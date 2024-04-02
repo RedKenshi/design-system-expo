@@ -6,6 +6,35 @@
     "orientation": "portrait",
     "icon": "./assets/icon.png",
     "userInterfaceStyle": "light",
+    "plugins": [
+      [
+        "expo-font",
+        {
+          "fonts": [
+            "./assets/fonts/Axiforma Thin.otf",
+            "./assets/fonts/Axiforma Thin Italic.otf",
+            "./assets/fonts/Axiforma Light.otf",
+            "./assets/fonts/Axiforma Light Italic.otf",
+            "./assets/fonts/Axiforma Book.otf",
+            "./assets/fonts/Axiforma Book Italic.otf",
+            "./assets/fonts/Axiforma Regular.otf",
+            "./assets/fonts/Axiforma Italic.otf",
+            "./assets/fonts/Axiforma Medium.otf",
+            "./assets/fonts/Axiforma Medium Italic.otf",
+            "./assets/fonts/Axiforma SemiBold.otf",
+            "./assets/fonts/Axiforma SemiBold Italic.otf",
+            "./assets/fonts/Axiforma Bold.otf",
+            "./assets/fonts/Axiforma Bold Italic.otf",
+            "./assets/fonts/Axiforma ExtraBold.otf",
+            "./assets/fonts/Axiforma ExtraBold Italic.otf",
+            "./assets/fonts/Axiforma Black.otf",
+            "./assets/fonts/Axiforma Black Italic.otf",
+            "./assets/fonts/Axiforma Heavy.otf",
+            "./assets/fonts/Axiforma Heavy Italic.otf"
+          ]
+        }
+      ]
+    ],
     "splash": {
       "image": "./assets/splash.png",
       "resizeMode": "contain",
@@ -15,13 +44,15 @@
       "**/*"
     ],
     "ios": {
-      "supportsTablet": true
+      "supportsTablet": true,
+      "bundleIdentifier": "com.redkenshi.designsystem"
     },
     "android": {
       "adaptiveIcon": {
         "foregroundImage": "./assets/adaptive-icon.png",
         "backgroundColor": "#ffffff"
-      }
+      },
+      "package": "com.redkenshi.designsystem"
     },
     "web": {
       "favicon": "./assets/favicon.png"
