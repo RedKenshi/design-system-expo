@@ -1,16 +1,15 @@
 import React, { useEffect, useMemo, useState } from 'react';
-import { LayoutRectangle, Modal, Pressable, StyleProp, StyleSheet, Text, TextInput, TextStyle, TouchableOpacity, View } from 'react-native';
-import PALETTE, { FONTS } from "../../Palette";
-
-import { IconSVG, IconSVGCode } from '../../IconSVG';
+import { LayoutRectangle, Modal, Pressable, StyleProp, StyleSheet, Text, TextInput, TextStyle, TouchableOpacity } from 'react-native';
 import { BlurView } from 'expo-blur';
-import Button from '../Button';
-import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import CustomText from '../CustomText';
+import { useResponsiveProp } from '@shopify/restyle';
 import chroma from "chroma-js";
 import { addDays, addMonths, endOfMonth, endOfWeek, format, startOfMonth, subMonths, startOfWeek, isSameDay, isToday, isPast, isFuture, isBefore, isAfter, startOfDay, endOfDay, isValid, isWithinInterval, formatDistance } from "date-fns";
 
-const fieldHeight = 45;
+import PALETTE, { FONTS, FieldSizes } from "../../Palette";
+import { IconSVG, IconSVGCode } from '../../IconSVG';
+import Button from '../Button';
+import CustomText from '../CustomText';
+import Box from '../Box';
 
 export type DateRange = {
     from: Date | null,
@@ -43,35 +42,37 @@ export const DateRangePickerField = ({
 
     const fromLabel = "du"
     const toLabel = "au"
-    const breakPoint = 180
 
-    const insets = useSafeAreaInsets();
     const [layout, setLayout] = useState<LayoutRectangle>(null)
     const [selectedDate, setSelectedDate] = useState<DateRange>({ from: null, to: null })
     const [selectedMonth, setSelectedMonth] = useState<Date>(new Date())
     const [datePickerOpen, setDatePickerOpen] = useState<boolean>(false)
-    const [cellSize, setCellSize] = useState<number>(0)
+    const [modalBodyLayout, setModalBodyLayout] = useState<LayoutRectangle>()
     const [weeks, setWeeks] = useState([]);
 
+    const width = useResponsiveProp(FieldSizes.width)
+    const height = useResponsiveProp(FieldSizes.height)
+    const labelHeight = useResponsiveProp(FieldSizes.labelHeight)
+
+    const cellSize = useMemo(() => {
+        if (modalBodyLayout) {
+            return (modalBodyLayout.width - 24) / 7 - 4 // - 24 is a padding of 12 on left and right 
+        } else {
+            return 34
+        }
+    }, [modalBodyLayout])
     const monthLabel = useMemo(() => {
         return format(selectedMonth ?? new Date(), "MMMM yyyy")
     }, [selectedMonth])
-
     const previousMonth = () => {
         setSelectedMonth(subMonths(selectedMonth, 1))
     }
     const nextMonth = () => {
         setSelectedMonth(addMonths(selectedMonth, 1))
     }
-
-    const margins = {
-        marginLeft: insets.left + PALETTE.spacing.l,
-        marginRight: insets.right + PALETTE.spacing.l
-    }
     const handleOpen = () => {
         setDatePickerOpen(true)
     }
-
     useEffect(() => { // CALENDAR GENERATION
         const month = selectedMonth.getMonth()
         const year = selectedMonth.getFullYear()
@@ -132,18 +133,18 @@ export const DateRangePickerField = ({
         if (cellSize) {
             return (
                 <>
-                    <View style={{ flexDirection: "row" }}>
-                        <View style={cellStyle}><Text style={[styles.cellText, { color: PALETTE.disabled }]}>L</Text></View>
-                        <View style={cellStyle}><Text style={[styles.cellText, { color: PALETTE.disabled }]}>M</Text></View>
-                        <View style={cellStyle}><Text style={[styles.cellText, { color: PALETTE.disabled }]}>M</Text></View>
-                        <View style={cellStyle}><Text style={[styles.cellText, { color: PALETTE.disabled }]}>J</Text></View>
-                        <View style={cellStyle}><Text style={[styles.cellText, { color: PALETTE.disabled }]}>V</Text></View>
-                        <View style={cellStyle}><Text style={[styles.cellText, { color: PALETTE.disabled }]}>S</Text></View>
-                        <View style={cellStyle}><Text style={[styles.cellText, { color: PALETTE.disabled }]}>D</Text></View>
-                    </View>
+                    <Box style={{ flexDirection: "row" }}>
+                        <Box style={cellStyle}><Text style={[styles.cellText, { color: PALETTE.colors.disabled }]}>L</Text></Box>
+                        <Box style={cellStyle}><Text style={[styles.cellText, { color: PALETTE.colors.disabled }]}>M</Text></Box>
+                        <Box style={cellStyle}><Text style={[styles.cellText, { color: PALETTE.colors.disabled }]}>M</Text></Box>
+                        <Box style={cellStyle}><Text style={[styles.cellText, { color: PALETTE.colors.disabled }]}>J</Text></Box>
+                        <Box style={cellStyle}><Text style={[styles.cellText, { color: PALETTE.colors.disabled }]}>V</Text></Box>
+                        <Box style={cellStyle}><Text style={[styles.cellText, { color: PALETTE.colors.disabled }]}>S</Text></Box>
+                        <Box style={cellStyle}><Text style={[styles.cellText, { color: PALETTE.colors.disabled }]}>D</Text></Box>
+                    </Box>
                     {weeks.map((week, i) => {
                         return (
-                            <View key={`week${i}`} style={{ flexDirection: "row" }}>
+                            <Box key={`week${i}`} flexDirection='row' gap='xs'>
                                 {week.map((day, j) => {
                                     const isSelected = isSameDay(day.date, selectedDate.from) || isSameDay(day.date, selectedDate.to)
                                     return (
@@ -166,7 +167,7 @@ export const DateRangePickerField = ({
                                         </TouchableOpacity>
                                     )
                                 })}
-                            </View>
+                            </Box>
                         )
                     })}
                 </>
@@ -174,60 +175,40 @@ export const DateRangePickerField = ({
         } else {
             return <></>
         }
-    }, [weeks, cellStyle, selectedDate])
+    }, [weeks, cellSize, cellStyle, selectedDate])
 
     const labelDependentComputedStyle = useMemo<StyleProp<TextStyle>>(() => {
-        let row = 1;
-        if (layout && layout.width < breakPoint) {
-            row = 2
-        } else {
-            row = 1
-        }
         if (label == undefined || label == null || label.length == 0) {
             return {
-                height: row * fieldHeight,
-                paddingTop: PALETTE.spacing.m
+                minWidth: width,
+                height: 2 * height,
+                paddingTop: PALETTE.spacing.l
             }
         } else {
             return {
-                height: row * fieldHeight + PALETTE.spacing.xl,
-                paddingTop: PALETTE.spacing.m + PALETTE.spacing.l
+                minWidth: width,
+                height: 2 * height + labelHeight,
+                paddingTop: PALETTE.spacing.xxl
             }
         }
-
     }, [label, layout])
 
     const datesDisplay = useMemo(() => {
         if (!layout) return <></>
-        if (layout.width < breakPoint) {
-            return (
-                <>
-                    {label && <Text style={styles.label}>{label}</Text>}
-                    <TextInput numberOfLines={2} editable={false} style={[styles.inputTall, labelDependentComputedStyle]} pointerEvents='none' />
-                    <View style={{ flexDirection: "row", position: "absolute", right: 0, bottom: 45, left: 0, justifyContent: "space-between", alignItems: "center", height: 45, paddingHorizontal: PALETTE.spacing.m, gap: PALETTE.spacing.m }}>
-                        <Text style={styles.prefixPlaceholder}>{fromLabel}</Text>
-                        <Text style={[styles.inputText, !value.from && styles.datePlaceholder]}> {value.from ? isValid(value.from) && `${format(value.from, "dd/MM/yyyy")}` : "__/__/____"}</Text>
-                    </View>
-                    <View style={{ flexDirection: "row", position: "absolute", right: 0, bottom: 0, left: 0, justifyContent: "space-between", alignItems: "center", height: 45, paddingHorizontal: PALETTE.spacing.m, gap: PALETTE.spacing.m }}>
-                        <Text style={styles.prefixPlaceholder}>{toLabel}</Text>
-                        <Text style={[styles.inputText, !value.to && styles.datePlaceholder]}> {value.to ? isValid(value.to) && `${format(value.to, "dd/MM/yyyy")}` : "__/__/____"}</Text>
-                    </View>
-                </>
-            )
-        } else {
-            return (
-                <>
-                    {label && <Text style={styles.label}>{label}</Text>}
-                    <TextInput numberOfLines={2} editable={false} style={[styles.inputWide, labelDependentComputedStyle]} pointerEvents='none' />
-                    <View style={{ flexDirection: "row", position: "absolute", right: 0, bottom: 0, left: 0, justifyContent: "space-between", alignItems: "center", height: 45, paddingHorizontal: PALETTE.spacing.m, gap: PALETTE.spacing.m }}>
-                        <Text style={styles.prefixPlaceholder}>{fromLabel}</Text>
-                        <Text style={[styles.inputText, !value.from && styles.datePlaceholder]}> {value.from ? isValid(value.from) && `${format(value.from, "dd/MM/yyyy")}` : "__/__/____"}</Text>
-                        <Text style={styles.prefixPlaceholder}>{toLabel}</Text>
-                        <Text style={[styles.inputText, !value.to && styles.datePlaceholder]}> {value.to ? isValid(value.to) && `${format(value.to, "dd/MM/yyyy")}` : "__/__/____"}</Text>
-                    </View>
-                </>
-            )
-        }
+        return (
+            <>
+                {label && <Text style={styles.label}>{label}</Text>}
+                <TextInput numberOfLines={2} editable={false} style={[styles.inputTall, labelDependentComputedStyle]} pointerEvents='none' />
+                <Box style={{ flexDirection: "row", position: "absolute", right: 0, bottom: height, left: 0, justifyContent: "space-between", alignItems: "center", height: 45, paddingHorizontal: PALETTE.spacing.m, gap: PALETTE.spacing.m }}>
+                    <Text style={styles.prefixPlaceholder}>{fromLabel}</Text>
+                    <Text style={[styles.inputText, !value.from && styles.datePlaceholder]}> {value.from ? isValid(value.from) && `${format(value.from, "dd/MM/yyyy")}` : "__/__/____"}</Text>
+                </Box>
+                <Box style={{ flexDirection: "row", position: "absolute", right: 0, bottom: 0, left: 0, justifyContent: "space-between", alignItems: "center", height: 45, paddingHorizontal: PALETTE.spacing.m, gap: PALETTE.spacing.m }}>
+                    <Text style={styles.prefixPlaceholder}>{toLabel}</Text>
+                    <Text style={[styles.inputText, !value.to && styles.datePlaceholder]}> {value.to ? isValid(value.to) && `${format(value.to, "dd/MM/yyyy")}` : "__/__/____"}</Text>
+                </Box>
+            </>
+        )
     }, [labelDependentComputedStyle, value])
 
     return (
@@ -238,34 +219,45 @@ export const DateRangePickerField = ({
             <Modal animationType='fade' transparent={true} visible={datePickerOpen} onRequestClose={() => setDatePickerOpen} >
                 <BlurView intensity={10} style={styles.blur} >
                     <Pressable onPress={() => setDatePickerOpen(false)} style={styles.dimmer} />
-                    <View style={[{ zIndex: 10, ...margins, justifyContent: "center", alignSelf: "stretch" }]}>
-                        <View style={styles.modalBody}>
-                            <View style={{ gap: PALETTE.spacing.m }}>
-                                <View style={{ flexDirection: "row", justifyContent: "space-between", alignItems: "center", marginVertical: PALETTE.spacing.l, marginHorizontal: PALETTE.spacing.m }}>
+                    <Box
+                        backgroundColor='surface'
+                        gap="m"
+                        padding='m'
+                        width={{ phone: '90%', tablet: 460 }}
+                        zIndex={20}
+                        justifyContent='center'
+                        alignItems='center'
+                        borderRadius={8}
+                        flexDirection="column"
+                        onLayout={(e) => setModalBodyLayout(e.nativeEvent.layout)}
+                    >
+                        <Box style={styles.modalBody}>
+                            <Box style={{ gap: PALETTE.spacing.m }}>
+                                <Box marginVertical='l' marginHorizontal='m' style={{ flexDirection: "row", justifyContent: "space-between", alignItems: "center" }}>
                                     <Button icon={IconSVGCode.chevron_left} onPress={previousMonth} outline size="s" />
                                     <CustomText style={{ fontSize: 24, lineHeight: 28, marginTop: 8 }}>{monthLabel}</CustomText>
                                     <Button icon={IconSVGCode.chevron_right} onPress={nextMonth} outline size="s" />
-                                </View>
-                                <View style={{ borderBottomWidth: 1, borderColor: PALETTE.disabled }} />
-                                <View onLayout={(e) => setCellSize((e.nativeEvent.layout.width / 7) - 4)} style={{ flexDirection: "column", marginHorizontal: PALETTE.spacing.s, marginVertical: PALETTE.spacing.l }}>
+                                </Box>
+                                <Box style={{ borderBottomWidth: 1, borderColor: PALETTE.colors.disabled }} />
+                                <Box flexDirection="column" marginHorizontal='s' marginVertical='l' gap='xs' >
                                     {monthGrid}
-                                </View>
-                            </View>
-                            <View style={{ flexDirection: "row", justifyContent: "center", alignItems: "center" }}>
-                                <View style={{ flex: 1, alignItems: "center" }}>
+                                </Box>
+                            </Box>
+                            <Box style={{ flexDirection: "row", justifyContent: "center", alignItems: "center" }}>
+                                <Box style={{ flex: 1, alignItems: "center" }}>
                                     <Text style={styles.cellText}>{selectedDate.from ? format(selectedDate.from, "dd/MM/yyyy") : "-"}</Text>
-                                </View>
+                                </Box>
                                 <IconSVG icon={IconSVGCode.chevron_right} size='normal' />
-                                <View style={{ flex: 1, alignItems: "center" }}>
+                                <Box style={{ flex: 1, alignItems: "center" }}>
                                     <Text style={styles.cellText}>{selectedDate.to ? format(selectedDate.to, "dd/MM/yyyy") : "-"}</Text>
-                                </View>
-                            </View>
-                            <View style={{ flexDirection: "row", gap: PALETTE.spacing.l, margin: PALETTE.spacing.xs }}>
+                                </Box>
+                            </Box>
+                            <Box flexDirection="row" gap='l' margin='xs' >
                                 <Button style={{ flex: 1 }} onPress={() => setDatePickerOpen(false)} variant='danger' title="Fermer" />
                                 <Button disabled={selectedDate == null} style={{ flex: 1 }} onPress={handleDateValidation} variant='primary' title={selectedDate.from && selectedDate.to ? `Validate ${formatDistance(selectedDate.from, selectedDate.to)}` : "-"} />
-                            </View>
-                        </View>
-                    </View>
+                            </Box>
+                        </Box>
+                    </Box>
                 </BlurView>
             </Modal>
         </>
@@ -277,12 +269,11 @@ const styles = StyleSheet.create({
         height: 80,
         textAlign: "right",
         borderBottomWidth: 2,
-        borderBottomColor: PALETTE.textOnPanel,
-        backgroundColor: PALETTE.item,
-        color: PALETTE.fullThemeInverse,
+        borderBottomColor: PALETTE.colors.textOnPanel,
+        backgroundColor: PALETTE.colors.item,
+        color: PALETTE.colors.fullThemeInverse,
         fontFamily: FONTS.A600,
         fontSize: 18,
-        minWidth: 168,
         paddingHorizontal: PALETTE.spacing.m,
         paddingTop: PALETTE.spacing.m,
         paddingBottom: PALETTE.spacing.m - 2,
@@ -292,12 +283,11 @@ const styles = StyleSheet.create({
         height: 80,
         textAlign: "right",
         borderBottomWidth: 2,
-        borderBottomColor: PALETTE.textOnPanel,
-        backgroundColor: PALETTE.item,
-        color: PALETTE.fullThemeInverse,
+        borderBottomColor: PALETTE.colors.textOnPanel,
+        backgroundColor: PALETTE.colors.item,
+        color: PALETTE.colors.fullThemeInverse,
         fontFamily: FONTS.A600,
         fontSize: 18,
-        minWidth: 168,
         paddingHorizontal: PALETTE.spacing.m,
         paddingTop: PALETTE.spacing.m,
         paddingBottom: PALETTE.spacing.m - 2,
@@ -306,7 +296,7 @@ const styles = StyleSheet.create({
     label: {
         position: "absolute",
         fontFamily: FONTS.A700,
-        color: PALETTE.primary,
+        color: PALETTE.colors.primary,
         zIndex: 1000,
         top: PALETTE.spacing.s + 2,
         left: PALETTE.spacing.s,
@@ -314,20 +304,20 @@ const styles = StyleSheet.create({
     inputText: {
         fontSize: 18,
         lineHeight: 18,
-        color: PALETTE.fullThemeInverse,
+        color: PALETTE.colors.fullThemeInverse,
         fontFamily: FONTS.A600,
     },
     prefixPlaceholder: {
         fontFamily: FONTS.A600,
         fontSize: 16,
         lineHeight: 16,
-        color: chroma(PALETTE.fullThemeInverse).alpha(.4).hex()
+        color: chroma(PALETTE.colors.fullThemeInverse).alpha(.4).hex()
     },
     datePlaceholder: {
         letterSpacing: .8,
         fontSize: 18,
         lineHeight: 18,
-        color: chroma(PALETTE.fullThemeInverse).alpha(.4).hex()
+        color: chroma(PALETTE.colors.fullThemeInverse).alpha(.4).hex()
     },
     blur: {
         height: "100%",
@@ -338,7 +328,6 @@ const styles = StyleSheet.create({
         justifyContent: "center"
     },
     cell: {
-        margin: 2,
         borderRadius: 4,
         justifyContent: "center",
         alignItems: "center",
@@ -346,46 +335,37 @@ const styles = StyleSheet.create({
     cellText: {
         fontFamily: FONTS.A500,
         fontSize: 18,
-        color: PALETTE.textOnSurface
+        color: PALETTE.colors.textOnSurface
     },
     offSelectedMonthText: {
-        color: PALETTE.disabled
+        color: PALETTE.colors.disabled
     },
     selectedDate: {
-        backgroundColor: PALETTE.primary
+        backgroundColor: PALETTE.colors.primary
     },
     selectedDateText: {
-        color: PALETTE.textOnPrimary
+        color: PALETTE.colors.textOnPrimary
     },
     today: {
-        backgroundColor: chroma(PALETTE.warning).alpha(.1).hex()
+        backgroundColor: chroma(PALETTE.colors.warning).alpha(.1).hex()
     },
     todayText: {
-        color: PALETTE.warning
+        color: PALETTE.colors.warning
     },
     inRangeSelected: {
-        backgroundColor: chroma(PALETTE.primary).alpha(.1).hex()
+        backgroundColor: chroma(PALETTE.colors.primary).alpha(.1).hex()
     },
     inRangeSelectedText: {
-        color: PALETTE.primary
+        color: PALETTE.colors.primary
     },
     forbiddenText: {
-        color: chroma(PALETTE.danger).alpha(.45).hex(),
+        color: chroma(PALETTE.colors.danger).alpha(.45).hex(),
         textDecorationLine: "line-through"
     },
     title: {
-        color: PALETTE.textOnSurface,
+        color: PALETTE.colors.textOnSurface,
         fontFamily: FONTS.A600,
         fontSize: 16
-    },
-    rowWrapper: {
-        height: 64,
-        marginHorizontal: PALETTE.spacing.xs,
-        paddingHorizontal: PALETTE.spacing.xs,
-        paddingVertical: PALETTE.spacing.xs,
-        flexDirection: "row",
-        justifyContent: "space-between",
-        alignItems: "center"
     },
     dimmer: {
         position: "absolute",
@@ -401,7 +381,7 @@ const styles = StyleSheet.create({
     modalBody: {
         flexDirection: "column",
         gap: PALETTE.spacing.l,
-        backgroundColor: PALETTE.surface,
+        backgroundColor: PALETTE.colors.surface,
         padding: PALETTE.spacing.s,
         borderRadius: 8
     },

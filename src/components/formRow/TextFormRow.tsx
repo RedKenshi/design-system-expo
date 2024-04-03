@@ -34,13 +34,11 @@ export const TextFormRow = ({
 
 const styles = StyleSheet.create({
     title: {
-        color: PALETTE.textOnSurface,
+        color: PALETTE.colors.textOnSurface,
         fontFamily: FONTS.A600,
         fontSize: 16
     },
     rowWrapper: {
-        height: 64,
-        marginHorizontal: PALETTE.spacing.xs,
         paddingHorizontal: PALETTE.spacing.xs,
         paddingVertical: PALETTE.spacing.xs,
         flexDirection: "row",

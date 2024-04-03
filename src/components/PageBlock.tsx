@@ -8,7 +8,7 @@ interface Props {
     style?: ViewStyle
 }
 
-export const Panel = (props: Props) => {
+export const PageBlock = (props: Props) => {
 
     const {
         children,
@@ -17,22 +17,18 @@ export const Panel = (props: Props) => {
 
     return (
         <Box
-            backgroundColor='surface'
-            marginVertical='s'
-            paddingHorizontal={{ phone: 'm', tablet: 'xl' }}
-            paddingVertical={{ phone: 'm', tablet: 'xl' }}
-            borderRadius={{ phone: 8, tablet: 12 }}
-            style={style}
+            maxWidth={{ phone: '100%', tablet: '75%' }}
+            style={{ ...styles.pageBlock, ...style }}
         >
             {children}
         </Box>
     );
 };
 
-export default Panel;
+export default PageBlock;
 
 const styles = StyleSheet.create({
-    panel: {
-
+    pageBlock: {
+        alignSelf: "center"
     },
 })

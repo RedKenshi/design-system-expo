@@ -24,19 +24,19 @@ export const Alert: React.FC<Props> = ({
         let baseColor = ""
         switch (variant) {
             case 'primary':
-                baseColor = PALETTE.primary
+                baseColor = PALETTE.colors.primary
                 break;
             case 'info':
-                baseColor = PALETTE.info
+                baseColor = PALETTE.colors.info
                 break;
             case 'success':
-                baseColor = PALETTE.success
+                baseColor = PALETTE.colors.success
                 break;
             case 'warning':
-                baseColor = PALETTE.warning
+                baseColor = PALETTE.colors.warning
                 break;
             case 'danger':
-                baseColor = PALETTE.danger
+                baseColor = PALETTE.colors.danger
                 break;
         }
         return {

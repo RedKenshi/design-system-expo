@@ -16,16 +16,16 @@ export const Legend = ({
 }: Props) => {
 
     const computedStyle = useMemo((): TextStyle => {
-        let color = PALETTE.textLegend;
+        let color = PALETTE.colors.textLegend;
         switch (variant) {
             case 'primary':
-                color = PALETTE.primary
+                color = PALETTE.colors.primary
                 break;
             case 'onPrimary':
-                color = PALETTE.textOnPrimary
+                color = PALETTE.colors.textOnPrimary
                 break;
             default:
-                color = PALETTE.textLegend
+                color = PALETTE.colors.textLegend
                 break;
         }
         return {

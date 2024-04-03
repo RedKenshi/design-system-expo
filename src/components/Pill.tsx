@@ -30,73 +30,73 @@ export const Pill: React.FC<Props> = ({
             case 'primary':
                 if (inverted) {
                     return {
-                        background: chroma(PALETTE.primary).alpha(.2).hex(),
-                        text: PALETTE.primary
+                        background: chroma(PALETTE.colors.primary).alpha(.2).hex(),
+                        text: PALETTE.colors.primary
                     }
                 } else {
                     return {
-                        background: PALETTE.primary,
-                        text: PALETTE.white
+                        background: PALETTE.colors.primary,
+                        text: PALETTE.colors.white
                     }
                 }
             case 'success':
                 if (inverted) {
                     return {
-                        background: chroma(PALETTE.success).alpha(.2).hex(),
-                        text: PALETTE.success
+                        background: chroma(PALETTE.colors.success).alpha(.2).hex(),
+                        text: PALETTE.colors.success
                     }
                 } else {
                     return {
-                        background: PALETTE.success,
-                        text: PALETTE.white
+                        background: PALETTE.colors.success,
+                        text: PALETTE.colors.white
                     }
                 }
             case 'warning':
                 if (inverted) {
                     return {
-                        background: chroma(PALETTE.warning).alpha(.2).hex(),
-                        text: PALETTE.warning
+                        background: chroma(PALETTE.colors.warning).alpha(.2).hex(),
+                        text: PALETTE.colors.warning
                     }
                 } else {
                     return {
-                        background: PALETTE.warning,
-                        text: PALETTE.white
+                        background: PALETTE.colors.warning,
+                        text: PALETTE.colors.white
                     }
                 }
             case 'danger':
                 if (inverted) {
                     return {
-                        background: chroma(PALETTE.danger).alpha(.2).hex(),
-                        text: PALETTE.danger
+                        background: chroma(PALETTE.colors.danger).alpha(.2).hex(),
+                        text: PALETTE.colors.danger
                     }
                 } else {
                     return {
-                        background: PALETTE.danger,
-                        text: PALETTE.white
+                        background: PALETTE.colors.danger,
+                        text: PALETTE.colors.white
                     }
                 }
             case 'info':
                 if (inverted) {
                     return {
-                        background: chroma(PALETTE.info).alpha(.2).hex(),
-                        text: PALETTE.info
+                        background: chroma(PALETTE.colors.info).alpha(.2).hex(),
+                        text: PALETTE.colors.info
                     }
                 } else {
                     return {
-                        background: PALETTE.info,
-                        text: PALETTE.white
+                        background: PALETTE.colors.info,
+                        text: PALETTE.colors.white
                     }
                 }
             case 'neutral':
                 if (inverted) {
                     return {
-                        background: chroma(PALETTE.offwhite).alpha(.2).hex(),
-                        text: PALETTE.textOnSurface
+                        background: chroma(PALETTE.colors.offwhite).alpha(.2).hex(),
+                        text: PALETTE.colors.textOnSurface
                     }
                 } else {
                     return {
-                        background: PALETTE.background,
-                        text: PALETTE.fullThemeInverse
+                        background: PALETTE.colors.background,
+                        text: PALETTE.colors.fullThemeInverse
                     }
                 }
         }

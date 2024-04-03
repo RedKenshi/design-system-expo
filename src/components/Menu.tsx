@@ -2,36 +2,33 @@ import { StyleSheet, Text, View } from "react-native";
 import { IconSVG, IconSVGCode } from "../IconSVG";
 import PALETTE, { FONTS } from "../Palette";
 import Pill from "./Pill";
+import Box from "./Box";
 
 export const Menu = () => {
 
     return (
-        <View style={styles.menuWrapper}>
+        <Box flex={1} gap="s" padding='l' justifyContent={"flex-start"}>
             <LI title={"Général"} selected={true} icon={IconSVGCode.gear} />
             <LI title={"Dashboard"} selected={false} icon={IconSVGCode.dashboard} />
             <LI title={"Utilisateurs et groupes"} selected={false} icon={IconSVGCode.user} />
             <LI title={"Matériel"} selected={false} icon={IconSVGCode.printer} />
-            <View style={styles.hr} />
+            <Box style={styles.hr} />
             <LI title={"Vente"} selected={false} icon={IconSVGCode.bag} pro />
             <LI title={"Réservation"} selected={false} icon={IconSVGCode.table} pro />
             <LI title={"Publication"} selected={false} icon={IconSVGCode.edit} pro />
-            <View style={styles.hr} />
-        </View>
+            <Box style={styles.hr} />
+            <Box flex={1} />
+        </Box>
     )
 }
 
 const styles = StyleSheet.create({
-    menuWrapper: {
-        flex: 1,
-        padding: PALETTE.spacing.l,
-        gap: 8,
-    },
     hr: {
         alignSelf: "center",
         width: "95%",
         margin: "auto",
         borderBottomWidth: 1,
-        borderColor: PALETTE.textOnBackground
+        borderColor: PALETTE.colors.textOnBackground
     }
 })
 
@@ -46,7 +43,7 @@ export const LI = ({ title, icon, selected, pro = false }: LIProps) => {
 
     return (
         <View style={[stylesLI.rowWrapper, selected ? stylesLI.rowWrapperSelected : null]}>
-            <IconSVG icon={icon} size="big" fill={PALETTE.primary} />
+            <IconSVG icon={icon} size="big" fill={PALETTE.colors.primary} />
             <Text numberOfLines={1} style={[stylesLI.rowTitle, selected ? stylesLI.rowTextSelected : null]}>{title}</Text>
             {pro &&
                 <>
@@ -71,10 +68,10 @@ const stylesLI = StyleSheet.create({
         borderRadius: 6
     },
     rowWrapperSelected: {
-        backgroundColor: PALETTE.fullTheme,
+        backgroundColor: PALETTE.colors.fullTheme,
     },
     rowTitle: {
-        color: PALETTE.textOnSurface,
+        color: PALETTE.colors.textOnSurface,
         fontFamily: FONTS.A600,
         fontSize: 16
     }

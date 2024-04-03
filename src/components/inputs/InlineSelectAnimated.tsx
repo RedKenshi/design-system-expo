@@ -1,5 +1,5 @@
 
-import React, { useEffect, useMemo, useState } from 'react';
+import React, { useEffect, useMemo, useRef, useState } from 'react';
 import { LayoutRectangle, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import PALETTE, { FONTS } from "../../Palette";
 import Animated, { useAnimatedStyle, useSharedValue, withTiming } from 'react-native-reanimated';
@@ -19,28 +19,28 @@ export const InlineSelectAnimated = ({
     options,
 }: Props) => {
 
-    const [optionsPositions, setOptionsPositions] = useState([])
     const [selectedIndex, setSelectedIndex] = useState<number>(-1)
     const width = useSharedValue(0);
     const left = useSharedValue(0);
+    const optionsPositions = useRef([])
 
     useEffect(() => {
         setSelectedIndex(options.findIndex(x => x.value == selected))
     }, [selected])
 
     const setLayoutForIndex = (e: LayoutRectangle, index: number) => {
-        let tmp = JSON.parse(JSON.stringify(optionsPositions))
-        tmp[index] = { left: e.x, width: e.width }
-        setOptionsPositions(tmp)
+        let tmp = JSON.parse(JSON.stringify(optionsPositions.current))
+        optionsPositions.current = [...tmp, { index: index, left: e.x, width: e.width }]
     }
 
     useEffect(() => {
         let selectedIndex = options.findIndex(x => x.value == selected)
-        if (optionsPositions[selectedIndex] != undefined && optionsPositions[selectedIndex].width && optionsPositions[selectedIndex].left) {
-            width.value = withTiming(optionsPositions[selectedIndex].width, { duration: 250 })
-            left.value = withTiming(optionsPositions[selectedIndex].left, { duration: 250 })
+        let positions = optionsPositions.current.find(x => x.index == selectedIndex)
+        if (positions != undefined && positions.width && positions.left) {
+            width.value = withTiming(optionsPositions.current.find(x => x.index == selectedIndex).width, { duration: 250 })
+            left.value = withTiming(optionsPositions.current.find(x => x.index == selectedIndex).left, { duration: 250 })
         }
-    }, [selectedIndex, optionsPositions])
+    }, [selectedIndex])
 
     const animatedStyles = useAnimatedStyle(() => ({
         width: width.value,
@@ -73,15 +73,15 @@ const styles = StyleSheet.create({
     selectedBack: {
         position: "absolute",
         top: space,
-        backgroundColor: PALETTE.primary,
+        backgroundColor: PALETTE.colors.primary,
         height: height - (2 * space),
         borderRadius: (height - (2 * space)) / 2,
     },
     selectedText: {
-        color: PALETTE.textOnPrimary
+        color: PALETTE.colors.textOnPrimary
     },
     optionText: {
-        color: PALETTE.fullThemeInverse,
+        color: PALETTE.colors.fullThemeInverse,
         fontFamily: FONTS.A600,
         marginTop: 3,
         fontSize: 14,
@@ -91,7 +91,7 @@ const styles = StyleSheet.create({
         height: height,
         minWidth: height,
         borderRadius: height / 2,
-        backgroundColor: PALETTE.item,
+        backgroundColor: PALETTE.colors.item,
         paddingLeft: 2 * space,
         paddingRight: space,
         flexDirection: "row",

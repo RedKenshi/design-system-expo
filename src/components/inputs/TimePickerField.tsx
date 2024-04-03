@@ -1,6 +1,6 @@
 import React, { useEffect, useMemo, useRef, useState } from 'react';
-import { Modal, NativeScrollEvent, NativeSyntheticEvent, Pressable, StyleProp, StyleSheet, Text, TextInput, TextStyle, TouchableOpacity, View } from 'react-native';
-import PALETTE, { FONTS } from "../../Palette";
+import { LayoutRectangle, Modal, NativeScrollEvent, NativeSyntheticEvent, Pressable, StyleProp, StyleSheet, Text, TextInput, TextStyle, TouchableOpacity } from 'react-native';
+import PALETTE, { FONTS, FieldSizes } from "../../Palette";
 
 import { IconSVG, IconSVGCode } from '../../IconSVG';
 import { BlurView } from 'expo-blur';
@@ -11,8 +11,8 @@ import { format, isValid, parse } from "date-fns";
 
 import { ScrollView } from 'react-native-gesture-handler';
 import { LinearGradient } from 'expo-linear-gradient';
-
-const fieldHeight = 45;
+import { useResponsiveProp } from '@shopify/restyle';
+import Box from '../Box';
 
 interface Props {
     label?: string,
@@ -34,12 +34,16 @@ export const TimePickerField = ({
     minutesStep = 15
 }: Props) => {
 
-    const insets = useSafeAreaInsets();
     const [selectedHour, setSelectedHour] = useState<number | null>(null)
     const [selectedMinutes, setSelectedMinutes] = useState<number | null>(null)
     const [datePickerOpen, setTimePickerOpen] = useState<boolean>(false)
-    const [cellSize, setCellSize] = useState<number>(48)
+    const [modalBodyLayout, setModalBodyLayout] = useState<LayoutRectangle>()
+    const cellSize = 96
     const [loading, setLoading] = useState<boolean>(true)
+
+    const width = useResponsiveProp(FieldSizes.width)
+    const height = useResponsiveProp(FieldSizes.height)
+    const labelHeight = useResponsiveProp(FieldSizes.labelHeight)
 
     const handleOpen = () => {
         setTimePickerOpen(true)
@@ -127,7 +131,7 @@ export const TimePickerField = ({
     const clock = useMemo(() => {
         if (cellSize && !loading) {
             return (
-                <View style={{ flexDirection: 'row', alignSelf: 'center', width: cellSize * 4, gap: cellSize / 3, marginTop: PALETTE.spacing.m, justifyContent: "center", alignItems: "center", position: "relative" }}>
+                <Box marginTop='m' flexDirection='row' alignSelf='center' justifyContent="center" alignItems="center" position="relative" style={{ width: cellSize * 2.5 }}>
                     <ScrollView
                         onLayout={(e) => handleOnLayoutScroll("H")}
                         onScroll={(e) => handleScroll(e, "H")}
@@ -136,20 +140,22 @@ export const TimePickerField = ({
                         snapToAlignment={"center"}
                         decelerationRate={"normal"}
                         showsVerticalScrollIndicator={false}
-                        style={{ width: cellSize * 2, height: cellSize * 3 }}
+                        style={{ width: cellSize, height: cellSize * 3 }}
                         contentContainerStyle={{
                             paddingVertical: cellSize,
                         }}
                     >
                         {hours.map((h, i) => {
                             return (
-                                <TouchableOpacity onPress={() => scrollViewH.current.scrollTo({ y: i * cellSize, x: 0, animated: true })} style={{ height: cellSize, flex: 1, justifyContent: "center", alignItems: "center" }}>
-                                    <Text style={{ color: PALETTE.textOnSurface, fontFamily: FONTS.A600, fontSize: 32, lineHeight: 32, letterSpacing: 1.5, marginTop: 6, alignSelf: "stretch", textAlign: "center" }}>{h.toString().padStart(2, "0")}</Text>
+                                <TouchableOpacity onPress={() => scrollViewH.current.scrollTo({ y: i * cellSize, x: 0, animated: true })} style={{ height: cellSize, width: cellSize, justifyContent: "center", alignItems: "center" }}>
+                                    <Text style={{ color: PALETTE.colors.textOnSurface, fontFamily: FONTS.A600, fontSize: 40, lineHeight: 40, letterSpacing: 1.5, marginTop: 6, alignSelf: "stretch", textAlign: "center" }}>{h.toString().padStart(2, "0")}</Text>
                                 </TouchableOpacity>
                             )
                         })}
                     </ScrollView>
-                    <Text style={{ fontSize: cellSize - 4, lineHeight: cellSize, fontFamily: FONTS.A700, color: PALETTE.textOnSurface }}>:</Text>
+                    <Box style={{ width: cellSize / 2, height: cellSize, justifyContent: "center", alignItems: 'center' }}>
+                        <Text style={{ fontSize: cellSize - 32, lineHeight: cellSize, fontFamily: FONTS.A700, color: PALETTE.colors.textOnSurface }}>:</Text>
+                    </Box>
                     <ScrollView
                         onLayout={(e) => handleOnLayoutScroll("M")}
                         onScroll={(e) => handleScroll(e, "M")}
@@ -158,54 +164,51 @@ export const TimePickerField = ({
                         snapToAlignment={"center"}
                         decelerationRate={"normal"}
                         showsVerticalScrollIndicator={false}
-                        style={{ width: cellSize * 2, height: cellSize * 3 }}
+                        style={{ width: cellSize, height: cellSize * 3 }}
                         contentContainerStyle={{
                             paddingVertical: cellSize,
                         }}
                     >
                         {minutes.map((m, i) => {
                             return (
-                                <TouchableOpacity onPress={() => scrollViewM.current.scrollTo({ y: i * cellSize, x: 0, animated: true })} style={{ height: cellSize, flex: 1, justifyContent: "center", alignItems: "center" }}>
-                                    <Text style={{ color: PALETTE.textOnSurface, fontFamily: FONTS.A600, fontSize: 32, lineHeight: 32, letterSpacing: 1.5, marginTop: 6, alignSelf: "stretch", textAlign: "center" }}>{m.toString().padStart(2, "0")}</Text>
+                                <TouchableOpacity onPress={() => scrollViewM.current.scrollTo({ y: i * cellSize, x: 0, animated: true })} style={{ height: cellSize, width: cellSize, justifyContent: "center", alignItems: "center" }}>
+                                    <Text style={{ color: PALETTE.colors.textOnSurface, fontFamily: FONTS.A600, fontSize: 40, lineHeight: 40, letterSpacing: 1.5, marginTop: 6, alignSelf: "stretch", textAlign: "center" }}>{m.toString().padStart(2, "0")}</Text>
                                 </TouchableOpacity>
                             )
                         })}
                     </ScrollView>
-                    <View pointerEvents='none' style={{ position: "absolute", top: 0, left: 0, right: 0, height: cellSize * 1.6, zIndex: 1000 }}>
+                    <Box pointerEvents='none' style={{ position: "absolute", top: 0, left: 0, right: 0, height: cellSize * 1.6, zIndex: 1000 }}>
                         <LinearGradient
                             locations={[0, 0.7]}
-                            colors={[PALETTE.surface, chroma(PALETTE.surface).alpha(.0).hex()]}
+                            colors={[PALETTE.colors.surface, chroma(PALETTE.colors.surface).alpha(.0).hex()]}
                             style={{ alignSelf: "stretch", flex: 1 }}
                         />
-                    </View>
-                    <View pointerEvents='none' style={{ position: "absolute", bottom: 0, left: 0, right: 0, height: cellSize * 1.6, zIndex: 1000 }}>
+                    </Box>
+                    <Box pointerEvents='none' style={{ position: "absolute", bottom: 0, left: 0, right: 0, height: cellSize * 1.6, zIndex: 1000 }}>
                         <LinearGradient
                             locations={[0.3, 1]}
-                            colors={[chroma(PALETTE.surface).alpha(.0).hex(), PALETTE.surface]}
+                            colors={[chroma(PALETTE.colors.surface).alpha(.0).hex(), PALETTE.colors.surface]}
                             style={{ alignSelf: "stretch", flex: 1 }}
                         />
-                    </View>
-                </View>
+                    </Box>
+                </Box>
             )
         } else {
             return <></>
         }
     }, [cellSize, loading])
 
-    const margins = {
-        marginLeft: insets.left + PALETTE.spacing.l,
-        marginRight: insets.right + PALETTE.spacing.l
-    }
-
     const labelDependentComputedStyle = useMemo<StyleProp<TextStyle>>(() => {
         if (label == undefined || label == null || label.length == 0) {
             return {
-                height: 46,
+                minWidth: width,
+                height: height,
                 paddingTop: PALETTE.spacing.m
             }
         } else {
             return {
-                height: 68,
+                minWidth: width,
+                height: height + labelHeight,
                 paddingTop: PALETTE.spacing.m + PALETTE.spacing.l
             }
         }
@@ -217,24 +220,37 @@ export const TimePickerField = ({
             <TouchableOpacity style={{ position: 'relative' }} onPress={handleOpen}>
                 {label && <Text style={styles.label}>{label}</Text>}
                 <TextInput editable={false} value={value ? isValid(value) ? format(value, "dd/MM/yyyy") : value.toString() : "__:__"} style={[styles.input, labelDependentComputedStyle, !value && styles.datePlaceholder]} pointerEvents='none' />
-                <IconSVG icon={IconSVGCode.clock} fill={PALETTE.disabled} style={{ position: "absolute", bottom: PALETTE.spacing.l, left: PALETTE.spacing.m }} size='normal' />
+                <Box style={{ position: "absolute", bottom: 0, left: PALETTE.spacing.m, height: height, flexDirection: 'row', justifyContent: "center", alignItems: "center" }}>
+                    <IconSVG icon={IconSVGCode.clock} fill={PALETTE.colors.disabled} size='normal' />
+                </Box>
             </TouchableOpacity>
             <Modal animationType='fade' transparent={true} visible={datePickerOpen} onRequestClose={() => setTimePickerOpen} >
                 <BlurView intensity={10} style={styles.blur} >
                     <Pressable onPress={() => setTimePickerOpen(false)} style={styles.dimmer} />
-                    <View style={[{ zIndex: 10, ...margins, justifyContent: "center", alignSelf: "stretch" }]}>
-                        <View style={styles.modalBody}>
-                            <View style={{ gap: PALETTE.spacing.m }}>
-                                <View style={{ flexDirection: "column", marginHorizontal: PALETTE.spacing.s, marginVertical: PALETTE.spacing.l }}>
+                    <Box
+                        backgroundColor='surface'
+                        gap="m"
+                        padding='m'
+                        width={{ phone: '90%', tablet: 460 }}
+                        zIndex={20}
+                        justifyContent='center'
+                        alignItems='center'
+                        borderRadius={8}
+                        flexDirection="column"
+                        onLayout={(e) => setModalBodyLayout(e.nativeEvent.layout)}
+                    >
+                        <Box style={styles.modalBody}>
+                            <Box gap='m' >
+                                <Box marginHorizontal='s' flexDirection="column" marginVertical='l' >
                                     {clock}
-                                </View>
-                            </View>
-                            <View style={{ flexDirection: "row", gap: PALETTE.spacing.l, margin: PALETTE.spacing.xs }}>
+                                </Box>
+                            </Box>
+                            <Box flexDirection="row" gap='l' margin='xs' alignSelf={"stretch"} >
                                 <Button style={{ flex: 1 }} onPress={() => setTimePickerOpen(false)} variant='danger' title="Fermer" />
-                                <Button disabled={computedTime == null} style={{ flex: 1 }} onPress={() => { handleChange(computedTime); setLoading(true); setTimePickerOpen(false); }} variant='primary' title={computedTime ? computedTime : "--:--"} />
-                            </View>
-                        </View>
-                    </View>
+                                <Button style={{ flex: 1 }} onPress={() => { handleChange(computedTime); setLoading(true); setTimePickerOpen(false); }} disabled={computedTime == null} variant='primary' title={computedTime ? computedTime : "--:--"} />
+                            </Box>
+                        </Box>
+                    </Box>
                 </BlurView>
             </Modal>
         </>
@@ -245,19 +261,18 @@ const styles = StyleSheet.create({
     label: {
         position: "absolute",
         fontFamily: FONTS.A700,
-        color: PALETTE.primary,
+        color: PALETTE.colors.primary,
         zIndex: 1000,
         top: PALETTE.spacing.s + 2,
         left: PALETTE.spacing.s,
     },
     datePlaceholder: {
         letterSpacing: 2,
-        color: chroma(PALETTE.fullThemeInverse).alpha(.4).hex()
+        color: chroma(PALETTE.colors.fullThemeInverse).alpha(.4).hex()
     },
     blur: {
         height: "100%",
         width: "100%",
-        backgroundColor: "#000c",
         display: "flex",
         alignItems: "center",
         justifyContent: "center"
@@ -269,27 +284,17 @@ const styles = StyleSheet.create({
         alignItems: "center",
     },
     title: {
-        color: PALETTE.textOnSurface,
+        color: PALETTE.colors.textOnSurface,
         fontFamily: FONTS.A600,
         fontSize: 16
-    },
-    rowWrapper: {
-        height: 64,
-        marginHorizontal: PALETTE.spacing.xs,
-        paddingHorizontal: PALETTE.spacing.xs,
-        paddingVertical: PALETTE.spacing.xs,
-        flexDirection: "row",
-        justifyContent: "space-between",
-        alignItems: "center"
     },
     input: {
         textAlign: "right",
         borderBottomWidth: 2,
-        borderBottomColor: PALETTE.textOnPanel,
-        backgroundColor: PALETTE.item,
-        color: PALETTE.fullThemeInverse,
+        borderBottomColor: PALETTE.colors.textOnPanel,
+        backgroundColor: PALETTE.colors.item,
+        color: PALETTE.colors.fullThemeInverse,
         fontFamily: FONTS.A600,
-        minWidth: 168,
         paddingHorizontal: PALETTE.spacing.m,
         paddingTop: PALETTE.spacing.m,
         paddingBottom: PALETTE.spacing.m - 2,
@@ -299,6 +304,7 @@ const styles = StyleSheet.create({
     },
     dimmer: {
         position: "absolute",
+        backgroundColor: "#000c",
         top: 0,
         bottom: 0,
         right: 0,
@@ -309,9 +315,10 @@ const styles = StyleSheet.create({
         backgroundColor: "#000c",
     },
     modalBody: {
+        alignSelf: "stretch",
         flexDirection: "column",
         gap: PALETTE.spacing.l,
-        backgroundColor: PALETTE.surface,
+        backgroundColor: PALETTE.colors.surface,
         padding: PALETTE.spacing.s,
         borderRadius: 8
     },

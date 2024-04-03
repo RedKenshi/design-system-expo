@@ -1,3 +1,5 @@
+import { createTheme } from "@shopify/restyle"
+
 export const FONTS = {
     A100: "Axiforma-Thin",
     A100_I: "Axiforma-Thin-Italic",
@@ -20,17 +22,7 @@ export const FONTS = {
     A950: "Axiforma-Heavy",
     A950_I: "Axiforma-Heavy-Italic",
 }
-
-const spacing = {
-    xxs: 2,
-    xs: 4,
-    s: 8,
-    m: 12,
-    l: 16,
-    xl: 24,
-    xxl: 32,
-}
-
+//COLORS
 const primary = {
     '50': '#edf7ff',
     '100': '#d7ebff',
@@ -44,7 +36,6 @@ const primary = {
     '900': '#133c95',
     '950': '#11265a',
 }
-
 const info = {
     '50': '#edf3ff',
     '100': '#dee7ff',
@@ -58,7 +49,6 @@ const info = {
     '900': '#2a2a85',
     '950': '#1a194d',
 }
-
 const success = {
     '50': '#edfcf4',
     '100': '#d3f8e2',
@@ -72,7 +62,6 @@ const success = {
     '900': '#094b35',
     '950': '#042a1e',
 }
-
 const warning = {
     '50': '#fff9eb',
     '100': '#ffeec6',
@@ -86,7 +75,6 @@ const warning = {
     '900': '#7a290d',
     '950': '#461302',
 }
-
 const danger = {
     '50': '#fdf2f6',
     '100': '#fbe8f0',
@@ -100,28 +88,13 @@ const danger = {
     '900': '#7f1c36',
     '950': '#4d0a1c',
 }
-
 const palettes = {
     primary: primary,
     success: success,
     warning: warning,
     danger: danger,
 }
-
-export const shadow = {
-    shadowColor: "#000",
-    shadowOffset: {
-        width: 0,
-        height: 0,
-    },
-    shadowOpacity: 0.15,
-    shadowRadius: 5,
-    elevation: 4,
-}
-
-export const LIGHT_THEME = {
-    spacing,
-    palettes,
+const lightColors = {
 
     //ELEMENTS COLORS
     background: "#F2F2F7",
@@ -153,6 +126,12 @@ export const LIGHT_THEME = {
     warning: warning["300"],
     danger: danger["500"],
 
+    //ELEMENTS COLORS
+    toggleTrueTrack: primary["200"],
+    toggleFalseTrack: danger["200"],
+    toggleTrue: primary["500"],
+    toggleFalse: danger["500"],
+
     //STATUS COLORS
     fullblack: "#000000",
     fullwhite: "#ffffff",
@@ -171,15 +150,12 @@ export const LIGHT_THEME = {
     grey: "#BCBCBC",
     fuel: "#464255"
 }
-
-export const DARK_THEME = {
-    spacing,
-    palettes,
+const darkColors = {
 
     //ELEMENTS COLORS
-    background: "#000",
+    background: "#0c0c0e",
     surface: "#202022",
-    item: "#000000",
+    item: "#0c0c0e",
     fullTheme: "#000000",
     fullThemeInverse: "#ffffff",
 
@@ -206,6 +182,12 @@ export const DARK_THEME = {
     warning: warning["300"],
     danger: danger["600"],
 
+    //ELEMENTS COLORS
+    toggleTrueTrack: primary["900"],
+    toggleFalseTrack: danger["950"],
+    toggleTrue: primary["500"],
+    toggleFalse: danger["500"],
+
     //STATUS COLORS
     fullblack: "#000000",
     fullwhite: "#ffffff",
@@ -225,4 +207,115 @@ export const DARK_THEME = {
     fuel: "#464255"
 }
 
+//SPACINGS
+const spacing = {
+    'xxs': 2,
+    'xs': 4,
+    's': 8,
+    'm': 12,
+    'l': 16,
+    'xl': 24,
+    'xxl': 32,
+}
+const breakpoints = {
+    phone: 0,
+    longPhone: {
+        width: 0,
+        height: 812,
+    },
+    tablet: 768,
+    largeTablet: 1024,
+}
+const shadow = {
+    shadowColor: "#000",
+    shadowOffset: {
+        width: 0,
+        height: 0,
+    },
+    shadowOpacity: 0.15,
+    shadowRadius: 5,
+    elevation: 4,
+}
+
+// TEXTS
+const textVariants = {
+    default: {
+        fontSize: 16,
+        lineHeight: 19,
+        fontFamily: FONTS.A400,
+        textAlign: "justify",
+        margin: spacing.xs
+    },
+    legend: {
+        fontSize: 13,
+        lineHeight: 17,
+        fontFamily: FONTS.A600_I,
+        textAlign: "justify",
+        paddingHorizontal: spacing.s
+    },
+    h1: {
+        fontSize: 28,
+        letterSpacing: 1.2,
+        fontFamily: FONTS.A500,
+    },
+    h2: {
+        fontSize: 24,
+        letterSpacing: 1.3,
+        fontFamily: FONTS.A500,
+    },
+    h3: {
+        fontSize: 20,
+        letterSpacing: 1.4,
+        fontFamily: FONTS.A600,
+    },
+    h4: {
+        fontSize: 16,
+        lsetterSpacing: 1.6,
+        fontFamily: FONTS.A700,
+    },
+    h5: {
+        fontSize: 14,
+        letterSpacing: 1.8,
+        fontFamily: FONTS.A800,
+    },
+}
+
+//RESTYLE THEME CREATION AND THEME EXPORT 
+const LIGHT_THEME = createTheme({
+    spacing,
+    palettes,
+    shadow,
+    textVariants,
+    breakpoints,
+    colors: lightColors
+})
+const DARK_THEME = createTheme({
+    spacing,
+    palettes,
+    shadow,
+    textVariants,
+    breakpoints,
+    colors: darkColors
+})
+
+export type Theme = typeof LIGHT_THEME;
 export default LIGHT_THEME;
+
+
+export const FieldSizes = {
+    width: {
+        phone: 168,
+        tablet: 192,
+        largeTablet: 240
+    },
+    height: {
+        phone: 48,
+        tablet: 48,
+        largeTablet: 48
+    },
+    labelHeight: {
+        phone: 22,
+        tablet: 22,
+        largeTablet: 22
+    },
+}

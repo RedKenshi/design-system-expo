@@ -1,4 +1,4 @@
-import { Pressable, StyleSheet, Text, View } from "react-native"
+import { Pressable, StyleSheet } from "react-native"
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import Animated, { useAnimatedStyle, useSharedValue, withTiming } from 'react-native-reanimated';
 import { useEffect } from "react";
@@ -6,6 +6,8 @@ import { Dimensions } from 'react-native';
 import PALETTE from "../Palette";
 import Menu from "./Menu";
 import { EiwieSVG } from "../IconSVG";
+import { BlurView } from "expo-blur";
+import Box from "./Box";
 
 type Props = {
     open: boolean,
@@ -44,13 +46,17 @@ export const Drawer = ({ open, setOpenMenu }: Props) => {
 
     return (
         <Animated.View style={[styles.drawerWrapper, animatedStyles]}>
-            <View style={[styles.drawerContainer, padding, { backgroundColor: PALETTE.surface }]}>
-                <View style={styles.logoWrapper}>
-                    <EiwieSVG color={PALETTE.primary} neutral={PALETTE.textOnSurface} />
-                </View>
+            <Box width={{ phone: 320, tablet: 380, largeTablet: 420 }} style={[styles.drawerContainer, padding, { backgroundColor: PALETTE.colors.surface }]}>
+                <Box style={styles.logoWrapper}>
+                    <EiwieSVG color={PALETTE.colors.primary} neutral={PALETTE.colors.textOnSurface} />
+                </Box>
                 <Menu />
-            </View>
-            {open && <Pressable onPress={() => setOpenMenu(false)} style={styles.dimmer} />}
+            </Box>
+            {open &&
+                <BlurView intensity={5} style={{ height: "100%", width: "100%" }}>
+                    <Pressable onPress={() => setOpenMenu(false)} style={styles.dimmer} />
+                </BlurView>
+            }
         </Animated.View>
     )
 }
@@ -82,10 +88,9 @@ const styles = StyleSheet.create({
         top: 0,
         bottom: 0,
         left: 0,
-        width: "80%",
     },
     dimmer: {
         flex: 1,
-        backgroundColor: "#0005"
+        backgroundColor: "#0008"
     }
 })

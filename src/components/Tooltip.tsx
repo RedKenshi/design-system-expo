@@ -13,7 +13,7 @@ export const Tooltip: React.FC<Props> = ({
 
     return (
         <TouchableOpacity style={{ height: 16, width: 16, marginLeft: PALETTE.spacing.m }}>
-            <IconSVG style={{ height: 16, width: 16 }} icon={IconSVGCode.infos} fill={PALETTE.warning} size="small" />
+            <IconSVG style={{ height: 16, width: 16 }} icon={IconSVGCode.infos} fill={PALETTE.colors.warning} size="small" />
         </TouchableOpacity>
     );
 };

@@ -38,13 +38,11 @@ export const DateFormRow = ({
 
 const styles = StyleSheet.create({
     title: {
-        color: PALETTE.textOnSurface,
+        color: PALETTE.colors.textOnSurface,
         fontFamily: FONTS.A600,
         fontSize: 16
     },
     rowWrapper: {
-        height: 64,
-        marginHorizontal: PALETTE.spacing.xs,
         paddingHorizontal: PALETTE.spacing.xs,
         paddingVertical: PALETTE.spacing.xs,
         flexDirection: "row",
@@ -53,9 +51,9 @@ const styles = StyleSheet.create({
     },
     input: {
         borderBottomWidth: 3,
-        borderBottomColor: PALETTE.textOnPanel,
-        backgroundColor: PALETTE.item,
-        color: PALETTE.fullThemeInverse,
+        borderBottomColor: PALETTE.colors.textOnPanel,
+        backgroundColor: PALETTE.colors.item,
+        color: PALETTE.colors.fullThemeInverse,
         fontFamily: FONTS.A600,
         minWidth: 168,
         paddingHorizontal: PALETTE.spacing.m,

@@ -25,7 +25,7 @@ export const Ticket = ({ side }: Props) => {
 
     return (
         <TicketView onPress={() => { setSelected(!selected) }} side={side}>
-            <View style={[{ paddingHorizontal: 6, paddingVertical: 8, display: "flex", flexDirection: "column", gap: 8, borderColor: PALETTE.primary }, selected ? selectedStyleBySide : null]}>
+            <View style={[{ paddingHorizontal: 6, paddingVertical: 8, display: "flex", flexDirection: "column", gap: 8, borderColor: PALETTE.colors.primary }, selected ? selectedStyleBySide : null]}>
                 <View style={{ flex: 3, display: "flex", flexDirection: "row", justifyContent: "space-between", alignItems: "center" }}>
                     <View style={{ flex: 1, display: "flex", flexDirection: "row", gap: 8, justifyContent: "flex-start" }}>
                         <Pill title="INT-132" variant={selected ? "primary" : "neutral"} />
@@ -37,22 +37,22 @@ export const Ticket = ({ side }: Props) => {
                 </View>
                 <View style={{ flex: 2, display: "flex", flexDirection: "row", justifyContent: "flex-start", alignItems: "center", gap: 8 }}>
                     <IconSVG size={"normal"} icon={IconSVGCode.tmpUser} fill={PALETTE.yellow} />
-                    <Text style={{ fontSize: 18, lineHeight: 18, marginTop: 3, fontFamily: FONTS.A400, color: PALETTE.textOnSurface }}>JEAN JACQUES</Text>
+                    <Text style={{ fontSize: 18, lineHeight: 18, marginTop: 3, fontFamily: FONTS.A400, color: PALETTE.colors.textOnSurface }}>JEAN JACQUES</Text>
                     <IconSVG size={"normal"} icon={IconSVGCode.tmpStar} fill={PALETTE.yellow} />
-                    <Text style={{ fontSize: 18, lineHeight: 18, marginTop: 3, fontFamily: FONTS.A400, color: PALETTE.textOnSurface }}>5</Text>
-                    <IconSVG size={"normal"} icon={IconSVGCode.tmpBook} fill={PALETTE.primary} />
-                    <IconSVG size={"normal"} icon={IconSVGCode.tmpCB} fill={PALETTE.primary} />
+                    <Text style={{ fontSize: 18, lineHeight: 18, marginTop: 3, fontFamily: FONTS.A400, color: PALETTE.colors.textOnSurface }}>5</Text>
+                    <IconSVG size={"normal"} icon={IconSVGCode.tmpBook} fill={PALETTE.colors.primary} />
+                    <IconSVG size={"normal"} icon={IconSVGCode.tmpCB} fill={PALETTE.colors.primary} />
                 </View>
                 <View style={{ flex: 2, display: "flex", flexDirection: "row", justifyContent: "space-between", alignItems: "center" }}>
                     <View style={{ flex: 1, display: "flex", flexDirection: "row", justifyContent: "flex-start", gap: 8 }}>
-                        <IconSVG size={"normal"} icon={IconSVGCode.tmpFork} fill={PALETTE.primary} />
-                        <Text style={{ fontSize: 18, lineHeight: 18, marginTop: 3, fontFamily: FONTS.A400, color: PALETTE.textOnSurface }}>4</Text>
-                        <IconSVG size={"normal"} icon={IconSVGCode.tmpTicket} fill={PALETTE.primary} />
-                        <Text style={{ fontSize: 18, lineHeight: 18, marginTop: 3, fontFamily: FONTS.A400, color: PALETTE.textOnSurface }}>8.00 €</Text>
+                        <IconSVG size={"normal"} icon={IconSVGCode.tmpFork} fill={PALETTE.colors.primary} />
+                        <Text style={{ fontSize: 18, lineHeight: 18, marginTop: 3, fontFamily: FONTS.A400, color: PALETTE.colors.textOnSurface }}>4</Text>
+                        <IconSVG size={"normal"} icon={IconSVGCode.tmpTicket} fill={PALETTE.colors.primary} />
+                        <Text style={{ fontSize: 18, lineHeight: 18, marginTop: 3, fontFamily: FONTS.A400, color: PALETTE.colors.textOnSurface }}>8.00 €</Text>
                     </View>
                     <View style={{ flex: 1, display: "flex", flexDirection: "row", justifyContent: "flex-end", alignItems: "center", gap: 8 }}>
-                        <IconSVG size={"normal"} icon={IconSVGCode.tmpEdit} fill={PALETTE.success} />
-                        <Text style={{ fontSize: 18, lineHeight: 18, marginTop: 3, fontFamily: FONTS.A600, color: PALETTE.success }}>34 MIN</Text>
+                        <IconSVG size={"normal"} icon={IconSVGCode.tmpEdit} fill={PALETTE.colors.success} />
+                        <Text style={{ fontSize: 18, lineHeight: 18, marginTop: 3, fontFamily: FONTS.A600, color: PALETTE.colors.success }}>34 MIN</Text>
                     </View>
                 </View>
             </View>

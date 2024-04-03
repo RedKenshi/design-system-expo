@@ -2,6 +2,8 @@
 import React, { useMemo } from 'react';
 import { StyleSheet, Text, TextStyle, View } from 'react-native';
 import PALETTE, { FONTS } from "../Palette";
+import Box from './Box';
+
 
 interface Props {
     children: string | string[],
@@ -17,19 +19,19 @@ export const CustomText = ({
 
     const computedStyle = useMemo((): TextStyle => {
 
-        let color = PALETTE.textOnSurface;
+        let color = PALETTE.colors.textOnSurface;
         switch (variant) {
             case 'primary':
-                color = PALETTE.primary
+                color = PALETTE.colors.primary
                 break;
             case 'onPrimary':
-                color = PALETTE.textOnPrimary
+                color = PALETTE.colors.textOnPrimary
                 break;
             case 'onBackground':
-                color = PALETTE.textOnBackground
+                color = PALETTE.colors.textOnBackground
                 break;
             case 'onSurface':
-                color = PALETTE.textOnSurface
+                color = PALETTE.colors.textOnSurface
                 break;
         }
         return {
@@ -38,11 +40,11 @@ export const CustomText = ({
     }, [variant])
 
     return (
-        <View>
+        <Box margin={{ phone: 'xs' }}>
             <Text style={{ ...styles.text, ...computedStyle, ...style }} >
                 {children}
             </Text>
-        </View>
+        </Box>
     );
 };
 
@@ -53,6 +55,5 @@ const styles = StyleSheet.create({
         fontSize: 16,
         lineHeight: 19,
         fontFamily: FONTS.A400,
-        margin: PALETTE.spacing.xs
     }
 })

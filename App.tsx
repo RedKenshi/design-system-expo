@@ -1,6 +1,7 @@
 import { StatusBar } from 'expo-status-bar';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
-import { ScrollView, StyleSheet, View } from 'react-native';
+import { ScrollView, StyleSheet, Text, View } from 'react-native';
+import { ThemeProvider } from '@shopify/restyle';
 import PALETTE from "./src/Palette"
 
 import { useFonts } from 'expo-font';
@@ -9,21 +10,22 @@ import { useCallback, useEffect, useState } from 'react';
 import Design from './src/pages/Design';
 import Drawer from './src/components/Drawer';
 import TopBar from './src/components/TopBar';
-import Modal from './src/components/Modal';
 import { IconSVGCode } from './src/IconSVG';
 import TextFormRow from './src/components/formRow/TextFormRow';
-import InlineSelect from './src/components/inputs/InlineSelect';
 import InlineSelectFormRow from './src/components/formRow/InlineSelectFormRow';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import ModalNative from './src/components/ModalNative';
+
+import theme from "./src/Palette"
+import Box from './src/components/Box';
 
 SplashScreen.preventAutoHideAsync();
 
 export default function App() {
 
   const [open, setOpen] = useState(false);
-  const [selectedSize, setSelectedSize] = useState(false);
-  const [selectedToppings, setSelectedToppings] = useState(false);
+  const [selectedSize, setSelectedSize] = useState(null);
+  const [selectedToppings, setSelectedToppings] = useState(null);
   const [paletteDark, setPaletteDark] = useState(true);
   const [openModalF, setOpenModalF] = useState(false);
   const [openModalS, setOpenModalS] = useState(false);
@@ -75,16 +77,16 @@ export default function App() {
   }
 
   return (
-    <GestureHandlerRootView style={{ height: "100%", width: "100%" }}>
-      <SafeAreaProvider style={{ backgroundColor: PALETTE.background }}>
-        <StatusBar style={paletteDark ? "light" : "dark"} />
-        <TopBar setOpenMenu={setOpen} />
-        <Drawer setOpenMenu={setOpen} open={open} />
-        <ModalNative open={openModalF} setOpen={setOpenModalF} actions={[
-          { variant: "danger", onPress: () => setOpenModalF(false), title: "No", icon: IconSVGCode.xmark },
-          { variant: "primary", onPress: () => setOpenModalF(false), title: "Yes", icon: IconSVGCode.check }
-        ]} >
-          <View style={{ flex: 1, paddingVertical: PALETTE.spacing.m, paddingHorizontal: PALETTE.spacing.m }} >
+    <GestureHandlerRootView style={{ minHeight: "100%", width: "100%" }}>
+      <ThemeProvider theme={theme}>
+        <SafeAreaProvider style={{ backgroundColor: PALETTE.colors.background }}>
+          <StatusBar style={paletteDark ? "light" : "dark"} />
+          <TopBar setOpenMenu={setOpen} />
+          <Drawer setOpenMenu={setOpen} open={open} />
+          <ModalNative open={openModalF} setOpen={setOpenModalF} actions={[
+            { variant: "danger", onPress: () => setOpenModalF(false), title: "No", icon: IconSVGCode.xmark },
+            { variant: "primary", onPress: () => setOpenModalF(false), title: "Yes", icon: IconSVGCode.check }
+          ]} >
             <TextFormRow value={"IS PRIMARY"} isActive handleChange={() => { }} title={"UN"} />
             <TextFormRow value={"IS SUCCESS"} isSuccess handleChange={() => { }} title={"DEUX"} />
             <TextFormRow value={"IS WARNING"} isWarning handleChange={() => { }} title={"TROIS"} />
@@ -108,35 +110,35 @@ export default function App() {
             <TextFormRow value={""} handleChange={() => { }} title={"DIX"} />
             <TextFormRow value={""} handleChange={() => { }} title={"ONZE"} />
             <TextFormRow value={""} handleChange={() => { }} title={"DOUZE"} />
-          </View>
-        </ModalNative>
-        <ModalNative open={openModalS} setOpen={setOpenModalS} actions={[
-          { variant: "danger", onPress: () => setOpenModalS(false), title: "No", icon: IconSVGCode.xmark },
-          { variant: "primary", onPress: () => setOpenModalS(false), title: "Yes", icon: IconSVGCode.check }
-        ]} >
-          <View style={{ flex: 1, paddingVertical: PALETTE.spacing.m, paddingHorizontal: PALETTE.spacing.m }} >
-            <TextFormRow value={"IS PRIMARY"} handleChange={() => { }} title={"UN"} />
-            <InlineSelectFormRow title="Size" handleChange={(e) => setSelectedSize(e)} selected={selectedSize} options={[
-              { label: 'S', value: 1 },
-              { label: 'M', value: 2 },
-              { label: 'L', value: 3 }
-            ]}
-            />
-          </View>
-        </ModalNative>
-        <View style={[styles.container]} onLayout={onLayoutRootView}>
-          <ScrollView horizontal={false} automaticallyAdjustKeyboardInsets >
-            <Design setOpenModalF={setOpenModalF} setOpenModalS={setOpenModalS} />
+          </ModalNative>
+          <ModalNative open={openModalS} setOpen={setOpenModalS} actions={[
+            { variant: "danger", onPress: () => setOpenModalS(false), title: "No", icon: IconSVGCode.xmark },
+            { variant: "primary", onPress: () => setOpenModalS(false), title: "Yes", icon: IconSVGCode.check }
+          ]} >
+            <View style={{ flex: 1, paddingVertical: PALETTE.spacing.m, paddingHorizontal: PALETTE.spacing.m }} >
+              <TextFormRow value={"IS PRIMARY"} handleChange={() => { }} title={"UN"} />
+              <InlineSelectFormRow title="Size" handleChange={(e) => setSelectedSize(e)} selected={selectedSize} options={[
+                { label: 'S', value: 1 },
+                { label: 'M', value: 2 },
+                { label: 'L', value: 3 }
+              ]}
+              />
+            </View>
+          </ModalNative>
+          <ScrollView horizontal={false} automaticallyAdjustKeyboardInsets style={{ width: "100%" }} >
+            <Box style={[styles.container]} onLayout={onLayoutRootView} >
+              <Design setOpenModalF={setOpenModalF} setOpenModalS={setOpenModalS} />
+            </Box>
           </ScrollView>
-        </View>
-      </SafeAreaProvider>
+        </SafeAreaProvider>
+      </ThemeProvider>
     </GestureHandlerRootView>
   );
 }
 
 const styles = StyleSheet.create({
   container: {
-    flex: 1,
+    maxWidth: "100%",
     alignItems: 'center',
     justifyContent: 'center',
   },

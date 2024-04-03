@@ -39,23 +39,23 @@ export const Button: React.FC<Props> = ({
         let textColor = null
         switch (variant) {
             case 'primary':
-                baseColor = PALETTE.primary
+                baseColor = PALETTE.colors.primary
                 break;
             case 'success':
-                baseColor = PALETTE.success
+                baseColor = PALETTE.colors.success
                 break;
             case 'warning':
-                baseColor = PALETTE.warning
+                baseColor = PALETTE.colors.warning
                 break;
             case 'danger':
-                baseColor = PALETTE.danger
+                baseColor = PALETTE.colors.danger
                 break;
             case 'info':
-                baseColor = PALETTE.info
+                baseColor = PALETTE.colors.info
                 break;
             case 'neutral':
-                baseColor = PALETTE.white
-                textColor = { textColor: PALETTE.fullblack }
+                baseColor = PALETTE.colors.white
+                textColor = { textColor: PALETTE.colors.fullblack }
                 break;
         }
         return {
@@ -136,7 +136,7 @@ export const Button: React.FC<Props> = ({
             } else {
                 variantStyles = {
                     ...variantStyles,
-                    color: PALETTE.offwhite
+                    color: PALETTE.colors.offwhite
                 }
             }
         } else {
@@ -158,11 +158,11 @@ export const Button: React.FC<Props> = ({
 
     const iconSize = useMemo(() => {
         switch (size) {
-            case 's': return "small"
-            case 'm': return "normal"
-            case 'l': return "normal"
+            case 's': return "small"; break;
+            case 'm': return "normal"; break;
+            case 'l': return "big"; break;
         }
-    }, [])
+    }, [size])
 
     return (
         <TouchableOpacity disabled={disabled || loading} style={[computedStyle, style]} onPress={onPress}>

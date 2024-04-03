@@ -16,9 +16,10 @@ export const Toggle: React.FC<Props> = ({
     return (
         <View style={styles.container}>
             <Switch
-                trackColor={{ false: PALETTE.fullTheme, true: chroma(PALETTE.primary).darken(1.5).saturate(2).hex() }}
-                thumbColor={value ? PALETTE.palettes.primary[400] : chroma(PALETTE.palettes.primary[300]).set("hsl.s", .4).hex()}
-                ios_backgroundColor={PALETTE.fullTheme}
+                activeThumbColor={PALETTE.colors.toggleTrue}
+                trackColor={{ true: PALETTE.colors.toggleTrueTrack, false: PALETTE.colors.danger }}
+                thumbColor={value ? PALETTE.colors.toggleTrue : PALETTE.colors.toggleFalse}
+                ios_backgroundColor={value ? PALETTE.colors.toggleTrueTrack : PALETTE.colors.toggleFalseTrack}
                 onValueChange={handleChange}
                 value={value}
             />

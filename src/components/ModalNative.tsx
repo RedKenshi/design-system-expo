@@ -1,11 +1,12 @@
-import React from 'react';
-import { Modal as NativeModal, Pressable, ScrollView, StyleSheet, View, ViewStyle } from 'react-native';
+import React, { useState } from 'react';
+import { LayoutRectangle, Modal as NativeModal, Pressable, ScrollView, StyleSheet, View, ViewStyle } from 'react-native';
 import PALETTE, { FONTS } from "../Palette";
 
 import { IconSVGCode } from '../IconSVG';
 import { BlurView } from 'expo-blur';
 import Button, { ButtonVariant } from './Button';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import Box from './Box';
 
 type ModalAction = {
     variant: ButtonVariant
@@ -25,11 +26,7 @@ interface Props {
 export const ModalNative = ({ open, setOpen, actions, preventCloseOnDimmerPress = false, children }: Props) => {
 
     const insets = useSafeAreaInsets();
-
-    const margins = {
-        marginLeft: insets.left + PALETTE.spacing.l,
-        marginRight: insets.right + PALETTE.spacing.l
-    }
+    const [modalBodyLayout, setModalBodyLayout] = useState<LayoutRectangle>()
 
     const modalStyle = {
 
@@ -40,18 +37,30 @@ export const ModalNative = ({ open, setOpen, actions, preventCloseOnDimmerPress 
             <NativeModal animationType='fade' transparent={true} visible={open} onRequestClose={() => setOpen(false)} >
                 <BlurView intensity={10} style={styles.blur} >
                     <Pressable onPress={() => setOpen(false)} style={styles.dimmer} />
-                    <View style={[{ ...margins }, styles.modalBody]}>
-                        <ScrollView contentContainerStyle={{ paddingBottom: "15%" }} automaticallyAdjustKeyboardInsets={true}>
+                    <Box
+                        backgroundColor='surface'
+                        gap="m"
+                        padding='m'
+                        maxHeight="80%"
+                        width={{ phone: '90%', tablet: 460 }}
+                        zIndex={20}
+                        justifyContent='center'
+                        alignItems='center'
+                        borderRadius={8}
+                        flexDirection="column"
+                        onLayout={(e) => setModalBodyLayout(e.nativeEvent.layout)}
+                    >
+                        <ScrollView style={{ width: "100%", alignSelf: "stretch" }} contentContainerStyle={{ paddingBottom: "5%", paddingHorizontal: PALETTE.spacing.s }} automaticallyAdjustKeyboardInsets={true}>
                             {children}
                         </ScrollView>
-                        <View style={styles.actionsRow}>
+                        <Box flexDirection="row" padding='s' paddingTop='l' gap='xxs'>
                             {actions.map((action, i) => {
                                 return (
                                     <Button key={`actions-${i}-${action.title}`} iconPosition="right" style={{ flex: 1 }} onPress={action.onPress} icon={action.icon} title={action.title} variant={action.variant} />
                                 )
                             })}
-                        </View>
-                    </View>
+                        </Box>
+                    </Box>
                 </BlurView>
             </NativeModal>
         );
@@ -63,12 +72,6 @@ export const ModalNative = ({ open, setOpen, actions, preventCloseOnDimmerPress 
 export default ModalNative;
 
 const styles = StyleSheet.create({
-    actionsRow: {
-        flexDirection: "row",
-        padding: PALETTE.spacing.s,
-        paddingTop: PALETTE.spacing.l,
-        gap: PALETTE.spacing.xxs
-    },
     blur: {
         height: "100%",
         width: "100%",
@@ -78,7 +81,7 @@ const styles = StyleSheet.create({
         justifyContent: "center"
     },
     title: {
-        color: PALETTE.textOnSurface,
+        color: PALETTE.colors.textOnSurface,
         fontFamily: FONTS.A600,
         fontSize: 16
     },
@@ -95,7 +98,7 @@ const styles = StyleSheet.create({
     },
     modalBody: {
         alignSelf: "stretch",
-        backgroundColor: PALETTE.surface,
+        backgroundColor: PALETTE.colors.surface,
         borderRadius: 8,
         maxHeight: "80%",
         gap: PALETTE.spacing.l,

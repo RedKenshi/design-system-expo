@@ -1,8 +1,10 @@
 
-import React, { useEffect, useMemo, useState } from 'react';
-import { StyleProp, StyleSheet, Text, TextInput, TextStyle, View } from 'react-native';
-import PALETTE, { FONTS } from "../../Palette";
+import React, { useMemo, useState } from 'react';
+import { StyleProp, StyleSheet, Text, TextInput, TextStyle } from 'react-native';
+import PALETTE, { FONTS, FieldSizes } from "../../Palette";
 import chroma from "chroma-js"
+import Box from '../Box';
+import { useResponsiveProp } from '@shopify/restyle';
 
 interface Props {
     label?: string,
@@ -31,55 +33,69 @@ export const CustomTextField = ({
 
     const computedStyle = useMemo<StyleProp<TextStyle>>(() => {
         let tmp: StyleProp<TextStyle> = {
-            borderBottomColor: PALETTE.textOnPanel,
+            borderBottomColor: PALETTE.colors.textOnPanel,
         };
         if (isActive || isFocus) {
             tmp = {
-                borderBottomColor: PALETTE.primary,
-                backgroundColor: chroma(PALETTE.primary).alpha(.08).hex()
+                borderBottomColor: PALETTE.colors.primary,
+                backgroundColor: chroma(PALETTE.colors.primary).alpha(.08).hex()
             }
         }
         if (isSuccess) {
             tmp = {
-                borderBottomColor: PALETTE.success,
-                backgroundColor: chroma(PALETTE.success).alpha(.08).hex()
+                borderBottomColor: PALETTE.colors.success,
+                backgroundColor: chroma(PALETTE.colors.success).alpha(.08).hex()
             }
         }
         if (isWarning) {
             tmp = {
-                borderBottomColor: PALETTE.warning,
-                backgroundColor: chroma(PALETTE.warning).alpha(.08).hex()
+                borderBottomColor: PALETTE.colors.warning,
+                backgroundColor: chroma(PALETTE.colors.warning).alpha(.08).hex()
             }
         }
         if (isError) {
             tmp = {
-                borderBottomColor: PALETTE.danger,
-                backgroundColor: chroma(PALETTE.danger).alpha(.08).hex()
+                borderBottomColor: PALETTE.colors.danger,
+                backgroundColor: chroma(PALETTE.colors.danger).alpha(.08).hex()
             }
         }
         return tmp
     }, [isActive, isSuccess, isError, isWarning, isFocus])
 
+    const width = useResponsiveProp(FieldSizes.width)
+    const height = useResponsiveProp(FieldSizes.height)
+    const labelHeight = useResponsiveProp(FieldSizes.labelHeight)
+
     const labelDependentComputedStyle = useMemo<StyleProp<TextStyle>>(() => {
         if (label == undefined || label == null || label.length == 0) {
             return {
-                height: 46,
+                minWidth: width,
+                height: height,
                 paddingTop: PALETTE.spacing.m
             }
         } else {
             return {
-                height: 68,
+                minWidth: width,
+                height: height + labelHeight,
                 paddingTop: PALETTE.spacing.m + PALETTE.spacing.l
             }
         }
 
     }, [label])
 
+
     return (
-        <View style={{ position: 'relative' }}>
+        <Box position='relative'>
             {label && <Text style={styles.label}>{label}</Text>}
-            <TextInput onFocus={() => setIsFocus(true)} onBlur={() => setIsFocus(false)} defaultValue={value} onChange={e => handleChange(e.nativeEvent.text)} style={[styles.input, computedStyle, labelDependentComputedStyle]} placeholder={placeholder} />
-        </View>
+            <TextInput
+                onFocus={() => setIsFocus(true)}
+                onBlur={() => setIsFocus(false)}
+                defaultValue={value}
+                onChange={e => handleChange(e.nativeEvent.text)}
+                style={[styles.input, computedStyle, labelDependentComputedStyle]}
+                placeholder={placeholder}
+            />
+        </Box>
     );
 };
 
@@ -87,7 +103,7 @@ const styles = StyleSheet.create({
     label: {
         position: "absolute",
         fontFamily: FONTS.A700,
-        color: PALETTE.primary,
+        color: PALETTE.colors.primary,
         zIndex: 1000,
         top: PALETTE.spacing.s + 2,
         left: PALETTE.spacing.s,
@@ -97,11 +113,10 @@ const styles = StyleSheet.create({
         paddingTop: PALETTE.spacing.m,
         paddingHorizontal: PALETTE.spacing.m,
         borderBottomWidth: infoBorderWith,
-        borderBottomColor: PALETTE.textOnPanel,
-        backgroundColor: PALETTE.item,
-        color: PALETTE.fullThemeInverse,
+        borderBottomColor: PALETTE.colors.textOnPanel,
+        backgroundColor: PALETTE.colors.item,
+        color: PALETTE.colors.fullThemeInverse,
         fontFamily: FONTS.A600,
-        minWidth: 168,
         borderRadius: 4,
         fontSize: 18,
     }

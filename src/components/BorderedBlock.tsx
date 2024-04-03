@@ -14,7 +14,7 @@ export const BorderedBlock = ({
     children,
     style,
     side = "left",
-    color = PALETTE.primary
+    color = PALETTE.colors.primary
 }: Props) => {
 
     const computedStyles = useMemo<ViewStyle>(() => {

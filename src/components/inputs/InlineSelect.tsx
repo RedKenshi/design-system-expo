@@ -37,19 +37,19 @@ const styles = StyleSheet.create({
         minWidth: height - (2 * space),
         borderRadius: (height - (2 * space)) / 2,
         paddingHorizontal: space * 2,
-        backgroundColor: PALETTE.surface,
+        backgroundColor: PALETTE.colors.surface,
         justifyContent: "center",
         alignItems: "center",
         textAlign: "center"
     },
     selected: {
-        backgroundColor: PALETTE.primary
+        backgroundColor: PALETTE.colors.primary
     },
     selectedText: {
-        color: PALETTE.textOnPrimary
+        color: PALETTE.colors.textOnPrimary
     },
     optionText: {
-        color: PALETTE.fullThemeInverse,
+        color: PALETTE.colors.fullThemeInverse,
         fontFamily: FONTS.A600,
         marginTop: 3,
         fontSize: 14,
@@ -59,7 +59,7 @@ const styles = StyleSheet.create({
         height: height,
         minWidth: height,
         borderRadius: height / 2,
-        backgroundColor: PALETTE.item,
+        backgroundColor: PALETTE.colors.item,
         paddingHorizontal: space,
         flexDirection: "row",
         justifyContent: "center",
