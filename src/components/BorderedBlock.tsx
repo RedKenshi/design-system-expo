@@ -1,7 +1,8 @@
 
 import React, { useMemo } from 'react';
 import { StyleSheet, View, ViewStyle } from 'react-native';
-import PALETTE, { FONTS } from "../Palette";
+import PALETTE, { FONTS, Theme } from "../Palette";
+import { useTheme } from '@shopify/restyle';
 
 interface Props {
     children: JSX.Element | JSX.Element[],
@@ -14,8 +15,10 @@ export const BorderedBlock = ({
     children,
     style,
     side = "left",
-    color = PALETTE.colors.primary
+    color
 }: Props) => {
+
+    const theme = useTheme<Theme>();
 
     const computedStyles = useMemo<ViewStyle>(() => {
         let tmp: ViewStyle = {
@@ -28,7 +31,7 @@ export const BorderedBlock = ({
                 tmp = { borderRightWidth: 4, paddingLeft: PALETTE.spacing.xxs }
                 break;
         }
-        return { ...tmp, borderColor: color }
+        return { ...tmp, borderColor: color ?? theme.colors.primary }
     }, [side])
 
     return (

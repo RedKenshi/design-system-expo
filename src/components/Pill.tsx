@@ -1,7 +1,8 @@
 import React, { useMemo } from 'react';
 import { Text, StyleSheet, TextStyle, ViewStyle, ActivityIndicator, View } from 'react-native';
-import PALETTE, { FONTS } from "../Palette"
+import PALETTE, { FONTS, Theme } from "../Palette"
 import chroma from "chroma-js"
+import { useTheme } from '@shopify/restyle';
 
 interface Props {
     title?: string;
@@ -25,82 +26,84 @@ export const Pill: React.FC<Props> = ({
     textStyle,
 }) => {
 
+    const theme = useTheme<Theme>();
+
     const baseColors = useMemo(() => {
         switch (variant) {
             case 'primary':
                 if (inverted) {
                     return {
-                        background: chroma(PALETTE.colors.primary).alpha(.2).hex(),
-                        text: PALETTE.colors.primary
+                        background: chroma(theme.colors.primary).alpha(.2).hex(),
+                        text: theme.colors.primary
                     }
                 } else {
                     return {
-                        background: PALETTE.colors.primary,
-                        text: PALETTE.colors.white
+                        background: theme.colors.primary,
+                        text: theme.colors.white
                     }
                 }
             case 'success':
                 if (inverted) {
                     return {
-                        background: chroma(PALETTE.colors.success).alpha(.2).hex(),
-                        text: PALETTE.colors.success
+                        background: chroma(theme.colors.success).alpha(.2).hex(),
+                        text: theme.colors.success
                     }
                 } else {
                     return {
-                        background: PALETTE.colors.success,
-                        text: PALETTE.colors.white
+                        background: theme.colors.success,
+                        text: theme.colors.white
                     }
                 }
             case 'warning':
                 if (inverted) {
                     return {
-                        background: chroma(PALETTE.colors.warning).alpha(.2).hex(),
-                        text: PALETTE.colors.warning
+                        background: chroma(theme.colors.warning).alpha(.2).hex(),
+                        text: theme.colors.warning
                     }
                 } else {
                     return {
-                        background: PALETTE.colors.warning,
-                        text: PALETTE.colors.white
+                        background: theme.colors.warning,
+                        text: theme.colors.white
                     }
                 }
             case 'danger':
                 if (inverted) {
                     return {
-                        background: chroma(PALETTE.colors.danger).alpha(.2).hex(),
-                        text: PALETTE.colors.danger
+                        background: chroma(theme.colors.danger).alpha(.2).hex(),
+                        text: theme.colors.danger
                     }
                 } else {
                     return {
-                        background: PALETTE.colors.danger,
-                        text: PALETTE.colors.white
+                        background: theme.colors.danger,
+                        text: theme.colors.white
                     }
                 }
             case 'info':
                 if (inverted) {
                     return {
-                        background: chroma(PALETTE.colors.info).alpha(.2).hex(),
-                        text: PALETTE.colors.info
+                        background: chroma(theme.colors.info).alpha(.2).hex(),
+                        text: theme.colors.info
                     }
                 } else {
                     return {
-                        background: PALETTE.colors.info,
-                        text: PALETTE.colors.white
+                        background: theme.colors.info,
+                        text: theme.colors.white
                     }
                 }
             case 'neutral':
                 if (inverted) {
                     return {
-                        background: chroma(PALETTE.colors.offwhite).alpha(.2).hex(),
-                        text: PALETTE.colors.textOnSurface
+                        background: theme.colors.background,
+                        text: theme.colors.fullThemeInverse
                     }
                 } else {
                     return {
-                        background: PALETTE.colors.background,
-                        text: PALETTE.colors.fullThemeInverse
+                        background: theme.colors.fullThemeInverse,
+                        text: theme.colors.fullTheme
                     }
                 }
         }
-    }, [variant, inverted])
+    }, [variant, inverted, theme])
 
     const computedStyle = useMemo(() => {
         let variantStyles: ViewStyle = {

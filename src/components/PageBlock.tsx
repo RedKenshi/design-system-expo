@@ -1,5 +1,5 @@
 
-import React, { useMemo } from 'react';
+import React from 'react';
 import { StyleSheet, ViewStyle } from 'react-native';
 import Box from './Box';
 

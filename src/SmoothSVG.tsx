@@ -1,7 +1,8 @@
 
 import { Circle, Path, Svg } from "react-native-svg";
-import PALETTE from "./Palette";
+import PALETTE, { Theme } from "./Palette";
 import { ColorValue, Text, View, ViewStyle } from "react-native";
+import { useTheme } from "@shopify/restyle";
 
 export enum SmoothSVGCode {
     money_receipt = "money_receipt",
@@ -326,7 +327,8 @@ type Props = {
 
 export const SmoothSVG = ({ icon, size, iconPadding, fill }: Props) => {
 
-    if (!fill) fill = PALETTE.colors.white;
+    const theme = useTheme<Theme>();
+    if (!fill) fill = theme.colors.white;
     let iconStyle: ViewStyle = null;
     switch (size) {
         case "tiny": iconStyle = { width: 8, height: 8 }; break;

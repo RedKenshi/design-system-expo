@@ -1,22 +1,38 @@
-import { StyleSheet, Text, View } from "react-native";
+import { StyleSheet, Text, TouchableOpacity } from "react-native";
 import { IconSVG, IconSVGCode } from "../IconSVG";
-import PALETTE, { FONTS } from "../Palette";
+import { FONTS, Theme } from "../Palette";
 import Pill from "./Pill";
 import Box from "./Box";
+import { useTheme } from "@shopify/restyle";
+import { Pages } from "../../App";
+import { useEffect } from "react";
 
-export const Menu = () => {
+interface Props {
+    page: Pages
+    setPage: (page: Pages) => void
+    closeDrawer: Function
+}
+
+export const Menu = ({ page, setPage, closeDrawer }: Props) => {
+
+    useEffect(() => closeDrawer(), [page])
 
     return (
         <Box flex={1} gap="s" padding='l' justifyContent={"flex-start"}>
-            <LI title={"Général"} selected={true} icon={IconSVGCode.gear} />
+            {/*<LI title={"Général"} selected={true} icon={IconSVGCode.gear} />
             <LI title={"Dashboard"} selected={false} icon={IconSVGCode.dashboard} />
             <LI title={"Utilisateurs et groupes"} selected={false} icon={IconSVGCode.user} />
             <LI title={"Matériel"} selected={false} icon={IconSVGCode.printer} />
-            <Box style={styles.hr} />
+            <Box borderColor="textOnBackground" style={styles.hr} />
             <LI title={"Vente"} selected={false} icon={IconSVGCode.bag} pro />
             <LI title={"Réservation"} selected={false} icon={IconSVGCode.table} pro />
             <LI title={"Publication"} selected={false} icon={IconSVGCode.edit} pro />
-            <Box style={styles.hr} />
+            <Box borderColor="textOnBackground" style={styles.hr} />*/}
+            <LI setPage={setPage} title={"Buttons"} page={"button"} selected={"button" == page} icon={IconSVGCode.keyboard} pro />
+            <LI setPage={setPage} title={"Typos"} page={"typo"} selected={"typo" == page} icon={IconSVGCode.font} pro />
+            <LI setPage={setPage} title={"Inputs"} page={"inputs"} selected={"inputs" == page} icon={IconSVGCode.cursori} pro />
+            <LI setPage={setPage} title={"Tickets"} page={"ticket"} selected={"ticket" == page} icon={IconSVGCode.tmpTicket} pro />
+            <LI setPage={setPage} title={"Dnd"} page={"dnd"} selected={"dnd" == page} icon={IconSVGCode.drag_handle} pro />
             <Box flex={1} />
         </Box>
     )
@@ -28,7 +44,6 @@ const styles = StyleSheet.create({
         width: "95%",
         margin: "auto",
         borderBottomWidth: 1,
-        borderColor: PALETTE.colors.textOnBackground
     }
 })
 
@@ -37,21 +52,24 @@ type LIProps = {
     selected: boolean,
     icon: IconSVGCode
     pro?: boolean
+    page: Pages
+    setPage: (page: Pages) => void
 }
 
-export const LI = ({ title, icon, selected, pro = false }: LIProps) => {
+export const LI = ({ title, icon, selected, pro = false, page, setPage }: LIProps) => {
 
+    const theme = useTheme<Theme>();
     return (
-        <View style={[stylesLI.rowWrapper, selected ? stylesLI.rowWrapperSelected : null]}>
-            <IconSVG icon={icon} size="big" fill={PALETTE.colors.primary} />
-            <Text numberOfLines={1} style={[stylesLI.rowTitle, selected ? stylesLI.rowTextSelected : null]}>{title}</Text>
+        <TouchableOpacity onPress={(e) => setPage(page)} style={[stylesLI.rowWrapper, { backgroundColor: selected ? theme.colors.fullTheme : null }]}>
+            <IconSVG icon={icon} size="big" fill={theme.colors.primary} />
+            <Text numberOfLines={1} style={[stylesLI.rowTitle, { color: theme.colors.textOnSurface }]}>{title}</Text>
             {pro &&
                 <>
-                    <View style={{ flex: 1 }} />
+                    <Box style={{ flex: 1 }} />
                     <Pill variant="neutral" inverted rounded title="PRO" size="xs" style={{ margin: 0, padding: 0 }} />
                 </>
             }
-        </View>
+        </TouchableOpacity>
     )
 }
 
@@ -67,11 +85,7 @@ const stylesLI = StyleSheet.create({
         flexDirection: "row",
         borderRadius: 6
     },
-    rowWrapperSelected: {
-        backgroundColor: PALETTE.colors.fullTheme,
-    },
     rowTitle: {
-        color: PALETTE.colors.textOnSurface,
         fontFamily: FONTS.A600,
         fontSize: 16
     }

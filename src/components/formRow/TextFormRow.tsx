@@ -2,7 +2,8 @@
 import React from 'react';
 import { StyleSheet, Text, View } from 'react-native';
 import { CustomTextField } from '../inputs/CustomTextField';
-import PALETTE, { FONTS } from "../../Palette";
+import PALETTE, { FONTS, Theme } from "../../Palette";
+import { useTheme } from '@shopify/restyle';
 
 interface Props {
     value: string,
@@ -24,9 +25,10 @@ export const TextFormRow = ({
     isWarning,
 }: Props) => {
 
+    const theme = useTheme<Theme>();
     return (
         <View style={styles.rowWrapper}>
-            <Text style={styles.title} >{title}</Text>
+            <Text style={[styles.title, { color: theme.colors.textOnSurface }]} >{title}</Text>
             <CustomTextField value={value} isActive={isActive} isSuccess={isSuccess} isError={isError} isWarning={isWarning} handleChange={handleChange} />
         </View>
     );
@@ -34,7 +36,6 @@ export const TextFormRow = ({
 
 const styles = StyleSheet.create({
     title: {
-        color: PALETTE.colors.textOnSurface,
         fontFamily: FONTS.A600,
         fontSize: 16
     },

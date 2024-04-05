@@ -1,9 +1,10 @@
 
 import React from 'react';
 import { StyleSheet, Text, View } from 'react-native';
-import PALETTE, { FONTS } from "../../Palette";
+import PALETTE, { FONTS, Theme } from "../../Palette";
 import InlineSelect from '../inputs/InlineSelect';
 import InlineSelectAnimated from '../inputs/InlineSelectAnimated';
+import { useTheme } from '@shopify/restyle';
 
 interface Props {
     title: string,
@@ -21,17 +22,19 @@ export const InlineSelectFormRow = ({
     handleChange,
 }: Props) => {
 
+    const theme = useTheme<Theme>();
+
     if (animated) {
         return (
             <View style={styles.rowWrapper}>
-                <Text style={styles.title} >{title}</Text>
+                <Text style={[styles.title, { color: theme.colors.textOnSurface }]} >{title}</Text>
                 <InlineSelectAnimated handleChange={handleChange} selected={selected} options={options} />
             </View>
         );
     } else {
         return (
             <View style={styles.rowWrapper}>
-                <Text style={styles.title} >{title}</Text>
+                <Text style={[styles.title, { color: theme.colors.textOnSurface }]} >{title}</Text>
                 <InlineSelect handleChange={handleChange} selected={selected} options={options} />
             </View>
         );
@@ -40,7 +43,6 @@ export const InlineSelectFormRow = ({
 
 const styles = StyleSheet.create({
     title: {
-        color: PALETTE.colors.textOnSurface,
         fontFamily: FONTS.A600,
         fontSize: 16
     },

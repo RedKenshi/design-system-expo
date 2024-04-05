@@ -1,8 +1,9 @@
 
 import React, { useMemo } from 'react';
-import { StyleSheet, Text, TextStyle, View } from 'react-native';
-import PALETTE, { FONTS } from "../Palette";
+import { StyleSheet, Text, TextStyle } from 'react-native';
+import PALETTE, { FONTS, Theme } from "../Palette";
 import Box from './Box';
+import { useTheme } from '@shopify/restyle';
 
 
 interface Props {
@@ -16,28 +17,27 @@ export const CustomText = ({
     style,
     variant = "onSurface"
 }: Props) => {
-
+    const theme = useTheme<Theme>();
     const computedStyle = useMemo((): TextStyle => {
-
-        let color = PALETTE.colors.textOnSurface;
+        let color = theme.colors.textOnSurface;
         switch (variant) {
             case 'primary':
-                color = PALETTE.colors.primary
+                color = theme.colors.primary
                 break;
             case 'onPrimary':
-                color = PALETTE.colors.textOnPrimary
+                color = theme.colors.textOnPrimary
                 break;
             case 'onBackground':
-                color = PALETTE.colors.textOnBackground
+                color = theme.colors.textOnBackground
                 break;
             case 'onSurface':
-                color = PALETTE.colors.textOnSurface
+                color = theme.colors.textOnSurface
                 break;
         }
         return {
             color: color,
         }
-    }, [variant])
+    }, [variant, theme])
 
     return (
         <Box margin={{ phone: 'xs' }}>

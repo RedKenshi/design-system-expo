@@ -1,8 +1,9 @@
 
 import React from 'react';
-import { Pressable, StyleSheet, Text, View } from 'react-native';
-import PALETTE, { FONTS } from "../../Palette";
+import { Pressable, StyleSheet, Text } from 'react-native';
+import PALETTE, { FONTS, Theme } from "../../Palette";
 import DatePickerField from '../inputs/DatePickerField';
+import { useTheme } from '@shopify/restyle';
 
 interface Props {
     value: Date,
@@ -26,9 +27,11 @@ export const DateFormRow = ({
     futureForbidden = false,
 }: Props) => {
 
+    const theme = useTheme<Theme>();
+
     return (
         <Pressable onLongPress={() => handleChange(null)} delayLongPress={1000} style={styles.rowWrapper}>
-            <Text style={styles.title}>{title}</Text>
+            <Text style={[styles.title, { color: theme.colors.textOnSurface }]}>{title}</Text>
             <DatePickerField
                 value={value}
                 handleChange={handleChange}
@@ -44,7 +47,6 @@ export const DateFormRow = ({
 
 const styles = StyleSheet.create({
     title: {
-        color: PALETTE.colors.textOnSurface,
         fontFamily: FONTS.A600,
         fontSize: 16
     },
@@ -54,18 +56,6 @@ const styles = StyleSheet.create({
         flexDirection: "row",
         justifyContent: "space-between",
         alignItems: "center"
-    },
-    input: {
-        borderBottomWidth: 3,
-        borderBottomColor: PALETTE.colors.textOnPanel,
-        backgroundColor: PALETTE.colors.item,
-        color: PALETTE.colors.fullThemeInverse,
-        fontFamily: FONTS.A600,
-        minWidth: 168,
-        paddingHorizontal: PALETTE.spacing.m,
-        paddingVertical: PALETTE.spacing.l,
-        borderRadius: 4,
-        fontSize: 16
     }
 });
 

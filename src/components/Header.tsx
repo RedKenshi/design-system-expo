@@ -1,7 +1,8 @@
 
 import React, { useMemo } from 'react';
 import { Text, TextStyle } from 'react-native';
-import PALETTE, { FONTS } from "../Palette";
+import PALETTE, { FONTS, Theme } from "../Palette";
+import { useTheme } from '@shopify/restyle';
 
 interface Props {
     children: string | string[],
@@ -16,6 +17,8 @@ export const Header = ({
     size,
     variant = "primary"
 }: Props) => {
+
+    const theme = useTheme<Theme>();
 
     const computedStyle = useMemo((): TextStyle => {
         let fontSize = 16
@@ -51,19 +54,19 @@ export const Header = ({
                 family = FONTS.A800;
                 break;
         }
-        let color = PALETTE.colors.primary;
+        let color = theme.colors.primary;
         switch (variant) {
             case 'primary':
-                color = PALETTE.colors.primary
+                color = theme.colors.primary
                 break;
             case 'onPrimary':
-                color = PALETTE.colors.textOnPrimary
+                color = theme.colors.textOnPrimary
                 break;
             case 'onBackground':
-                color = PALETTE.colors.textOnBackground
+                color = theme.colors.textOnBackground
                 break;
             case 'onSurface':
-                color = PALETTE.colors.textOnSurface
+                color = theme.colors.textOnSurface
                 break;
         }
         return {
@@ -76,7 +79,7 @@ export const Header = ({
             letterSpacing: ls,
 
         }
-    }, [size, variant])
+    }, [size, variant, theme])
 
     return (
         <Text style={{ ...computedStyle, ...style }} >

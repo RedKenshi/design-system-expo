@@ -1,8 +1,10 @@
 import React, { useMemo } from 'react';
 import { Text, StyleSheet, TextStyle, ViewStyle, View } from 'react-native';
 import { IconSVG, IconSVGCode } from '../IconSVG';
-import PALETTE, { FONTS } from "../Palette"
+import PALETTE, { FONTS, Theme } from "../Palette"
 import chroma from "chroma-js"
+import Box from './Box';
+import { useTheme } from '@shopify/restyle';
 
 interface Props {
     title: string;
@@ -19,31 +21,32 @@ export const Alert: React.FC<Props> = ({
     variant,
     style
 }) => {
+    const theme = useTheme<Theme>();
 
     const baseColors = useMemo(() => {
         let baseColor = ""
         switch (variant) {
             case 'primary':
-                baseColor = PALETTE.colors.primary
+                baseColor = theme.colors.primary
                 break;
             case 'info':
-                baseColor = PALETTE.colors.info
+                baseColor = theme.colors.info
                 break;
             case 'success':
-                baseColor = PALETTE.colors.success
+                baseColor = theme.colors.success
                 break;
             case 'warning':
-                baseColor = PALETTE.colors.warning
+                baseColor = theme.colors.warning
                 break;
             case 'danger':
-                baseColor = PALETTE.colors.danger
+                baseColor = theme.colors.danger
                 break;
         }
         return {
             full: baseColor,
             fadded: chroma(baseColor).alpha(.09).hex()
         }
-    }, [variant])
+    }, [variant, theme])
 
     const computedStyle = useMemo(() => {
         let variantStyles: ViewStyle = {}
@@ -52,7 +55,7 @@ export const Alert: React.FC<Props> = ({
             borderColor: baseColors.full,
             backgroundColor: baseColors.fadded
         }
-        return { ...styles.container, ...variantStyles, ...style }
+        return { ...variantStyles, ...style }
     }, [baseColors])
 
     const computedTextStyle = useMemo(() => {
@@ -65,35 +68,34 @@ export const Alert: React.FC<Props> = ({
 
 
     return (
-        <View style={computedStyle}>
-            <View style={styles.headRow}>
-                <View style={{ width: 32 }}>
-                    <IconSVG size='normal' icon={icon} fill={computedTextStyle.color} />
-                </View>
-                <View>
+        <Box
+            minHeight={48}
+            marginHorizontal='m'
+            flexDirection='column'
+            gap='xs'
+            paddingHorizontal='m'
+            paddingVertical='m'
+            borderRadius={8}
+            style={computedStyle}
+        >
+            <Box style={styles.headRow}>
+                <Box style={{ width: 24 }}>
+                    <IconSVG size='small' icon={icon} fill={computedTextStyle.color} />
+                </Box>
+                <Box>
                     <Text style={[computedTextStyle, styles.title]}>{title}</Text>
-                </View>
-            </View>
+                </Box>
+            </Box>
             {description &&
-                <View>
+                <Box>
                     <Text style={[computedTextStyle, styles.description]}>{description}</Text>
-                </View>
+                </Box>
             }
-        </View>
+        </Box>
     );
 };
 
 const styles = StyleSheet.create({
-    container: {
-        minHeight: 48,
-        marginHorizontal: PALETTE.spacing.m,
-        marginVertical: PALETTE.spacing.s,
-        flexDirection: 'column',
-        gap: PALETTE.spacing.xs,
-        paddingHorizontal: PALETTE.spacing.m,
-        paddingVertical: PALETTE.spacing.m,
-        borderRadius: 16,
-    },
     headRow: {
         flex: 1,
         display: "flex",
@@ -104,13 +106,13 @@ const styles = StyleSheet.create({
     },
     title: {
         fontFamily: FONTS.A600,
-        fontSize: 18,
+        fontSize: 16,
         marginTop: 2
     },
     description: {
         fontFamily: FONTS.A600,
         textAlign: "justify",
-        fontSize: 16,
+        fontSize: 14,
         lineHeight: 24,
     },
 });

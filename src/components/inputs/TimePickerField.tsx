@@ -1,6 +1,6 @@
 import React, { useEffect, useMemo, useRef, useState } from 'react';
 import { LayoutRectangle, Modal, NativeScrollEvent, NativeSyntheticEvent, Pressable, StyleProp, StyleSheet, Text, TextInput, TextStyle, TouchableOpacity } from 'react-native';
-import PALETTE, { FONTS, FieldSizes } from "../../Palette";
+import PALETTE, { FONTS, FieldSizes, Theme } from "../../Palette";
 
 import { IconSVG, IconSVGCode } from '../../IconSVG';
 import { BlurView } from 'expo-blur';
@@ -11,7 +11,7 @@ import { format, isValid, parse } from "date-fns";
 
 import { ScrollView } from 'react-native-gesture-handler';
 import { LinearGradient } from 'expo-linear-gradient';
-import { useResponsiveProp } from '@shopify/restyle';
+import { useResponsiveProp, useTheme } from '@shopify/restyle';
 import Box from '../Box';
 
 interface Props {
@@ -34,6 +34,7 @@ export const TimePickerField = ({
     minutesStep = 15
 }: Props) => {
 
+    const theme = useTheme<Theme>();
     const [selectedHour, setSelectedHour] = useState<number | null>(null)
     const [selectedMinutes, setSelectedMinutes] = useState<number | null>(null)
     const [datePickerOpen, setTimePickerOpen] = useState<boolean>(false)
@@ -61,6 +62,10 @@ export const TimePickerField = ({
     }
 
     useEffect(() => {
+        loadValues()
+    }, [value, defaultValue])
+
+    const loadValues = () => {
         let tmpH = null
         let tmpM = null
         let initialDate = null
@@ -97,7 +102,7 @@ export const TimePickerField = ({
         setSelectedHour(tmpH)
         setSelectedMinutes(tmpM)
         setLoading(false)
-    }, [value, defaultValue])
+    }
 
     const handleOnLayoutScroll = (HM: "H" | "M") => {
         if (HM == "H") {
@@ -148,13 +153,13 @@ export const TimePickerField = ({
                         {hours.map((h, i) => {
                             return (
                                 <TouchableOpacity onPress={() => scrollViewH.current.scrollTo({ y: i * cellSize, x: 0, animated: true })} style={{ height: cellSize, width: cellSize, justifyContent: "center", alignItems: "center" }}>
-                                    <Text style={{ color: PALETTE.colors.textOnSurface, fontFamily: FONTS.A600, fontSize: 40, lineHeight: 40, letterSpacing: 1.5, marginTop: 6, alignSelf: "stretch", textAlign: "center" }}>{h.toString().padStart(2, "0")}</Text>
+                                    <Text style={{ color: theme.colors.textOnSurface, fontFamily: FONTS.A600, fontSize: 40, lineHeight: 40, letterSpacing: 1.5, marginTop: 6, alignSelf: "stretch", textAlign: "center" }}>{h.toString().padStart(2, "0")}</Text>
                                 </TouchableOpacity>
                             )
                         })}
                     </ScrollView>
                     <Box style={{ width: cellSize / 2, height: cellSize, justifyContent: "center", alignItems: 'center' }}>
-                        <Text style={{ fontSize: cellSize - 32, lineHeight: cellSize, fontFamily: FONTS.A700, color: PALETTE.colors.textOnSurface }}>:</Text>
+                        <Text style={{ fontSize: cellSize - 32, lineHeight: cellSize, fontFamily: FONTS.A700, color: theme.colors.textOnSurface }}>:</Text>
                     </Box>
                     <ScrollView
                         onLayout={(e) => handleOnLayoutScroll("M")}
@@ -172,7 +177,7 @@ export const TimePickerField = ({
                         {minutes.map((m, i) => {
                             return (
                                 <TouchableOpacity onPress={() => scrollViewM.current.scrollTo({ y: i * cellSize, x: 0, animated: true })} style={{ height: cellSize, width: cellSize, justifyContent: "center", alignItems: "center" }}>
-                                    <Text style={{ color: PALETTE.colors.textOnSurface, fontFamily: FONTS.A600, fontSize: 40, lineHeight: 40, letterSpacing: 1.5, marginTop: 6, alignSelf: "stretch", textAlign: "center" }}>{m.toString().padStart(2, "0")}</Text>
+                                    <Text style={{ color: theme.colors.textOnSurface, fontFamily: FONTS.A600, fontSize: 40, lineHeight: 40, letterSpacing: 1.5, marginTop: 6, alignSelf: "stretch", textAlign: "center" }}>{m.toString().padStart(2, "0")}</Text>
                                 </TouchableOpacity>
                             )
                         })}
@@ -180,20 +185,21 @@ export const TimePickerField = ({
                     <Box pointerEvents='none' style={{ position: "absolute", top: 0, left: 0, right: 0, height: cellSize * 1.6, zIndex: 1000 }}>
                         <LinearGradient
                             locations={[0, 0.7]}
-                            colors={[PALETTE.colors.surface, chroma(PALETTE.colors.surface).alpha(.0).hex()]}
+                            colors={[theme.colors.surface, chroma(theme.colors.surface).alpha(.0).hex()]}
                             style={{ alignSelf: "stretch", flex: 1 }}
                         />
                     </Box>
                     <Box pointerEvents='none' style={{ position: "absolute", bottom: 0, left: 0, right: 0, height: cellSize * 1.6, zIndex: 1000 }}>
                         <LinearGradient
                             locations={[0.3, 1]}
-                            colors={[chroma(PALETTE.colors.surface).alpha(.0).hex(), PALETTE.colors.surface]}
+                            colors={[chroma(theme.colors.surface).alpha(.0).hex(), theme.colors.surface]}
                             style={{ alignSelf: "stretch", flex: 1 }}
                         />
                     </Box>
                 </Box>
             )
         } else {
+            loadValues()
             return <></>
         }
     }, [cellSize, loading])
@@ -203,13 +209,13 @@ export const TimePickerField = ({
             return {
                 minWidth: width,
                 height: height,
-                paddingTop: PALETTE.spacing.m
+                paddingTop: theme.spacing.m
             }
         } else {
             return {
                 minWidth: width,
                 height: height + labelHeight,
-                paddingTop: PALETTE.spacing.m + PALETTE.spacing.l
+                paddingTop: theme.spacing.m + theme.spacing.l
             }
         }
 
@@ -218,10 +224,26 @@ export const TimePickerField = ({
     return (
         <>
             <TouchableOpacity style={{ position: 'relative' }} onPress={handleOpen}>
-                {label && <Text style={styles.label}>{label}</Text>}
-                <TextInput editable={false} value={value ? isValid(value) ? format(value, "dd/MM/yyyy") : value.toString() : "__:__"} style={[styles.input, labelDependentComputedStyle, !value && styles.datePlaceholder]} pointerEvents='none' />
-                <Box style={{ position: "absolute", bottom: 0, left: PALETTE.spacing.m, height: height, flexDirection: 'row', justifyContent: "center", alignItems: "center" }}>
-                    <IconSVG icon={IconSVGCode.clock} fill={PALETTE.colors.disabled} size='normal' />
+                {label && <Text style={[styles.label, { color: theme.colors.primary }]}>{label}</Text>}
+                <TextInput
+                    editable={false}
+                    value={value ? isValid(value) ? format(value, "dd/MM/yyyy") : value.toString() : "__:__"}
+                    style={[
+                        styles.input,
+                        {
+                            borderBottomColor: theme.colors.textOnPanel,
+                            backgroundColor: theme.colors.item,
+                            color: theme.colors.fullThemeInverse
+                        },
+                        labelDependentComputedStyle,
+                        !value && {
+                            ...styles.datePlaceholder, color: chroma(theme.colors.fullThemeInverse).alpha(.4).hex()
+                        }
+                    ]}
+                    pointerEvents='none'
+                />
+                <Box style={{ position: "absolute", bottom: 0, left: theme.spacing.m, height: height, flexDirection: 'row', justifyContent: "center", alignItems: "center" }}>
+                    <IconSVG icon={IconSVGCode.clock} fill={theme.colors.disabled} size='normal' />
                 </Box>
             </TouchableOpacity>
             <Modal animationType='fade' transparent={true} visible={datePickerOpen} onRequestClose={() => setTimePickerOpen} >
@@ -239,7 +261,7 @@ export const TimePickerField = ({
                         flexDirection="column"
                         onLayout={(e) => setModalBodyLayout(e.nativeEvent.layout)}
                     >
-                        <Box style={styles.modalBody}>
+                        <Box gap='l' backgroundColor='surface' padding='s' style={styles.modalBody}>
                             <Box gap='m' >
                                 <Box marginHorizontal='s' flexDirection="column" marginVertical='l' >
                                     {clock}
@@ -261,14 +283,12 @@ const styles = StyleSheet.create({
     label: {
         position: "absolute",
         fontFamily: FONTS.A700,
-        color: PALETTE.colors.primary,
         zIndex: 1000,
         top: PALETTE.spacing.s + 2,
         left: PALETTE.spacing.s,
     },
     datePlaceholder: {
         letterSpacing: 2,
-        color: chroma(PALETTE.colors.fullThemeInverse).alpha(.4).hex()
     },
     blur: {
         height: "100%",
@@ -283,17 +303,9 @@ const styles = StyleSheet.create({
         justifyContent: "center",
         alignItems: "center",
     },
-    title: {
-        color: PALETTE.colors.textOnSurface,
-        fontFamily: FONTS.A600,
-        fontSize: 16
-    },
     input: {
         textAlign: "right",
         borderBottomWidth: 2,
-        borderBottomColor: PALETTE.colors.textOnPanel,
-        backgroundColor: PALETTE.colors.item,
-        color: PALETTE.colors.fullThemeInverse,
         fontFamily: FONTS.A600,
         paddingHorizontal: PALETTE.spacing.m,
         paddingTop: PALETTE.spacing.m,
@@ -311,15 +323,9 @@ const styles = StyleSheet.create({
         left: 0,
         zIndex: 10
     },
-    modal: {
-        backgroundColor: "#000c",
-    },
     modalBody: {
         alignSelf: "stretch",
         flexDirection: "column",
-        gap: PALETTE.spacing.l,
-        backgroundColor: PALETTE.colors.surface,
-        padding: PALETTE.spacing.s,
         borderRadius: 8
     },
 });

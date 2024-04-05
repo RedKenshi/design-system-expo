@@ -1,7 +1,8 @@
 
 import React, { useMemo } from 'react';
-import { StyleSheet, Text, TextStyle, View } from 'react-native';
-import PALETTE, { FONTS } from "../Palette";
+import { StyleSheet, Text, TextStyle } from 'react-native';
+import PALETTE, { FONTS, Theme } from "../Palette";
+import { useTheme } from '@shopify/restyle';
 
 interface Props {
     children: string,
@@ -14,24 +15,24 @@ export const Legend = ({
     style,
     variant
 }: Props) => {
-
+    const theme = useTheme<Theme>();
     const computedStyle = useMemo((): TextStyle => {
-        let color = PALETTE.colors.textLegend;
+        let color = theme.colors.textLegend;
         switch (variant) {
             case 'primary':
-                color = PALETTE.colors.primary
+                color = theme.colors.primary
                 break;
             case 'onPrimary':
-                color = PALETTE.colors.textOnPrimary
+                color = theme.colors.textOnPrimary
                 break;
             default:
-                color = PALETTE.colors.textLegend
+                color = theme.colors.textLegend
                 break;
         }
         return {
             color: color,
         }
-    }, [variant])
+    }, [variant, theme])
 
     return (
         <Text style={{ ...styles.legend, ...computedStyle, ...style }} >

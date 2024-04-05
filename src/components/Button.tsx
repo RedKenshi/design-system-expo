@@ -1,8 +1,9 @@
 import React, { useMemo } from 'react';
-import { Text, TouchableOpacity, StyleSheet, TextStyle, ViewStyle, ActivityIndicator, ColorValue } from 'react-native';
+import { Text, TouchableOpacity, StyleSheet, TextStyle, ViewStyle, ActivityIndicator } from 'react-native';
 import { IconSVG, IconSVGCode } from '../IconSVG';
-import PALETTE, { FONTS } from "../Palette"
+import PALETTE, { FONTS, Theme } from "../Palette"
 import chroma from "chroma-js"
+import { useTheme } from '@shopify/restyle';
 
 export type ButtonVariant = 'primary' | 'success' | 'warning' | 'danger' | 'info' | 'neutral'
 
@@ -34,28 +35,30 @@ export const Button: React.FC<Props> = ({
     textStyle,
 }) => {
 
+    const theme = useTheme<Theme>();
+
     const baseColors = useMemo(() => {
         let baseColor = ""
         let textColor = null
         switch (variant) {
             case 'primary':
-                baseColor = PALETTE.colors.primary
+                baseColor = theme.colors.primary
                 break;
             case 'success':
-                baseColor = PALETTE.colors.success
+                baseColor = theme.colors.success
                 break;
             case 'warning':
-                baseColor = PALETTE.colors.warning
+                baseColor = theme.colors.warning
                 break;
             case 'danger':
-                baseColor = PALETTE.colors.danger
+                baseColor = theme.colors.danger
                 break;
             case 'info':
-                baseColor = PALETTE.colors.info
+                baseColor = theme.colors.info
                 break;
             case 'neutral':
-                baseColor = PALETTE.colors.white
-                textColor = { textColor: PALETTE.colors.fullblack }
+                baseColor = theme.colors.white
+                textColor = { textColor: theme.colors.fullblack }
                 break;
         }
         return {
@@ -66,7 +69,7 @@ export const Button: React.FC<Props> = ({
             fadded: chroma(baseColor).alpha(.075).hex(),
             ...textColor
         }
-    }, [variant])
+    }, [variant, theme])
 
     const computedStyle = useMemo(() => {
         let variantStyles: ViewStyle = {}
@@ -136,7 +139,7 @@ export const Button: React.FC<Props> = ({
             } else {
                 variantStyles = {
                     ...variantStyles,
-                    color: PALETTE.colors.offwhite
+                    color: theme.colors.offwhite
                 }
             }
         } else {
@@ -148,19 +151,18 @@ export const Button: React.FC<Props> = ({
             } else {
                 variantStyles = {
                     ...variantStyles,
-                    backgroundColor: baseColors.full
                 }
             }
         }
 
-        return { ...variantStyles, ...textStyle, ...styles.text }
-    }, [baseColors, outline, disabled, loading])
+        return { ...styles.text, ...variantStyles, ...textStyle }
+    }, [baseColors, outline, disabled, loading, textStyle])
 
     const iconSize = useMemo(() => {
         switch (size) {
             case 's': return "small"; break;
             case 'm': return "normal"; break;
-            case 'l': return "big"; break;
+            case 'l': return "bigger"; break;
         }
     }, [size])
 

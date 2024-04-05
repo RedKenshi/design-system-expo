@@ -1,4 +1,5 @@
 import { createTheme } from "@shopify/restyle"
+import chroma from 'chroma-js'
 
 export const FONTS = {
     A100: "Axiforma-Thin",
@@ -117,6 +118,7 @@ const lightColors = {
     textOnSecondary: "#FFFFFF",
     textOnDisabled: "#A3A3A3",
     textLegend: "#acadb4",
+    textFadded: chroma("#000").alpha(.2).hex(),
 
     textBold: "#000000",
 
@@ -148,7 +150,10 @@ const lightColors = {
     marine: "#174B82",
     red: "#E74C3C",
     grey: "#BCBCBC",
-    fuel: "#464255"
+    fuel: "#464255",
+
+    themeSwitchText: "#b9deff",
+    themeSwitchBackground: "#34495e",
 }
 const darkColors = {
 
@@ -173,6 +178,7 @@ const darkColors = {
     textOnPrimary: "#FFFFFF",
     textOnSecondary: "#FFFFFF",
     textOnDisabled: "#1E1E20",
+    textFadded: chroma("#fff").alpha(.2).hex(),
 
     textBold: "#FFFFFF",
 
@@ -184,7 +190,7 @@ const darkColors = {
 
     //ELEMENTS COLORS
     toggleTrueTrack: primary["900"],
-    toggleFalseTrack: danger["950"],
+    toggleFalseTrack: danger["900"],
     toggleTrue: primary["500"],
     toggleFalse: danger["500"],
 
@@ -204,7 +210,10 @@ const darkColors = {
     marine: "#174B82",
     red: "#E74C3C",
     grey: "#BCBCBC",
-    fuel: "#464255"
+    fuel: "#464255",
+
+    themeSwitchText: "#f1c40f",
+    themeSwitchBackground: "#ffffff",
 }
 
 //SPACINGS
@@ -281,7 +290,7 @@ const textVariants = {
 }
 
 //RESTYLE THEME CREATION AND THEME EXPORT 
-const LIGHT_THEME = createTheme({
+export const LIGHT_THEME = createTheme({
     spacing,
     palettes,
     shadow,
@@ -289,7 +298,7 @@ const LIGHT_THEME = createTheme({
     breakpoints,
     colors: lightColors
 })
-const DARK_THEME = createTheme({
+export const DARK_THEME = createTheme({
     spacing,
     palettes,
     shadow,
@@ -298,8 +307,8 @@ const DARK_THEME = createTheme({
     colors: darkColors
 })
 
-export type Theme = typeof LIGHT_THEME;
-export default LIGHT_THEME;
+export type Theme = typeof DARK_THEME;
+export default DARK_THEME;
 
 
 export const FieldSizes = {

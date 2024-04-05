@@ -1,8 +1,9 @@
 
-import React, { useEffect, useMemo, useRef, useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import { LayoutRectangle, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
-import PALETTE, { FONTS } from "../../Palette";
+import PALETTE, { FONTS, Theme } from "../../Palette";
 import Animated, { useAnimatedStyle, useSharedValue, withTiming } from 'react-native-reanimated';
+import { useTheme } from '@shopify/restyle';
 
 const height = 40;
 const space = PALETTE.spacing.xs + 2;
@@ -19,6 +20,7 @@ export const InlineSelectAnimated = ({
     options,
 }: Props) => {
 
+    const theme = useTheme<Theme>();
     const [selectedIndex, setSelectedIndex] = useState<number>(-1)
     const width = useSharedValue(0);
     const left = useSharedValue(0);
@@ -48,12 +50,12 @@ export const InlineSelectAnimated = ({
     }));
 
     return (
-        <View style={styles.input}>
-            <Animated.View style={[styles.selectedBack, animatedStyles]} />
+        <View style={[styles.input, { backgroundColor: theme.colors.item }]}>
+            <Animated.View style={[styles.selectedBack, { backgroundColor: theme.colors.primary }, animatedStyles]} />
             {options.map((o: { label: string, value: any }, i: number) => {
                 return (
                     <TouchableOpacity key={`${i}-${o.label}`} onLayout={(e) => setLayoutForIndex(e.nativeEvent.layout, i)} style={[styles.option]} onPress={() => handleChange(o.value)}>
-                        <Text style={[styles.optionText, selected == o.value ? styles.selectedText : null]}>{o.label}</Text>
+                        <Text style={[styles.optionText, { color: theme.colors.fullThemeInverse }, selected == o.value ? { color: theme.colors.textOnPrimary } : null]}>{o.label}</Text>
                     </TouchableOpacity>
                 )
             })}
@@ -73,15 +75,10 @@ const styles = StyleSheet.create({
     selectedBack: {
         position: "absolute",
         top: space,
-        backgroundColor: PALETTE.colors.primary,
         height: height - (2 * space),
         borderRadius: (height - (2 * space)) / 2,
     },
-    selectedText: {
-        color: PALETTE.colors.textOnPrimary
-    },
     optionText: {
-        color: PALETTE.colors.fullThemeInverse,
         fontFamily: FONTS.A600,
         marginTop: 3,
         fontSize: 14,
@@ -91,7 +88,6 @@ const styles = StyleSheet.create({
         height: height,
         minWidth: height,
         borderRadius: height / 2,
-        backgroundColor: PALETTE.colors.item,
         paddingLeft: 2 * space,
         paddingRight: space,
         flexDirection: "row",

@@ -2,10 +2,10 @@ import React, { useEffect, useMemo, useState } from 'react';
 import { LayoutRectangle, Modal, Pressable, StyleProp, StyleSheet, TextInput, TextStyle, TouchableOpacity, Text } from 'react-native';
 import { BlurView } from 'expo-blur';
 import chroma from "chroma-js";
-import { useResponsiveProp } from '@shopify/restyle';
+import { useResponsiveProp, useTheme } from '@shopify/restyle';
 import { addDays, addMonths, endOfMonth, endOfWeek, format, startOfMonth, subMonths, startOfWeek, isSameDay, isToday, isPast, isFuture, isBefore, isAfter, startOfDay, endOfDay, isValid } from "date-fns";
 
-import PALETTE, { FONTS, FieldSizes } from "../../Palette";
+import PALETTE, { FONTS, FieldSizes, Theme } from "../../Palette";
 import { IconSVG, IconSVGCode } from '../../IconSVG';
 import Button from '../Button';
 import CustomText from '../CustomText';
@@ -15,6 +15,7 @@ interface Props {
     label?: string,
     value: Date,
     handleChange: (e: Date) => void;
+    hideDaysInitials?: boolean;
     from?: Date
     to?: Date
     pastForbidden?: boolean,
@@ -26,12 +27,15 @@ export const DatePickerField = ({
     label,
     value,
     handleChange,
+    hideDaysInitials = false,
     from,
     to,
     pastForbidden = false,
     todayForbidden = false,
     futureForbidden = false,
 }: Props) => {
+
+    const theme = useTheme<Theme>();
 
     const [selectedDate, setSelectedDate] = useState<Date | null>(null)
     const [selectedMonth, setSelectedMonth] = useState<Date>(new Date())
@@ -120,15 +124,17 @@ export const DatePickerField = ({
         if (cellSize) {
             return (
                 <>
-                    <Box flexDirection='row' gap='xs'>
-                        <Box style={cellStyle}><Text style={[styles.cellText, { color: PALETTE.colors.disabled }]}>L</Text></Box>
-                        <Box style={cellStyle}><Text style={[styles.cellText, { color: PALETTE.colors.disabled }]}>M</Text></Box>
-                        <Box style={cellStyle}><Text style={[styles.cellText, { color: PALETTE.colors.disabled }]}>M</Text></Box>
-                        <Box style={cellStyle}><Text style={[styles.cellText, { color: PALETTE.colors.disabled }]}>J</Text></Box>
-                        <Box style={cellStyle}><Text style={[styles.cellText, { color: PALETTE.colors.disabled }]}>V</Text></Box>
-                        <Box style={cellStyle}><Text style={[styles.cellText, { color: PALETTE.colors.disabled }]}>S</Text></Box>
-                        <Box style={cellStyle}><Text style={[styles.cellText, { color: PALETTE.colors.disabled }]}>D</Text></Box>
-                    </Box>
+                    {!hideDaysInitials &&
+                        <Box flexDirection='row' gap='xs'>
+                            <Box style={cellStyle}><Text style={[styles.cellText, { color: theme.colors.textFadded }]}>L</Text></Box>
+                            <Box style={cellStyle}><Text style={[styles.cellText, { color: theme.colors.textFadded }]}>M</Text></Box>
+                            <Box style={cellStyle}><Text style={[styles.cellText, { color: theme.colors.textFadded }]}>M</Text></Box>
+                            <Box style={cellStyle}><Text style={[styles.cellText, { color: theme.colors.textFadded }]}>J</Text></Box>
+                            <Box style={cellStyle}><Text style={[styles.cellText, { color: theme.colors.textFadded }]}>V</Text></Box>
+                            <Box style={cellStyle}><Text style={[styles.cellText, { color: theme.colors.textFadded }]}>S</Text></Box>
+                            <Box style={cellStyle}><Text style={[styles.cellText, { color: theme.colors.textFadded }]}>D</Text></Box>
+                        </Box>
+                    }
                     {weeks.map((week, i) => {
                         return (
                             <Box flexDirection='row' gap='xs'>
@@ -137,15 +143,16 @@ export const DatePickerField = ({
                                     return (
                                         <TouchableOpacity onPress={() => !day.forbidden ? handleDateSelection(day) : null} style={[
                                             cellStyle,
-                                            day.isToday ? styles.today : null,
-                                            isSelected ? styles.selectedDate : null,
+                                            day.isToday ? { backgroundColor: chroma(theme.colors.warning).alpha(.1).hex() } : null,
+                                            isSelected ? { backgroundColor: theme.colors.primary } : null,
                                         ]}>
                                             <Text style={[
                                                 styles.cellText,
-                                                day.isSelectedMonth ? null : styles.offSelectedMonthText,
-                                                day.isToday ? styles.todayText : null,
-                                                isSelected ? styles.selectedDateText : null,
-                                                day.forbidden ? styles.forbiddenText : null
+                                                { color: theme.colors.textOnSurface },
+                                                day.isSelectedMonth ? null : { color: theme.colors.disabled },
+                                                day.isToday ? { color: theme.colors.warning } : null,
+                                                isSelected ? { color: theme.colors.textOnPrimary } : null,
+                                                day.forbidden ? { ...styles.forbiddenText, color: chroma(theme.colors.danger).alpha(.45).hex() } : null
                                             ]}>
                                                 {format(day.date, 'dd')}
                                             </Text>
@@ -181,10 +188,26 @@ export const DatePickerField = ({
     return (
         <>
             <TouchableOpacity style={{}} onPress={handleOpen}>
-                {label && <Text style={styles.label}>{label}</Text>}
-                <TextInput editable={false} value={value ? isValid(value) ? format(value, "dd/MM/yyyy") : value.toString() : "__/__/____"} style={[styles.input, labelDependentComputedStyle, !value && styles.datePlaceholder]} pointerEvents='none' />
+                {label && <Text style={[styles.label, { color: theme.colors.primary }]}>{label}</Text>}
+                <TextInput
+                    editable={false}
+                    value={value ? isValid(value) ? format(value, "dd/MM/yyyy") : value.toString() : "__/__/____"}
+                    style={[
+                        styles.input,
+                        {
+                            borderBottomColor: theme.colors.textOnPanel,
+                            backgroundColor: theme.colors.item,
+                            color: theme.colors.fullThemeInverse
+                        },
+                        labelDependentComputedStyle,
+                        !value && {
+                            ...styles.datePlaceholder,
+                            color: chroma(theme.colors.fullThemeInverse).alpha(.4).hex()
+                        }]}
+                    pointerEvents='none'
+                />
                 <Box flexDirection='row' justifyContent="center" alignItems="center" style={{ position: "absolute", bottom: 0, left: PALETTE.spacing.m, height: height }}>
-                    <IconSVG icon={IconSVGCode.agenda} fill={PALETTE.colors.disabled} size='normal' />
+                    <IconSVG icon={IconSVGCode.agenda} fill={theme.colors.disabled} size='normal' />
                 </Box>
             </TouchableOpacity>
             <Modal animationType='fade' transparent={true} visible={datePickerOpen} onRequestClose={() => setDatePickerOpen} >
@@ -210,7 +233,7 @@ export const DatePickerField = ({
                                 </Box>
                                 <Button icon={IconSVGCode.chevron_right} onPress={nextMonth} outline size="s" />
                             </Box>
-                            <Box style={{ borderBottomWidth: 1, borderColor: PALETTE.colors.disabled }} />
+                            <Box style={{ borderBottomWidth: 1, borderColor: theme.colors.disabled }} />
                             <Box flexDirection="column" marginHorizontal='s' marginVertical='l' gap='xs' >
                                 {monthGrid}
                             </Box>
@@ -230,14 +253,12 @@ const styles = StyleSheet.create({
     label: {
         position: "absolute",
         fontFamily: FONTS.A700,
-        color: PALETTE.colors.primary,
         zIndex: 1000,
         top: PALETTE.spacing.s + 2,
         left: PALETTE.spacing.s,
     },
     datePlaceholder: {
         letterSpacing: 1,
-        color: chroma(PALETTE.colors.fullThemeInverse).alpha(.4).hex()
     },
     blur: {
         display: "flex",
@@ -245,7 +266,6 @@ const styles = StyleSheet.create({
         alignItems: "center",
         height: "100%",
         width: "100%",
-        backgroundColor: "#000c",
     },
     cell: {
         borderRadius: 4,
@@ -255,38 +275,17 @@ const styles = StyleSheet.create({
     cellText: {
         fontFamily: FONTS.A500,
         fontSize: 18,
-        color: PALETTE.colors.textOnSurface
-    },
-    offSelectedMonthText: {
-        color: PALETTE.colors.disabled
-    },
-    selectedDate: {
-        backgroundColor: PALETTE.colors.primary
-    },
-    selectedDateText: {
-        color: PALETTE.colors.textOnPrimary
-    },
-    today: {
-        backgroundColor: chroma(PALETTE.colors.warning).alpha(.1).hex()
-    },
-    todayText: {
-        color: PALETTE.colors.warning
     },
     forbiddenText: {
-        color: chroma(PALETTE.colors.danger).alpha(.45).hex(),
         textDecorationLine: "line-through"
     },
     title: {
-        color: PALETTE.colors.textOnSurface,
         fontFamily: FONTS.A600,
         fontSize: 16
     },
     input: {
         textAlign: "right",
         borderBottomWidth: 2,
-        borderBottomColor: PALETTE.colors.textOnPanel,
-        backgroundColor: PALETTE.colors.item,
-        color: PALETTE.colors.fullThemeInverse,
         fontFamily: FONTS.A600,
         paddingHorizontal: PALETTE.spacing.m,
         paddingTop: PALETTE.spacing.m,
@@ -297,6 +296,7 @@ const styles = StyleSheet.create({
     },
     dimmer: {
         position: "absolute",
+        backgroundColor: "#000c",
         top: 0,
         bottom: 0,
         right: 0,

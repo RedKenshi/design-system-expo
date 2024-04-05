@@ -1,10 +1,10 @@
 
 import React, { useMemo, useState } from 'react';
 import { StyleProp, StyleSheet, Text, TextInput, TextStyle } from 'react-native';
-import PALETTE, { FONTS, FieldSizes } from "../../Palette";
+import PALETTE, { FONTS, FieldSizes, Theme } from "../../Palette";
 import chroma from "chroma-js"
 import Box from '../Box';
-import { useResponsiveProp } from '@shopify/restyle';
+import { useResponsiveProp, useTheme } from '@shopify/restyle';
 
 interface Props {
     label?: string,
@@ -29,38 +29,41 @@ export const CustomTextField = ({
     isWarning,
 }: Props) => {
 
+    const theme = useTheme<Theme>();
     const [isFocus, setIsFocus] = useState<boolean>(false)
 
     const computedStyle = useMemo<StyleProp<TextStyle>>(() => {
         let tmp: StyleProp<TextStyle> = {
-            borderBottomColor: PALETTE.colors.textOnPanel,
+            borderBottomColor: theme.colors.textOnPanel,
+            backgroundColor: theme.colors.item,
+            color: theme.colors.fullThemeInverse,
         };
         if (isActive || isFocus) {
             tmp = {
-                borderBottomColor: PALETTE.colors.primary,
-                backgroundColor: chroma(PALETTE.colors.primary).alpha(.08).hex()
+                borderBottomColor: theme.colors.primary,
+                backgroundColor: chroma(theme.colors.primary).alpha(.08).hex()
             }
         }
         if (isSuccess) {
             tmp = {
-                borderBottomColor: PALETTE.colors.success,
-                backgroundColor: chroma(PALETTE.colors.success).alpha(.08).hex()
+                borderBottomColor: theme.colors.success,
+                backgroundColor: chroma(theme.colors.success).alpha(.08).hex()
             }
         }
         if (isWarning) {
             tmp = {
-                borderBottomColor: PALETTE.colors.warning,
-                backgroundColor: chroma(PALETTE.colors.warning).alpha(.08).hex()
+                borderBottomColor: theme.colors.warning,
+                backgroundColor: chroma(theme.colors.warning).alpha(.08).hex()
             }
         }
         if (isError) {
             tmp = {
-                borderBottomColor: PALETTE.colors.danger,
-                backgroundColor: chroma(PALETTE.colors.danger).alpha(.08).hex()
+                borderBottomColor: theme.colors.danger,
+                backgroundColor: chroma(theme.colors.danger).alpha(.08).hex()
             }
         }
         return tmp
-    }, [isActive, isSuccess, isError, isWarning, isFocus])
+    }, [isActive, isSuccess, isError, isWarning, isFocus, theme])
 
     const width = useResponsiveProp(FieldSizes.width)
     const height = useResponsiveProp(FieldSizes.height)
@@ -71,13 +74,13 @@ export const CustomTextField = ({
             return {
                 minWidth: width,
                 height: height,
-                paddingTop: PALETTE.spacing.m
+                paddingTop: theme.spacing.m
             }
         } else {
             return {
                 minWidth: width,
                 height: height + labelHeight,
-                paddingTop: PALETTE.spacing.m + PALETTE.spacing.l
+                paddingTop: theme.spacing.m + theme.spacing.l
             }
         }
 
@@ -86,7 +89,7 @@ export const CustomTextField = ({
 
     return (
         <Box position='relative'>
-            {label && <Text style={styles.label}>{label}</Text>}
+            {label && <Text style={[styles.label, { color: theme.colors.primary }]}>{label}</Text>}
             <TextInput
                 onFocus={() => setIsFocus(true)}
                 onBlur={() => setIsFocus(false)}
@@ -103,7 +106,6 @@ const styles = StyleSheet.create({
     label: {
         position: "absolute",
         fontFamily: FONTS.A700,
-        color: PALETTE.colors.primary,
         zIndex: 1000,
         top: PALETTE.spacing.s + 2,
         left: PALETTE.spacing.s,
@@ -113,12 +115,9 @@ const styles = StyleSheet.create({
         paddingTop: PALETTE.spacing.m,
         paddingHorizontal: PALETTE.spacing.m,
         borderBottomWidth: infoBorderWith,
-        borderBottomColor: PALETTE.colors.textOnPanel,
-        backgroundColor: PALETTE.colors.item,
-        color: PALETTE.colors.fullThemeInverse,
-        fontFamily: FONTS.A600,
+        fontFamily: FONTS.A400,
         borderRadius: 4,
-        fontSize: 18,
+        fontSize: 15,
     }
 });
 

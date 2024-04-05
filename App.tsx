@@ -1,34 +1,33 @@
 import { StatusBar } from 'expo-status-bar';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
-import { ScrollView, StyleSheet, Text, View } from 'react-native';
+import { ScrollView, StyleSheet } from 'react-native';
 import { ThemeProvider } from '@shopify/restyle';
-import PALETTE from "./src/Palette"
+import { DARK_THEME, LIGHT_THEME } from "./src/Palette"
 
 import { useFonts } from 'expo-font';
 import * as SplashScreen from 'expo-splash-screen';
-import { useCallback, useEffect, useState } from 'react';
-import Design from './src/pages/Design';
+import { useCallback, useEffect, useMemo, useState } from 'react';
+import { Buttons } from './src/pages/Buttons';
 import Drawer from './src/components/Drawer';
 import TopBar from './src/components/TopBar';
-import { IconSVGCode } from './src/IconSVG';
-import TextFormRow from './src/components/formRow/TextFormRow';
-import InlineSelectFormRow from './src/components/formRow/InlineSelectFormRow';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
-import ModalNative from './src/components/ModalNative';
 
-import theme from "./src/Palette"
 import Box from './src/components/Box';
+import Typos from './src/pages/Typos';
+import Inputs from './src/pages/Inputs';
+import Tickets from './src/pages/Tickets';
+import Dnd from './src/pages/Dnd';
+import { DnDProvider } from './src/contexts/DragAndDropContext';
+export type Pages = 'button' | 'typo' | 'inputs' | 'ticket' | 'dnd';
 
 SplashScreen.preventAutoHideAsync();
 
 export default function App() {
 
+  const [darkMode, setDarkMode] = useState<boolean>(false)
   const [open, setOpen] = useState(false);
-  const [selectedSize, setSelectedSize] = useState(null);
-  const [selectedToppings, setSelectedToppings] = useState(null);
   const [paletteDark, setPaletteDark] = useState(true);
-  const [openModalF, setOpenModalF] = useState(false);
-  const [openModalS, setOpenModalS] = useState(false);
+  const [page, setPage] = useState<Pages>('dnd')
 
   useEffect(() => {
     if (open) setPaletteDark(true)
@@ -66,10 +65,75 @@ export default function App() {
     'Axiforma-Heavy-Italic': require("./assets/fonts/Axiforma Heavy Italic.otf")
   });
 
+  const getButtonPage = () => {
+    return (
+      <ScrollView horizontal={false} automaticallyAdjustKeyboardInsets style={[{ width: "100%" }]} >
+        <Box style={[styles.container]} onLayout={onLayoutRootView} backgroundColor='background'>
+          <Buttons />
+        </Box>
+      </ScrollView>
+    )
+  }
+  const getTypoPage = () => {
+    return (
+      <ScrollView horizontal={false} automaticallyAdjustKeyboardInsets style={[{ width: "100%" }]} >
+        <Box style={[styles.container]} onLayout={onLayoutRootView} backgroundColor='background'>
+          <Typos />
+        </Box>
+      </ScrollView>
+    )
+  }
+  const getInputsPage = () => {
+    return (
+      <ScrollView horizontal={false} automaticallyAdjustKeyboardInsets style={[{ width: "100%" }]} >
+        <Box style={[styles.container]} onLayout={onLayoutRootView} backgroundColor='background'>
+          <Inputs />
+        </Box>
+      </ScrollView>
+    )
+  }
+  const getTicketPage = () => {
+    return (
+      <ScrollView horizontal={false} automaticallyAdjustKeyboardInsets style={[{ width: "100%" }]} >
+        <Box style={[styles.container]} onLayout={onLayoutRootView} backgroundColor='background'>
+          <Tickets />
+        </Box>
+      </ScrollView>
+    )
+  }
+  const getDndPage = () => {
+    return (
+      <ScrollView scrollEnabled={false} horizontal={false} automaticallyAdjustKeyboardInsets style={[{ width: "100%" }]} contentContainerStyle={{ height: "100%" }} >
+        <Box style={styles.container} onLayout={onLayoutRootView} backgroundColor='background'>
+          <Dnd />
+        </Box>
+      </ScrollView>
+    )
+  }
+
+  const pageBody = useMemo(() => {
+    switch (page) {
+      case 'button':
+        return getButtonPage()
+      case 'typo':
+        return getTypoPage()
+      case 'inputs':
+        return getInputsPage()
+      case 'ticket':
+        return getTicketPage()
+      case 'dnd':
+        return getDndPage()
+    }
+  }, [page])
+
   const onLayoutRootView = useCallback(async () => {
     if (fontsLoaded || fontError) {
       await SplashScreen.hideAsync();
     }
+  }, [fontsLoaded, fontError]);
+
+  useEffect(() => {
+    onLayoutRootView()
   }, [fontsLoaded, fontError]);
 
   if (!fontsLoaded && !fontError) {
@@ -78,66 +142,24 @@ export default function App() {
 
   return (
     <GestureHandlerRootView style={{ minHeight: "100%", width: "100%" }}>
-      <ThemeProvider theme={theme}>
-        <SafeAreaProvider style={{ backgroundColor: PALETTE.colors.background }}>
-          <StatusBar style={paletteDark ? "light" : "dark"} />
-          <TopBar setOpenMenu={setOpen} />
-          <Drawer setOpenMenu={setOpen} open={open} />
-          <ModalNative open={openModalF} setOpen={setOpenModalF} actions={[
-            { variant: "danger", onPress: () => setOpenModalF(false), title: "No", icon: IconSVGCode.xmark },
-            { variant: "primary", onPress: () => setOpenModalF(false), title: "Yes", icon: IconSVGCode.check }
-          ]} >
-            <TextFormRow value={"IS PRIMARY"} isActive handleChange={() => { }} title={"UN"} />
-            <TextFormRow value={"IS SUCCESS"} isSuccess handleChange={() => { }} title={"DEUX"} />
-            <TextFormRow value={"IS WARNING"} isWarning handleChange={() => { }} title={"TROIS"} />
-            <TextFormRow value={"IS ERROR"} isError handleChange={() => { }} title={"QUATRE"} />
-            <InlineSelectFormRow title="Size" handleChange={(e) => setSelectedSize(e)} selected={selectedSize} options={[
-              { label: 'S', value: 1 },
-              { label: 'M', value: 2 },
-              { label: 'L', value: 3 }
-            ]}
-            />
-            <InlineSelectFormRow title="Toppings" handleChange={(e) => setSelectedToppings(e)} selected={selectedToppings} options={[
-              { label: 'Option 1', value: 1 },
-              { label: 'Option 2', value: 2 }
-            ]}
-            />
-            <TextFormRow value={"CINQ"} handleChange={() => { }} title={"CINQ"} />
-            <TextFormRow value={"SIX"} handleChange={() => { }} title={"SIX"} />
-            <TextFormRow value={""} handleChange={() => { }} title={"SEPT"} />
-            <TextFormRow value={""} handleChange={() => { }} title={"HUIT"} />
-            <TextFormRow value={""} handleChange={() => { }} title={"NEUF"} />
-            <TextFormRow value={""} handleChange={() => { }} title={"DIX"} />
-            <TextFormRow value={""} handleChange={() => { }} title={"ONZE"} />
-            <TextFormRow value={""} handleChange={() => { }} title={"DOUZE"} />
-          </ModalNative>
-          <ModalNative open={openModalS} setOpen={setOpenModalS} actions={[
-            { variant: "danger", onPress: () => setOpenModalS(false), title: "No", icon: IconSVGCode.xmark },
-            { variant: "primary", onPress: () => setOpenModalS(false), title: "Yes", icon: IconSVGCode.check }
-          ]} >
-            <View style={{ flex: 1, paddingVertical: PALETTE.spacing.m, paddingHorizontal: PALETTE.spacing.m }} >
-              <TextFormRow value={"IS PRIMARY"} handleChange={() => { }} title={"UN"} />
-              <InlineSelectFormRow title="Size" handleChange={(e) => setSelectedSize(e)} selected={selectedSize} options={[
-                { label: 'S', value: 1 },
-                { label: 'M', value: 2 },
-                { label: 'L', value: 3 }
-              ]}
-              />
-            </View>
-          </ModalNative>
-          <ScrollView horizontal={false} automaticallyAdjustKeyboardInsets style={{ width: "100%" }} >
-            <Box style={[styles.container]} onLayout={onLayoutRootView} >
-              <Design setOpenModalF={setOpenModalF} setOpenModalS={setOpenModalS} />
-            </Box>
-          </ScrollView>
-        </SafeAreaProvider>
-      </ThemeProvider>
+      <DnDProvider>
+        <ThemeProvider theme={darkMode ? DARK_THEME : LIGHT_THEME}>
+          <SafeAreaProvider style={StyleSheet.absoluteFill}>
+            <StatusBar style={paletteDark ? "light" : "dark"} />
+            <TopBar setOpenMenu={setOpen} />
+            <Drawer setPage={setPage} page={page} darkMode={darkMode} setDarkMode={setDarkMode} setOpenMenu={setOpen} open={open} />
+            {pageBody}
+          </SafeAreaProvider>
+        </ThemeProvider>
+      </DnDProvider>
     </GestureHandlerRootView>
   );
 }
 
 const styles = StyleSheet.create({
   container: {
+    alignSelf: "stretch",
+    minHeight: "100%",
     maxWidth: "100%",
     alignItems: 'center',
     justifyContent: 'center',

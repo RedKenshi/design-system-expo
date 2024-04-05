@@ -3,19 +3,27 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import Animated, { useAnimatedStyle, useSharedValue, withTiming } from 'react-native-reanimated';
 import { useEffect } from "react";
 import { Dimensions } from 'react-native';
-import PALETTE from "../Palette";
+import PALETTE, { Theme } from "../Palette";
 import Menu from "./Menu";
-import { EiwieSVG } from "../IconSVG";
+import { EiwieSVG, IconSVGCode } from "../IconSVG";
 import { BlurView } from "expo-blur";
 import Box from "./Box";
+import { useTheme } from "@shopify/restyle";
+import Button from "./Button";
+import { Pages } from "../../App";
 
 type Props = {
     open: boolean,
     setOpenMenu: (value: boolean) => void
+    darkMode: boolean,
+    setDarkMode: (value: boolean) => void
+    page: Pages
+    setPage: (page: Pages) => void
 }
 
-export const Drawer = ({ open, setOpenMenu }: Props) => {
+export const Drawer = ({ open, setOpenMenu, darkMode, setDarkMode, page, setPage }: Props) => {
 
+    const theme = useTheme<Theme>();
     const windowWidth = Dimensions.get('window').width;
     const insets = useSafeAreaInsets();
     const padding = {
@@ -46,11 +54,25 @@ export const Drawer = ({ open, setOpenMenu }: Props) => {
 
     return (
         <Animated.View style={[styles.drawerWrapper, animatedStyles]}>
-            <Box width={{ phone: 320, tablet: 380, largeTablet: 420 }} style={[styles.drawerContainer, padding, { backgroundColor: PALETTE.colors.surface }]}>
+            <Box width={{ phone: 320, tablet: 380, largeTablet: 420 }} style={[styles.drawerContainer, padding, { backgroundColor: theme.colors.surface }]}>
                 <Box style={styles.logoWrapper}>
-                    <EiwieSVG color={PALETTE.colors.primary} neutral={PALETTE.colors.textOnSurface} />
+                    <EiwieSVG color={theme.colors.primary} neutral={theme.colors.textOnSurface} />
                 </Box>
-                <Menu />
+                <Menu page={page} setPage={setPage} closeDrawer={() => setOpenMenu(false)} />
+                <Button
+                    style={{
+                        marginBottom: theme.spacing.l,
+                        borderRadius: 48,
+                        alignSelf: "center",
+                        backgroundColor: theme.colors.themeSwitchBackground
+                    }}
+                    textStyle={{
+                        color: theme.colors.themeSwitchText
+                    }}
+                    icon={darkMode ? IconSVGCode.sun : IconSVGCode.moon}
+                    onPress={() => { setDarkMode(!darkMode) }}
+                    iconPosition="right"
+                />
             </Box>
             {open &&
                 <BlurView intensity={5} style={{ height: "100%", width: "100%" }}>

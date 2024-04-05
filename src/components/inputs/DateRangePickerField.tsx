@@ -1,15 +1,16 @@
 import React, { useEffect, useMemo, useState } from 'react';
 import { LayoutRectangle, Modal, Pressable, StyleProp, StyleSheet, Text, TextInput, TextStyle, TouchableOpacity } from 'react-native';
 import { BlurView } from 'expo-blur';
-import { useResponsiveProp } from '@shopify/restyle';
+import { useResponsiveProp, useTheme } from '@shopify/restyle';
 import chroma from "chroma-js";
-import { addDays, addMonths, endOfMonth, endOfWeek, format, startOfMonth, subMonths, startOfWeek, isSameDay, isToday, isPast, isFuture, isBefore, isAfter, startOfDay, endOfDay, isValid, isWithinInterval, formatDistance } from "date-fns";
+import { addDays, addMonths, endOfMonth, endOfWeek, format, startOfMonth, subMonths, startOfWeek, isSameDay, isToday, isPast, isFuture, isBefore, isAfter, startOfDay, endOfDay, isValid, isWithinInterval, formatDistance, formatDistanceStrict, intervalToDuration, interval, differenceInDays } from "date-fns";
 
-import PALETTE, { FONTS, FieldSizes } from "../../Palette";
+import PALETTE, { FONTS, FieldSizes, Theme } from "../../Palette";
 import { IconSVG, IconSVGCode } from '../../IconSVG';
 import Button from '../Button';
 import CustomText from '../CustomText';
 import Box from '../Box';
+import Alert from '../Alert';
 
 export type DateRange = {
     from: Date | null,
@@ -20,28 +21,38 @@ interface Props {
     label?: string,
     value: DateRange,
     handleChange: (e: DateRange) => void;
-    minNumberOfDays: number
-    maxNumberOfDays: number
-    forbiddenBefore?: Date
-    forbiddenAfter?: Date
-    pastForbidden?: boolean,
-    todayForbidden?: boolean,
-    futureForbidden?: boolean,
+    hideDaysInitials?: boolean;
+    minNumberOfDays: number;
+    maxNumberOfDays: number;
+    forbiddenBefore?: Date;
+    forbiddenAfter?: Date;
+    pastForbidden?: boolean;
+    todayForbidden?: boolean;
+    futureForbidden?: boolean;
 }
 
 export const DateRangePickerField = ({
     label,
     value,
     handleChange,
+    hideDaysInitials = false,
     forbiddenBefore,
     forbiddenAfter,
+    minNumberOfDays,
+    maxNumberOfDays,
     pastForbidden = false,
     todayForbidden = false,
     futureForbidden = false,
 }: Props) => {
 
-    const fromLabel = "du"
-    const toLabel = "au"
+    const theme = useTheme<Theme>();
+
+    if (minNumberOfDays != null && maxNumberOfDays != null && minNumberOfDays > maxNumberOfDays) {
+        throw new Error(`Minimun number of days can't be higher than maximum of days (min:${minNumberOfDays} max:${maxNumberOfDays})`)
+    }
+
+    const fromLabel = "du";
+    const toLabel = "au";
 
     const [layout, setLayout] = useState<LayoutRectangle>(null)
     const [selectedDate, setSelectedDate] = useState<DateRange>({ from: null, to: null })
@@ -133,15 +144,17 @@ export const DateRangePickerField = ({
         if (cellSize) {
             return (
                 <>
-                    <Box style={{ flexDirection: "row" }}>
-                        <Box style={cellStyle}><Text style={[styles.cellText, { color: PALETTE.colors.disabled }]}>L</Text></Box>
-                        <Box style={cellStyle}><Text style={[styles.cellText, { color: PALETTE.colors.disabled }]}>M</Text></Box>
-                        <Box style={cellStyle}><Text style={[styles.cellText, { color: PALETTE.colors.disabled }]}>M</Text></Box>
-                        <Box style={cellStyle}><Text style={[styles.cellText, { color: PALETTE.colors.disabled }]}>J</Text></Box>
-                        <Box style={cellStyle}><Text style={[styles.cellText, { color: PALETTE.colors.disabled }]}>V</Text></Box>
-                        <Box style={cellStyle}><Text style={[styles.cellText, { color: PALETTE.colors.disabled }]}>S</Text></Box>
-                        <Box style={cellStyle}><Text style={[styles.cellText, { color: PALETTE.colors.disabled }]}>D</Text></Box>
-                    </Box>
+                    {!hideDaysInitials &&
+                        <Box flexDirection='row' gap='xs'>
+                            <Box style={cellStyle}><Text style={[styles.cellText, { color: theme.colors.textFadded }]}>L</Text></Box>
+                            <Box style={cellStyle}><Text style={[styles.cellText, { color: theme.colors.textFadded }]}>M</Text></Box>
+                            <Box style={cellStyle}><Text style={[styles.cellText, { color: theme.colors.textFadded }]}>M</Text></Box>
+                            <Box style={cellStyle}><Text style={[styles.cellText, { color: theme.colors.textFadded }]}>J</Text></Box>
+                            <Box style={cellStyle}><Text style={[styles.cellText, { color: theme.colors.textFadded }]}>V</Text></Box>
+                            <Box style={cellStyle}><Text style={[styles.cellText, { color: theme.colors.textFadded }]}>S</Text></Box>
+                            <Box style={cellStyle}><Text style={[styles.cellText, { color: theme.colors.textFadded }]}>D</Text></Box>
+                        </Box>
+                    }
                     {weeks.map((week, i) => {
                         return (
                             <Box key={`week${i}`} flexDirection='row' gap='xs'>
@@ -150,17 +163,19 @@ export const DateRangePickerField = ({
                                     return (
                                         <TouchableOpacity key={`week${i}-day${j}`} onPress={() => !day.forbidden ? handleDateSelection(day) : null} style={[
                                             cellStyle,
-                                            day.isToday ? styles.today : null,
-                                            day.isInSelectedRange ? styles.inRangeSelected : null,
-                                            isSelected ? styles.selectedDate : null,
+                                            day.isToday ? { backgroundColor: chroma(theme.colors.warning).alpha(.1).hex() } : null,
+                                            day.isInSelectedRange ? { backgroundColor: chroma(theme.colors.primary).alpha(.1).hex() } : null,
+                                            isSelected ? { backgroundColor: theme.colors.primary } : null,
                                         ]}>
                                             <Text style={[
                                                 styles.cellText,
-                                                day.isSelectedMonth ? null : styles.offSelectedMonthText,
-                                                day.isToday ? styles.todayText : null,
-                                                day.isInSelectedRange ? styles.inRangeSelectedText : null,
-                                                isSelected ? styles.selectedDateText : null,
-                                                day.forbidden ? styles.forbiddenText : null
+                                                { color: theme.colors.textOnSurface },
+                                                day.isSelectedMonth ? null : { color: theme.colors.disabled },
+                                                day.isToday ? { color: theme.colors.warning } : null,
+                                                day.isInSelectedRange ? { color: theme.colors.primary } : null,
+                                                isSelected ? { color: theme.colors.textOnPrimary } : null,
+                                                day.forbidden ? { ...styles.forbiddenText, color: chroma(theme.colors.danger).alpha(.45).hex() } : null
+
                                             ]}>
                                                 {format(day.date, 'dd')}
                                             </Text>
@@ -175,41 +190,82 @@ export const DateRangePickerField = ({
         } else {
             return <></>
         }
-    }, [weeks, cellSize, cellStyle, selectedDate])
+    }, [weeks, cellSize, cellStyle, selectedDate, theme])
 
     const labelDependentComputedStyle = useMemo<StyleProp<TextStyle>>(() => {
         if (label == undefined || label == null || label.length == 0) {
             return {
                 minWidth: width,
                 height: 2 * height,
-                paddingTop: PALETTE.spacing.l
+                paddingTop: theme.spacing.l
             }
         } else {
             return {
                 minWidth: width,
                 height: 2 * height + labelHeight,
-                paddingTop: PALETTE.spacing.xxl
+                paddingTop: theme.spacing.xxl
             }
         }
-    }, [label, layout])
+    }, [label, layout, theme])
 
     const datesDisplay = useMemo(() => {
         if (!layout) return <></>
         return (
             <>
-                {label && <Text style={styles.label}>{label}</Text>}
-                <TextInput numberOfLines={2} editable={false} style={[styles.inputTall, labelDependentComputedStyle]} pointerEvents='none' />
-                <Box style={{ flexDirection: "row", position: "absolute", right: 0, bottom: height, left: 0, justifyContent: "space-between", alignItems: "center", height: 45, paddingHorizontal: PALETTE.spacing.m, gap: PALETTE.spacing.m }}>
-                    <Text style={styles.prefixPlaceholder}>{fromLabel}</Text>
-                    <Text style={[styles.inputText, !value.from && styles.datePlaceholder]}> {value.from ? isValid(value.from) && `${format(value.from, "dd/MM/yyyy")}` : "__/__/____"}</Text>
+                {label && <Text style={[styles.label, { color: theme.colors.primary }]}>{label}</Text>}
+                <TextInput
+                    numberOfLines={2}
+                    editable={false}
+                    style={[
+                        styles.input,
+                        {
+                            borderBottomColor: theme.colors.textOnPanel,
+                            backgroundColor: theme.colors.item,
+                            color: theme.colors.fullThemeInverse,
+                        },
+                        labelDependentComputedStyle
+                    ]}
+                    pointerEvents='none'
+                />
+                <Box style={{ flexDirection: "row", position: "absolute", right: 0, bottom: height, left: 0, justifyContent: "space-between", alignItems: "center", height: 45, paddingHorizontal: theme.spacing.m, gap: theme.spacing.m }}>
+                    <Text style={[styles.prefixPlaceholder, { color: chroma(theme.colors.fullThemeInverse).alpha(.4).hex() }]}>{fromLabel}</Text>
+                    <Text
+                        style={[
+                            styles.inputText,
+                            { color: theme.colors.fullThemeInverse },
+                            !value.from && { ...styles.datePlaceholder, color: chroma(theme.colors.fullThemeInverse).alpha(.4).hex() }
+                        ]}
+                    >
+                        {value.from ? isValid(value.from) && `${format(value.from, "dd/MM/yyyy")}` : "__/__/____"}
+                    </Text>
                 </Box>
-                <Box style={{ flexDirection: "row", position: "absolute", right: 0, bottom: 0, left: 0, justifyContent: "space-between", alignItems: "center", height: 45, paddingHorizontal: PALETTE.spacing.m, gap: PALETTE.spacing.m }}>
-                    <Text style={styles.prefixPlaceholder}>{toLabel}</Text>
-                    <Text style={[styles.inputText, !value.to && styles.datePlaceholder]}> {value.to ? isValid(value.to) && `${format(value.to, "dd/MM/yyyy")}` : "__/__/____"}</Text>
+                <Box style={{ flexDirection: "row", position: "absolute", right: 0, bottom: 0, left: 0, justifyContent: "space-between", alignItems: "center", height: 45, paddingHorizontal: theme.spacing.m, gap: theme.spacing.m }}>
+                    <Text style={[styles.prefixPlaceholder, { color: chroma(theme.colors.fullThemeInverse).alpha(.4).hex() }]}>{toLabel}</Text>
+                    <Text
+                        style={[
+                            styles.inputText,
+                            { color: theme.colors.fullThemeInverse },
+                            !value.to && { ...styles.datePlaceholder, color: chroma(theme.colors.fullThemeInverse).alpha(.4).hex() }
+                        ]}
+                    >
+                        {value.to ? isValid(value.to) && `${format(value.to, "dd/MM/yyyy")}` : "__/__/____"}
+                    </Text>
                 </Box>
             </>
         )
-    }, [labelDependentComputedStyle, value])
+    }, [labelDependentComputedStyle, value, theme])
+
+    const outOfBoundAlert = useMemo(() => {
+        if (selectedDate == null || selectedDate.from == null || selectedDate.to == null) return null
+        const diff = differenceInDays(selectedDate.to, selectedDate.from)
+        if (Math.abs(diff) + 1 < minNumberOfDays) {
+            return <Alert variant='warning' icon={IconSVGCode.warning} title={`Selectionnez ${minNumberOfDays} jours au minimum`} />
+        }
+        if (Math.abs(diff) + 1 > maxNumberOfDays) {
+            return <Alert variant='warning' icon={IconSVGCode.warning} title={`Selectionnez ${maxNumberOfDays} jours au maximum`} />
+        }
+        return null
+    }, [selectedDate])
 
     return (
         <>
@@ -222,7 +278,7 @@ export const DateRangePickerField = ({
                     <Box
                         backgroundColor='surface'
                         gap="m"
-                        padding='m'
+                        paddingHorizontal='m'
                         width={{ phone: '90%', tablet: 460 }}
                         zIndex={20}
                         justifyContent='center'
@@ -231,30 +287,29 @@ export const DateRangePickerField = ({
                         flexDirection="column"
                         onLayout={(e) => setModalBodyLayout(e.nativeEvent.layout)}
                     >
-                        <Box style={styles.modalBody}>
-                            <Box style={{ gap: PALETTE.spacing.m }}>
-                                <Box marginVertical='l' marginHorizontal='m' style={{ flexDirection: "row", justifyContent: "space-between", alignItems: "center" }}>
-                                    <Button icon={IconSVGCode.chevron_left} onPress={previousMonth} outline size="s" />
-                                    <CustomText style={{ fontSize: 24, lineHeight: 28, marginTop: 8 }}>{monthLabel}</CustomText>
-                                    <Button icon={IconSVGCode.chevron_right} onPress={nextMonth} outline size="s" />
-                                </Box>
-                                <Box style={{ borderBottomWidth: 1, borderColor: PALETTE.colors.disabled }} />
-                                <Box flexDirection="column" marginHorizontal='s' marginVertical='l' gap='xs' >
-                                    {monthGrid}
-                                </Box>
+                        <Box flexDirection='column' gap='m' padding="s">
+                            <Box marginVertical='l' marginHorizontal='m' style={{ flexDirection: "row", justifyContent: "space-between", alignItems: "center" }}>
+                                <Button icon={IconSVGCode.chevron_left} onPress={previousMonth} outline size="s" />
+                                <CustomText style={{ fontSize: 24, lineHeight: 28, marginTop: 8 }}>{monthLabel}</CustomText>
+                                <Button icon={IconSVGCode.chevron_right} onPress={nextMonth} outline size="s" />
                             </Box>
-                            <Box style={{ flexDirection: "row", justifyContent: "center", alignItems: "center" }}>
+                            <Box style={{ borderBottomWidth: 1, borderColor: theme.colors.textFadded }} />
+                            <Box flexDirection="column" marginHorizontal='s' gap='xs' >
+                                {monthGrid}
+                            </Box>
+                            {outOfBoundAlert}
+                            <Box marginTop='m' style={{ flexDirection: "row", justifyContent: "center", alignItems: "center" }}>
                                 <Box style={{ flex: 1, alignItems: "center" }}>
                                     <Text style={styles.cellText}>{selectedDate.from ? format(selectedDate.from, "dd/MM/yyyy") : "-"}</Text>
                                 </Box>
-                                <IconSVG icon={IconSVGCode.chevron_right} size='normal' />
+                                <IconSVG icon={IconSVGCode.arrow_right} size='normal' />
                                 <Box style={{ flex: 1, alignItems: "center" }}>
                                     <Text style={styles.cellText}>{selectedDate.to ? format(selectedDate.to, "dd/MM/yyyy") : "-"}</Text>
                                 </Box>
                             </Box>
                             <Box flexDirection="row" gap='l' margin='xs' >
                                 <Button style={{ flex: 1 }} onPress={() => setDatePickerOpen(false)} variant='danger' title="Fermer" />
-                                <Button disabled={selectedDate == null} style={{ flex: 1 }} onPress={handleDateValidation} variant='primary' title={selectedDate.from && selectedDate.to ? `Validate ${formatDistance(selectedDate.from, selectedDate.to)}` : "-"} />
+                                <Button style={{ flex: 2 }} disabled={selectedDate == null || outOfBoundAlert != null} onPress={handleDateValidation} variant='primary' title={selectedDate.from && selectedDate.to ? `Validate ${formatDistanceStrict(selectedDate.from, selectedDate.to, { unit: 'day' })}` : "-"} />
                             </Box>
                         </Box>
                     </Box>
@@ -265,27 +320,10 @@ export const DateRangePickerField = ({
 };
 
 const styles = StyleSheet.create({
-    inputTall: {
+    input: {
         height: 80,
         textAlign: "right",
         borderBottomWidth: 2,
-        borderBottomColor: PALETTE.colors.textOnPanel,
-        backgroundColor: PALETTE.colors.item,
-        color: PALETTE.colors.fullThemeInverse,
-        fontFamily: FONTS.A600,
-        fontSize: 18,
-        paddingHorizontal: PALETTE.spacing.m,
-        paddingTop: PALETTE.spacing.m,
-        paddingBottom: PALETTE.spacing.m - 2,
-        borderRadius: 4,
-    },
-    inputWide: {
-        height: 80,
-        textAlign: "right",
-        borderBottomWidth: 2,
-        borderBottomColor: PALETTE.colors.textOnPanel,
-        backgroundColor: PALETTE.colors.item,
-        color: PALETTE.colors.fullThemeInverse,
         fontFamily: FONTS.A600,
         fontSize: 18,
         paddingHorizontal: PALETTE.spacing.m,
@@ -296,7 +334,6 @@ const styles = StyleSheet.create({
     label: {
         position: "absolute",
         fontFamily: FONTS.A700,
-        color: PALETTE.colors.primary,
         zIndex: 1000,
         top: PALETTE.spacing.s + 2,
         left: PALETTE.spacing.s,
@@ -304,25 +341,21 @@ const styles = StyleSheet.create({
     inputText: {
         fontSize: 18,
         lineHeight: 18,
-        color: PALETTE.colors.fullThemeInverse,
         fontFamily: FONTS.A600,
     },
     prefixPlaceholder: {
         fontFamily: FONTS.A600,
         fontSize: 16,
         lineHeight: 16,
-        color: chroma(PALETTE.colors.fullThemeInverse).alpha(.4).hex()
     },
     datePlaceholder: {
         letterSpacing: .8,
         fontSize: 18,
         lineHeight: 18,
-        color: chroma(PALETTE.colors.fullThemeInverse).alpha(.4).hex()
     },
     blur: {
         height: "100%",
         width: "100%",
-        backgroundColor: "#000c",
         display: "flex",
         alignItems: "center",
         justifyContent: "center"
@@ -335,37 +368,9 @@ const styles = StyleSheet.create({
     cellText: {
         fontFamily: FONTS.A500,
         fontSize: 18,
-        color: PALETTE.colors.textOnSurface
-    },
-    offSelectedMonthText: {
-        color: PALETTE.colors.disabled
-    },
-    selectedDate: {
-        backgroundColor: PALETTE.colors.primary
-    },
-    selectedDateText: {
-        color: PALETTE.colors.textOnPrimary
-    },
-    today: {
-        backgroundColor: chroma(PALETTE.colors.warning).alpha(.1).hex()
-    },
-    todayText: {
-        color: PALETTE.colors.warning
-    },
-    inRangeSelected: {
-        backgroundColor: chroma(PALETTE.colors.primary).alpha(.1).hex()
-    },
-    inRangeSelectedText: {
-        color: PALETTE.colors.primary
     },
     forbiddenText: {
-        color: chroma(PALETTE.colors.danger).alpha(.45).hex(),
         textDecorationLine: "line-through"
-    },
-    title: {
-        color: PALETTE.colors.textOnSurface,
-        fontFamily: FONTS.A600,
-        fontSize: 16
     },
     dimmer: {
         position: "absolute",
@@ -373,18 +378,9 @@ const styles = StyleSheet.create({
         bottom: 0,
         right: 0,
         left: 0,
-        zIndex: 10
-    },
-    modal: {
         backgroundColor: "#000c",
-    },
-    modalBody: {
-        flexDirection: "column",
-        gap: PALETTE.spacing.l,
-        backgroundColor: PALETTE.colors.surface,
-        padding: PALETTE.spacing.s,
-        borderRadius: 8
-    },
+        zIndex: 10
+    }
 });
 
 export default DateRangePickerField;
