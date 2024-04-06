@@ -1,6 +1,7 @@
 import React, { createContext, useRef, useState } from "react"
 import { LayoutRectangle } from "react-native"
 import { GestureUpdateEvent, PanGestureHandlerEventPayload } from "react-native-gesture-handler"
+import { IconSVGCode } from "../IconSVG"
 
 type DnDContext = {
     registeredDroppableAreas: RegisteredDroppable[]
@@ -24,6 +25,7 @@ export type Place = {
 export type Item = {
     label: string,
     color: string
+    icon: IconSVGCode
 }
 
 export const DnDContext = createContext<DnDContext>({
@@ -41,6 +43,7 @@ export const DnDProvider = ({ children }: Props) => {
     const [draggedAbsoluteCoordinates, setDraggedAbsoluteCoordinates] = useState<{ top: number, left: number, height: number, width: number } | null>(null)
 
     const registerDroppableArea = (id: string, lr: { width: number, height: number, pageX: number, pageY: number }) => {
+        console.log('register' + id)
         let tmp: RegisteredDroppable[] = JSON.parse(JSON.stringify(registeredDroppableAreas.current)).filter(x => x.id != id)
         tmp.push({ id, layout: lr })
         registeredDroppableAreas.current = tmp

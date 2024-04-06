@@ -2,18 +2,21 @@ import { Gesture, GestureDetector, GestureUpdateEvent, PanGestureHandlerEventPay
 import Animated, { runOnJS, useAnimatedStyle, useSharedValue, withSpring } from "react-native-reanimated";
 import Item from "./Item";
 import { DnDContext, Item as ItemType } from "../../contexts/DragAndDropContext";
-import { useContext, useRef, useState } from "react";
-import { LayoutChangeEvent } from "react-native";
+import React, { useContext, useRef, useState } from "react";
+import { LayoutChangeEvent, Pressable } from "react-native";
+import { useTheme } from "@shopify/restyle";
+import { Theme } from "../../Palette";
 
 type Props = {
     item: ItemType
-    handleItemAffectation: (placeId: string, itemId: string | null) => void
+    children: React.JSX.Element
+    handleItemAffectation: (placeId: string, itemId: string | null, droppableId: string | null) => void
+    droppableId: string
 }
 
-const Draggable = ({ item, handleItemAffectation }: Props) => {
+const Draggable = ({ children, handleItemAffectation, item, droppableId }: Props) => {
 
-    const LONG_PRESS_DELAY = 300;
-
+    const theme = useTheme<Theme>()
     const ref = useRef<Animated.View>();
 
     const [absoluteCoordinate, setAbsoluteCoordinate] = useState<{ top: number, left: number, height: number, width: number } | null>(null)
@@ -22,9 +25,13 @@ const Draggable = ({ item, handleItemAffectation }: Props) => {
 
     const translateX = useSharedValue(0);
     const translateY = useSharedValue(0);
+    const shadowOpacity = useSharedValue(0);
     const scale = useSharedValue(1);
     const cursor = useSharedValue('grab');
     const opacity = useSharedValue(1);
+
+    const MAGNET_SPRING_OPTIONS = { duration: 400, dampingRatio: .8 }
+    const FALLBACK_SPRING_OPTIONS = { duration: 800, dampingRatio: .8 }
 
     const handleLayout = (e: LayoutChangeEvent) => {
         if (ref.current) {
@@ -42,32 +49,25 @@ const Draggable = ({ item, handleItemAffectation }: Props) => {
     const magnetize = (e: GestureUpdateEvent<PanGestureHandlerEventPayload>) => {
         const magnet = droppableMagnetism(e)
         if (magnet != null) {
-            translateY.value = withSpring(magnet.y - (absoluteCoordinate.height / 2), { duration: 600 })
-            translateX.value = withSpring(magnet.x - (absoluteCoordinate.width / 2), { duration: 600 })
+            translateY.value = withSpring(magnet.y - (absoluteCoordinate.height / 2), MAGNET_SPRING_OPTIONS)
+            translateX.value = withSpring(magnet.x - (absoluteCoordinate.width / 2), MAGNET_SPRING_OPTIONS)
         } else {
-            translateY.value = withSpring(e.translationY, { duration: 300 })
-            translateX.value = withSpring(e.translationX, { duration: 300 })
+            translateY.value = withSpring(e.translationY, MAGNET_SPRING_OPTIONS)
+            translateX.value = withSpring(e.translationX, MAGNET_SPRING_OPTIONS)
         }
     }
 
-    const magnetizeAndAffect = (e: GestureUpdateEvent<PanGestureHandlerEventPayload>) => {
-        const magnet = droppableMagnetism(e)
-        if (magnet != null) {
-            handleItemAffectation(magnet.id, item.label)
-        } else {
-            translateY.value = withSpring(e.translationY, { duration: 300 })
-            translateX.value = withSpring(e.translationX, { duration: 300 })
-        }
+    const cancelDrag = (e: GestureUpdateEvent<PanGestureHandlerEventPayload>) => {
+        translateY.value = 0
+        translateX.value = 0
     }
 
-    const magnetizeAndCancel = (e: GestureUpdateEvent<PanGestureHandlerEventPayload>) => {
+    const onDragEnd = (e: GestureUpdateEvent<PanGestureHandlerEventPayload>) => {
         const magnet = droppableMagnetism(e)
         if (magnet != null) {
-            translateY.value = 0
-            translateX.value = 0
+            handleItemAffectation(magnet.id, item.label, droppableId ?? null)
         } else {
-            translateY.value = withSpring(0, { duration: 700 })
-            translateX.value = withSpring(0, { duration: 700 })
+            handleItemAffectation(null, item.label, droppableId ?? null)
         }
     }
 
@@ -75,18 +75,21 @@ const Draggable = ({ item, handleItemAffectation }: Props) => {
         cursor.value = 'grabbing';
         opacity.value = .6;
         runOnJS(setDraggedAbsoluteCoordinates)({ top: absoluteCoordinate.top, left: absoluteCoordinate.left, height: absoluteCoordinate.height, width: absoluteCoordinate.width })
-    }).activateAfterLongPress(LONG_PRESS_DELAY).onStart((e) => {
+    }).onStart((e) => {
         scale.value = 1.1;
+        shadowOpacity.value = .25;
         opacity.value = 1;
     }).onUpdate((e) => {
         runOnJS(magnetize)(e)
     }).onEnd((e) => {
-        runOnJS(magnetizeAndAffect)(e)
-        scale.value = 1
+        runOnJS(onDragEnd)(e)
+        scale.value = 1;
+        shadowOpacity.value = 0;
     }).onFinalize((e) => {
-        runOnJS(magnetizeAndCancel)(e)
+        runOnJS(cancelDrag)(e)
+        scale.value = 1;
         cursor.value = 'grab'
-        scale.value = 1
+        shadowOpacity.value = 0;
         opacity.value = 1
     });
 
@@ -98,14 +101,18 @@ const Draggable = ({ item, handleItemAffectation }: Props) => {
                 { scale: scale.value },
             ],
             cursor: cursor.value,
-            opacity: opacity.value
+            opacity: opacity.value,
+            ...theme.shadow,
+            shadowOpacity: shadowOpacity.value,
         };
     });
 
     return (
         <GestureDetector gesture={pan}>
-            <Animated.View ref={ref} onLayout={e => handleLayout(e)} style={[{ position: "relative", zIndex: 1000000 }, itemStyle]}>
-                <Item item={item} />
+            <Animated.View ref={ref} onLayout={e => handleLayout(e)} style={[{ position: "relative", zIndex: 10000000 }, itemStyle]}>
+                <Pressable onPress={(e) => { console.log('hey') }}>
+                    {children}
+                </Pressable>
             </Animated.View>
         </GestureDetector>
     )

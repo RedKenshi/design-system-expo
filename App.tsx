@@ -67,7 +67,7 @@ export default function App() {
 
   const getButtonPage = () => {
     return (
-      <ScrollView horizontal={false} automaticallyAdjustKeyboardInsets style={[{ width: "100%" }]} >
+      <ScrollView horizontal={false} scrollEnabled={true} automaticallyAdjustKeyboardInsets style={[{ width: "100%", height: '100%' }]} >
         <Box style={[styles.container]} onLayout={onLayoutRootView} backgroundColor='background'>
           <Buttons />
         </Box>
@@ -76,7 +76,7 @@ export default function App() {
   }
   const getTypoPage = () => {
     return (
-      <ScrollView horizontal={false} automaticallyAdjustKeyboardInsets style={[{ width: "100%" }]} >
+      <ScrollView horizontal={false} scrollEnabled={true} automaticallyAdjustKeyboardInsets style={[{ width: "100%", height: '100%' }]} >
         <Box style={[styles.container]} onLayout={onLayoutRootView} backgroundColor='background'>
           <Typos />
         </Box>
@@ -85,7 +85,7 @@ export default function App() {
   }
   const getInputsPage = () => {
     return (
-      <ScrollView horizontal={false} automaticallyAdjustKeyboardInsets style={[{ width: "100%" }]} >
+      <ScrollView horizontal={false} scrollEnabled={true} automaticallyAdjustKeyboardInsets style={[{ width: "100%", height: '100%' }]} >
         <Box style={[styles.container]} onLayout={onLayoutRootView} backgroundColor='background'>
           <Inputs />
         </Box>
@@ -94,7 +94,7 @@ export default function App() {
   }
   const getTicketPage = () => {
     return (
-      <ScrollView horizontal={false} automaticallyAdjustKeyboardInsets style={[{ width: "100%" }]} >
+      <ScrollView horizontal={false} scrollEnabled={true} automaticallyAdjustKeyboardInsets style={[{ width: "100%", height: '100%' }]} >
         <Box style={[styles.container]} onLayout={onLayoutRootView} backgroundColor='background'>
           <Tickets />
         </Box>
@@ -103,8 +103,8 @@ export default function App() {
   }
   const getDndPage = () => {
     return (
-      <ScrollView scrollEnabled={false} horizontal={false} automaticallyAdjustKeyboardInsets style={[{ width: "100%" }]} contentContainerStyle={{ height: "100%" }} >
-        <Box style={styles.container} onLayout={onLayoutRootView} backgroundColor='background'>
+      <ScrollView horizontal={false} scrollEnabled={false} automaticallyAdjustKeyboardInsets style={[{ width: "100%", height: '100%' }]} contentContainerStyle={{ height: '100%' }} >
+        <Box style={[styles.container, { height: '100%' }]} onLayout={onLayoutRootView} backgroundColor='background'>
           <Dnd />
         </Box>
       </ScrollView>

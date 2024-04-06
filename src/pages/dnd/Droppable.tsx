@@ -1,16 +1,14 @@
-import { useTheme } from "@shopify/restyle";
-import { FONTS, Theme } from "../../Palette";
 import { LayoutChangeEvent, View } from "react-native";
-import Item from "./Item";
 import { DnDContext, Place as PlaceType } from "../../contexts/DragAndDropContext";
-import { useContext, useEffect, useMemo, useRef } from "react";
-import Place from "./Place";
+import React, { useContext, useEffect, useRef } from "react";
 
 type Props = {
     place: PlaceType
+    id: string
+    children: React.JSX.Element
 }
 
-const Droppable = ({ place }: Props) => {
+const Droppable = ({ children, id, place }: Props) => {
 
     const ref = useRef<View>();
     const { registerDroppableArea, unregisterDroppableAreaById } = useContext(DnDContext);
@@ -29,22 +27,12 @@ const Droppable = ({ place }: Props) => {
         }
     }
 
-    const droppableContent = useMemo(() => {
-        if (place.item != null) {
-            return <Item item={place.item} />
-        } else {
-            return (
-                <Place place={place} />
-            )
-        }
-    }, [place.item])
-
     return (
         <View
             ref={ref}
             onLayout={e => handleLayout(e)}
         >
-            {droppableContent}
+            {React.cloneElement(children, { droppableId: id })}
         </View>
     )
 }
