@@ -9,6 +9,7 @@ interface Props {
     value: string,
     title?: string;
     handleChange: (e: string) => void;
+    defaultValue?: string
     isActive?: boolean
     isSuccess?: boolean
     isError?: boolean
@@ -19,6 +20,7 @@ export const TextFormRow = ({
     value,
     title,
     handleChange,
+    defaultValue,
     isActive,
     isSuccess,
     isError,
@@ -29,7 +31,7 @@ export const TextFormRow = ({
     return (
         <View style={styles.rowWrapper}>
             <Text style={[styles.title, { color: theme.colors.textOnSurface }]} >{title}</Text>
-            <CustomTextField value={value} isActive={isActive} isSuccess={isSuccess} isError={isError} isWarning={isWarning} handleChange={handleChange} />
+            <CustomTextField defaultValue={defaultValue} value={value} isActive={isActive} isSuccess={isSuccess} isError={isError} isWarning={isWarning} handleChange={handleChange} />
         </View>
     );
 };

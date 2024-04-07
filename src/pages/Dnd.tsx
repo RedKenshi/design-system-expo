@@ -49,11 +49,11 @@ export const Dnd = ({ }: Props) => {
 
     const handleItemAffectation = (placeId: string | null, itemId: string | null, droppableId: string) => {
         let tmp = JSON.parse(JSON.stringify(places))
-        if (placeId) {
-            tmp[tmp.findIndex(x => x.label == placeId)].item = JSON.parse(JSON.stringify(items.find(x => x.label == itemId)))
-        }
         if (droppableId) {
             tmp[tmp.findIndex(x => `bar${x.label - 1}` == droppableId)].item = null
+        }
+        if (placeId) {
+            tmp[tmp.findIndex(x => x.label == placeId)].item = JSON.parse(JSON.stringify(items.find(x => x.label == itemId)))
         }
         setPlaces(tmp)
     }
@@ -67,7 +67,7 @@ export const Dnd = ({ }: Props) => {
                         <FlatList numColumns={windowWidth > theme.breakpoints.largeTablet ? 3 : 2} data={items} style={{ overflow: "visible" }} contentContainerStyle={{ zIndex: 10000, gap: 16 }} columnWrapperStyle={{ justifyContent: "space-evenly" }} renderItem={({ item, index }) => {
                             return (
                                 <Droppable key={`available${index}`} place={item}>
-                                    <Draggable item={item} collection={''} handleItemAffectation={handleItemAffectation} key={`item${index}`} >
+                                    <Draggable item={item} handleItemAffectation={handleItemAffectation} key={`item${index}`} >
                                         <Item item={item} />
                                     </Draggable>
                                 </Droppable>

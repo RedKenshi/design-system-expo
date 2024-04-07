@@ -33,6 +33,7 @@ export const Menu = ({ page, setPage, closeDrawer }: Props) => {
             <LI setPage={setPage} title={"Inputs"} page={"inputs"} selected={"inputs" == page} icon={IconSVGCode.cursori} pro />
             <LI setPage={setPage} title={"Tickets"} page={"ticket"} selected={"ticket" == page} icon={IconSVGCode.tmpTicket} pro />
             <LI setPage={setPage} title={"Dnd"} page={"dnd"} selected={"dnd" == page} icon={IconSVGCode.drag_handle} pro />
+            <LI setPage={setPage} title={"Printer"} page={"printer"} selected={"printer" == page} icon={IconSVGCode.printer} pro />
             <Box flex={1} />
         </Box>
     )

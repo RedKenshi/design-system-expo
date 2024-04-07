@@ -16,9 +16,10 @@ import Box from './src/components/Box';
 import Typos from './src/pages/Typos';
 import Inputs from './src/pages/Inputs';
 import Tickets from './src/pages/Tickets';
+import Printer from './src/pages/Printer';
 import Dnd from './src/pages/Dnd';
 import { DnDProvider } from './src/contexts/DragAndDropContext';
-export type Pages = 'button' | 'typo' | 'inputs' | 'ticket' | 'dnd';
+export type Pages = 'button' | 'typo' | 'inputs' | 'ticket' | 'dnd' | 'printer';
 
 SplashScreen.preventAutoHideAsync();
 
@@ -110,6 +111,15 @@ export default function App() {
       </ScrollView>
     )
   }
+  const getPrinterPage = () => {
+    return (
+      <ScrollView horizontal={false} scrollEnabled={true} automaticallyAdjustKeyboardInsets style={[{ width: "100%", height: '100%' }]} >
+        <Box style={[styles.container, { height: '100%' }]} onLayout={onLayoutRootView} backgroundColor='background'>
+          <Printer />
+        </Box>
+      </ScrollView>
+    )
+  }
 
   const pageBody = useMemo(() => {
     switch (page) {
@@ -123,6 +133,8 @@ export default function App() {
         return getTicketPage()
       case 'dnd':
         return getDndPage()
+      case 'printer':
+        return getPrinterPage()
     }
   }, [page])
 

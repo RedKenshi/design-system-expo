@@ -1,7 +1,7 @@
 import { useTheme } from "@shopify/restyle";
 import { FONTS, Theme } from "../../Palette";
 import Box from "../../components/Box";
-import { Text } from "react-native";
+import { Text, View } from "react-native";
 import chroma from 'chroma-js'
 import { Place as PlaceType } from "../../contexts/DragAndDropContext";
 import Draggable from "./Draggable";
@@ -9,7 +9,7 @@ import Item from "./Item";
 
 type Props = {
     place: PlaceType
-    handleItemAffectation: (placeId: string, itemId: string | null) => void
+    handleItemAffectation: (placeId: string, itemId: string | null, droppableId: string) => void
     droppableId?: string
 }
 
@@ -17,17 +17,13 @@ const Place = ({ place, handleItemAffectation, droppableId }: Props) => {
 
     const theme = useTheme<Theme>();
 
-    if (place.item != null) {
-        return (
-            <Draggable item={place.item} collection={''} droppableId={droppableId} handleItemAffectation={handleItemAffectation} >
-                <Item item={place.item} />
-            </Draggable>
-        )
-    } else {
-        return (
+
+    return (
+        <>
             <Box
                 style={[
                     {
+                        position: "relative",
                         height: 80,
                         width: 112,
                         backgroundColor: chroma(theme.colors.primary).alpha(.25).hex(),
@@ -40,12 +36,19 @@ const Place = ({ place, handleItemAffectation, droppableId }: Props) => {
                     }
                 ]}
             >
-                <Box style={{}}>
+                <Box style={{ position: "relative", zIndex: 80 }}>
                     <Text style={{ fontSize: 28, fontFamily: FONTS.A700, color: theme.colors.textOnPrimary }}>{place.label.toUpperCase()}</Text>
                 </Box>
+                {place.item != null &&
+                    <View style={{ position: "absolute", zIndex: 100 }}>
+                        <Draggable item={place.item} droppableId={droppableId} handleItemAffectation={handleItemAffectation} >
+                            <Item item={place.item} />
+                        </Draggable>
+                    </View>
+                }
             </Box>
-        )
-    }
+        </>
+    )
 }
 
 export default Place
