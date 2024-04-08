@@ -21,7 +21,7 @@ const Draggable = ({ children, handleItemAffectation, item, droppableId }: Props
 
     const [absoluteCoordinate, setAbsoluteCoordinate] = useState<{ top: number, left: number, height: number, width: number } | null>(null)
 
-    const { droppableMagnetism, setDraggedAbsoluteCoordinates, } = useContext(DnDContext)
+    const { droppableMagnetism, setDraggedAbsoluteCoordinates, setDraggedFromDroppableId } = useContext(DnDContext)
 
     const translateX = useSharedValue(0);
     const translateY = useSharedValue(0);
@@ -74,6 +74,7 @@ const Draggable = ({ children, handleItemAffectation, item, droppableId }: Props
     const pan = Gesture.Pan().onBegin((e) => {
         cursor.value = 'grabbing';
         opacity.value = .6;
+        runOnJS(setDraggedFromDroppableId)(droppableId)
         runOnJS(setDraggedAbsoluteCoordinates)({ top: absoluteCoordinate.top, left: absoluteCoordinate.left, height: absoluteCoordinate.height, width: absoluteCoordinate.width })
     }).onStart((e) => {
         scale.value = 1.1;
@@ -87,6 +88,7 @@ const Draggable = ({ children, handleItemAffectation, item, droppableId }: Props
         shadowOpacity.value = 0;
     }).onFinalize((e) => {
         runOnJS(cancelDrag)(e)
+        runOnJS(setDraggedFromDroppableId)(null)
         scale.value = 1;
         cursor.value = 'grab'
         shadowOpacity.value = 0;
@@ -110,9 +112,7 @@ const Draggable = ({ children, handleItemAffectation, item, droppableId }: Props
     return (
         <GestureDetector gesture={pan}>
             <Animated.View ref={ref} onLayout={e => handleLayout(e)} style={[{ position: "relative", zIndex: 10000000 }, itemStyle]}>
-                <Pressable onPress={(e) => { console.log('hey') }}>
-                    {children}
-                </Pressable>
+                {children}
             </Animated.View>
         </GestureDetector>
     )

@@ -1,9 +1,6 @@
-import { Alert, FlatList, View, ViewStyle } from "react-native"
-import { Side } from "../components/TicketView"
-import { Ticket } from "../components/Ticket"
+import { FlatList, ViewStyle } from "react-native"
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Theme } from "../Palette"
-import Header from "../components/Header"
 
 import Box from "../components/Box"
 import PageBlock from "../components/PageBlock"
@@ -13,8 +10,13 @@ import { useState } from "react";
 import CustomTextField from "../components/inputs/CustomTextField";
 import Button from "../components/Button";
 import { IconSVGCode } from "../IconSVG";
-import axios from "axios";
+import EscPosPrinter, { usePrintersDiscovery, } from "react-native-esc-pos-printer";
+import { PrinterSeriesName } from "react-native-esc-pos-printer/lib/typescript/src/types";
+import { triggerPrint } from "./printer/Printer";
 
+import productLines from "./printer/fakeData.json"
+
+export type ProductLine = typeof productLines[0]
 type Props = {}
 
 export const Printer = ({ }: Props) => {
@@ -27,22 +29,43 @@ export const Printer = ({ }: Props) => {
         paddingRight: insets.right + theme.spacing.m,
     } as ViewStyle
 
-    const [ipPrinter, setIpPrinter] = useState<string>('192.168.1.69')
+    const [ipPrinter, setIpPrinter] = useState<string>('192.168.1.218')
+    const [printing, setPrinting] = useState(false);
+    const [init, setInit] = useState(false);
 
-    const [discovering, setDiscovering] = useState(false);
+    const printSimpleReceipt = async () => {
 
+        const printerTmp = {
+            target: `TCP:${ipPrinter}`,
+            seriesName: "EPOS2_TM_M30II" as PrinterSeriesName,
+            language: 'EPOS2_LANG_EN',
+        }
 
-    const triggerPrint = () => {
-
-    }
+        if (!init) {
+            await EscPosPrinter.init({
+                target: printerTmp.target,
+                seriesName: printerTmp.seriesName,
+                language: 'EPOS2_LANG_EN',
+            });
+            setInit(true);
+        }
+        try {
+            setPrinting(true);
+            await triggerPrint(productLines);
+        } catch (e) {
+            console.log('Print error', e);
+        } finally {
+            setPrinting(false);
+        }
+    };
 
     return (
         <>
             <PageBlock style={{ display: "flex", alignSelf: "stretch", justifyContent: "flex-start", alignItems: "flex-start", flexDirection: 'row', height: "100%" }} >
-                <Box marginHorizontal={{ tablet: 'l' }} alignItems="flex-start" style={[padding, { width: "100%", paddingBottom: "50%" }]} >
+                <Box marginHorizontal={{ tablet: 'l' }} alignItems="flex-start" style={[padding, { width: "100%", paddingBottom: "25%" }]} >
                     <Panel style={{ display: 'flex', flexDirection: "column", gap: theme.spacing.m, width: '100%' }}>
                         <CustomTextField value={ipPrinter} handleChange={setIpPrinter} />
-                        <Button title="PRINT" icon={IconSVGCode.printer} onPress={triggerPrint} />
+                        <Button loading={printing} title="PRINT" icon={IconSVGCode.printer} onPress={printSimpleReceipt} />
                     </Panel>
                 </Box>
                 <FlatList data={[]} renderItem={({ item, index }) => {

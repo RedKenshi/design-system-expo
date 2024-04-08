@@ -11,7 +11,7 @@ type Props = {
 const Droppable = ({ children, id, place }: Props) => {
 
     const ref = useRef<View>();
-    const { registerDroppableArea, unregisterDroppableAreaById } = useContext(DnDContext);
+    const { registerDroppableArea, unregisterDroppableAreaById, draggedFromDroppableId } = useContext(DnDContext);
 
     useEffect(() => {
         return () => {
@@ -29,6 +29,7 @@ const Droppable = ({ children, id, place }: Props) => {
 
     return (
         <View
+            style={{ zIndex: draggedFromDroppableId == id ? 10000 : 8000 }}
             ref={ref}
             onLayout={e => handleLayout(e)}
         >

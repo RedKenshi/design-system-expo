@@ -300,11 +300,11 @@ export const DateRangePickerField = ({
                             {outOfBoundAlert}
                             <Box marginTop='m' style={{ flexDirection: "row", justifyContent: "center", alignItems: "center" }}>
                                 <Box style={{ flex: 1, alignItems: "center" }}>
-                                    <Text style={styles.cellText}>{selectedDate.from ? format(selectedDate.from, "dd/MM/yyyy") : "-"}</Text>
+                                    <Text style={[styles.cellText, { color: theme.colors.fullThemeInverse }]}>{selectedDate.from ? format(selectedDate.from, "dd/MM/yyyy") : "-"}</Text>
                                 </Box>
                                 <IconSVG icon={IconSVGCode.arrow_right} size='normal' />
                                 <Box style={{ flex: 1, alignItems: "center" }}>
-                                    <Text style={styles.cellText}>{selectedDate.to ? format(selectedDate.to, "dd/MM/yyyy") : "-"}</Text>
+                                    <Text style={[styles.cellText, { color: theme.colors.fullThemeInverse }]}>{selectedDate.to ? format(selectedDate.to, "dd/MM/yyyy") : "-"}</Text>
                                 </Box>
                             </Box>
                             <Box flexDirection="row" gap='l' margin='xs' >

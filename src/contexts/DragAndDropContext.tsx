@@ -1,5 +1,4 @@
-import React, { createContext, useRef, useState } from "react"
-import { LayoutRectangle } from "react-native"
+import React, { createContext, useEffect, useRef, useState } from "react"
 import { GestureUpdateEvent, PanGestureHandlerEventPayload } from "react-native-gesture-handler"
 import { IconSVGCode } from "../IconSVG"
 
@@ -10,6 +9,8 @@ type DnDContext = {
     droppableMagnetism: (e: GestureUpdateEvent<PanGestureHandlerEventPayload>) => { id: string, x: number, y: number },
     draggedAbsoluteCoordinates: { top: number, left: number },
     setDraggedAbsoluteCoordinates: (params: { top: number, left: number, height: number, width: number }) => void
+    draggedFromDroppableId: string | null
+    setDraggedFromDroppableId: (id: string) => void
 }
 type RegisteredDroppable = {
     id: string
@@ -34,16 +35,18 @@ export const DnDContext = createContext<DnDContext>({
     unregisterDroppableAreaById: undefined,
     droppableMagnetism: undefined,
     draggedAbsoluteCoordinates: undefined,
-    setDraggedAbsoluteCoordinates: undefined
+    setDraggedAbsoluteCoordinates: undefined,
+    draggedFromDroppableId: null,
+    setDraggedFromDroppableId: (id: string) => { }
 })
 
 export const DnDProvider = ({ children }: Props) => {
 
     const registeredDroppableAreas = useRef<RegisteredDroppable[]>([])
+    const [draggedFromDroppableId, setDraggedFromDroppableId] = useState<string | null>(null)
     const [draggedAbsoluteCoordinates, setDraggedAbsoluteCoordinates] = useState<{ top: number, left: number, height: number, width: number } | null>(null)
 
     const registerDroppableArea = (id: string, lr: { width: number, height: number, pageX: number, pageY: number }) => {
-        console.log('register' + id)
         let tmp: RegisteredDroppable[] = JSON.parse(JSON.stringify(registeredDroppableAreas.current)).filter(x => x.id != id)
         tmp.push({ id, layout: lr })
         registeredDroppableAreas.current = tmp
@@ -89,7 +92,9 @@ export const DnDProvider = ({ children }: Props) => {
         unregisterDroppableAreaById,
         droppableMagnetism,
         draggedAbsoluteCoordinates,
-        setDraggedAbsoluteCoordinates
+        setDraggedAbsoluteCoordinates,
+        draggedFromDroppableId,
+        setDraggedFromDroppableId
     }
 
     return (

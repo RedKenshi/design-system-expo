@@ -1,0 +1,82 @@
+[
+    {
+        "label": "Ergonomic Granite Fish",
+        "quantity": 1,
+        "priceInclTaxUnit": 55,
+        "priceExclTaxUnit": 49.5,
+        "totalPriceInclTax": 55,
+        "totalPriceExclTax": 49.5,
+        "totalTaxAmount": 5.5,
+        "VAT": 0.1
+    },
+    {
+        "label": "Small Cotton Chicken",
+        "quantity": 3,
+        "priceInclTaxUnit": 37,
+        "priceExclTaxUnit": 33.3,
+        "totalPriceInclTax": 111,
+        "totalPriceExclTax": 99.9,
+        "totalTaxAmount": 11.1,
+        "VAT": 0.1
+    },
+    {
+        "label": "Licensed Plastic Shoes",
+        "quantity": 2,
+        "priceInclTaxUnit": 58,
+        "priceExclTaxUnit": 46.4,
+        "totalPriceInclTax": 116,
+        "totalPriceExclTax": 92.8,
+        "totalTaxAmount": 23.2,
+        "VAT": 0.2
+    },
+    {
+        "label": "Small Wooden Chips",
+        "quantity": 4,
+        "priceInclTaxUnit": 41,
+        "priceExclTaxUnit": 38.745,
+        "totalPriceInclTax": 164,
+        "totalPriceExclTax": 154.98,
+        "totalTaxAmount": 9.02,
+        "VAT": 0.055
+    },
+    {
+        "label": "Ergonomic Bronze Chips",
+        "quantity": 8,
+        "priceInclTaxUnit": 20,
+        "priceExclTaxUnit": 16,
+        "totalPriceInclTax": 160,
+        "totalPriceExclTax": 128,
+        "totalTaxAmount": 32,
+        "VAT": 0.2
+    },
+    {
+        "label": "Fantastic Steel Car",
+        "quantity": 4,
+        "priceInclTaxUnit": 34,
+        "priceExclTaxUnit": 32.13,
+        "totalPriceInclTax": 136,
+        "totalPriceExclTax": 128.52,
+        "totalTaxAmount": 7.48,
+        "VAT": 0.055
+    },
+    {
+        "label": "Practical Plastic Shoes",
+        "quantity": 5,
+        "priceInclTaxUnit": 42,
+        "priceExclTaxUnit": 37.8,
+        "totalPriceInclTax": 210,
+        "totalPriceExclTax": 189,
+        "totalTaxAmount": 21,
+        "VAT": 0.1
+    },
+    {
+        "label": "Modern Plastic Chicken",
+        "quantity": 4,
+        "priceInclTaxUnit": 50,
+        "priceExclTaxUnit": 47.25,
+        "totalPriceInclTax": 200,
+        "totalPriceExclTax": 189,
+        "totalTaxAmount": 11,
+        "VAT": 0.055
+    }
+]
