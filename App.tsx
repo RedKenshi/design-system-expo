@@ -28,7 +28,7 @@ export default function App() {
   const [darkMode, setDarkMode] = useState<boolean>(false)
   const [open, setOpen] = useState(false);
   const [paletteDark, setPaletteDark] = useState(true);
-  const [page, setPage] = useState<Pages>('dnd')
+  const [page, setPage] = useState<Pages>('printer')
 
   useEffect(() => {
     if (open) setPaletteDark(true)

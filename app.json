@@ -45,7 +45,14 @@
     ],
     "ios": {
       "supportsTablet": true,
-      "bundleIdentifier": "com.redkenshi.designsystem"
+      "bundleIdentifier": "com.redkenshi.designsystem",
+      "infoPlist": {
+        "NSBluetoothAlwaysUsageDescription": "Use this to communicate with the printer.",
+        "NSLocalNetworkUsageDescription": "Use this to says Bonjour to the printer.",
+        "UISupportedExternalAccessoryProtocols": [
+          "com.epson.escpos"
+        ]
+      },
     },
     "android": {
       "adaptiveIcon": {
