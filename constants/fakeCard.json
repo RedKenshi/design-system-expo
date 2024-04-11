@@ -1,0 +1,380 @@
+[
+    {
+        "id": "cat1",
+        "name": "Viandes",
+        "products": [
+            {
+                "id": "Via1",
+                "label": "Filet Mignon de Boeuf Grillé",
+                "priceExclTaxUnit": 24.99,
+                "VAT": 0.1
+            },
+            {
+                "id": "Via2",
+                "label": "Côtelette d'Agneau aux Herbes",
+                "priceExclTaxUnit": 22.50,
+                "VAT": 0.2
+            },
+            {
+                "id": "Via3",
+                "label": "Magret de Canard au Poivre Vert",
+                "priceExclTaxUnit": 18.75,
+                "VAT": 0.1
+            },
+            {
+                "id": "Via4",
+                "label": "Escalope de Veau Milanaise",
+                "priceExclTaxUnit": 16.80,
+                "VAT": 0.055
+            },
+            {
+                "id": "Via5",
+                "label": "Brochette de Poulet Teriyaki",
+                "priceExclTaxUnit": 14.99,
+                "VAT": 0.1
+            },
+            {
+                "id": "Via6",
+                "label": "Tournedos Rossini",
+                "priceExclTaxUnit": 28.50,
+                "VAT": 0.2
+            },
+            {
+                "id": "Via7",
+                "label": "Ribs de Porc Grillés",
+                "priceExclTaxUnit": 19.95,
+                "VAT": 0.055
+            },
+            {
+                "id": "Via8",
+                "label": "Steak Tartare Classique",
+                "priceExclTaxUnit": 21.25,
+                "VAT": 0.1
+            }
+        ]
+    },
+    {
+        "id": "cat2",
+        "name": "Poissons",
+        "products": [
+            {
+                "id": "Poi1",
+                "label": "Saumon Grillé à la Citronnelle",
+                "priceExclTaxUnit": 20.99,
+                "VAT": 0.1
+            },
+            {
+                "id": "Poi2",
+                "label": "Filet de Bar en Croûte d'Amandes",
+                "priceExclTaxUnit": 23.50,
+                "VAT": 0.2
+            },
+            {
+                "id": "Poi3",
+                "label": "Crevettes Sautées à l'Ail",
+                "priceExclTaxUnit": 18.75,
+                "VAT": 0.1
+            },
+            {
+                "id": "Poi4",
+                "label": "Cabillaud au Beurre Blanc",
+                "priceExclTaxUnit": 16.80,
+                "VAT": 0.055
+            },
+            {
+                "id": "Poi5",
+                "label": "Risotto aux Fruits de Mer",
+                "priceExclTaxUnit": 14.99,
+                "VAT": 0.1
+            },
+            {
+                "id": "Poi6",
+                "label": "Brochette de Thon Teriyaki",
+                "priceExclTaxUnit": 26.50,
+                "VAT": 0.2
+            },
+            {
+                "id": "Poi7",
+                "label": "Calamars Grillés à la Provençale",
+                "priceExclTaxUnit": 19.95,
+                "VAT": 0.055
+            },
+            {
+                "id": "Poi8",
+                "label": "Moules Marinières",
+                "priceExclTaxUnit": 17.25,
+                "VAT": 0.1
+            }
+        ]
+    },
+    {
+        "id": "cat3",
+        "name": "Végétarien",
+        "products": [
+            {
+                "id": "Veg1",
+                "label": "Raviolis aux Champignons Sauvages",
+                "priceExclTaxUnit": 18.99,
+                "VAT": 0.1
+            },
+            {
+                "id": "Veg2",
+                "label": "Salade Méditerranéenne",
+                "priceExclTaxUnit": 12.50,
+                "VAT": 0.2
+            },
+            {
+                "id": "Veg3",
+                "label": "Curry de Légumes et Lentilles",
+                "priceExclTaxUnit": 15.75,
+                "VAT": 0.1
+            },
+            {
+                "id": "Veg4",
+                "label": "Tarte aux Poireaux et Chèvre",
+                "priceExclTaxUnit": 14.80,
+                "VAT": 0.055
+            },
+            {
+                "id": "Veg5",
+                "label": "Burger Végétarien aux Haricots Noirs",
+                "priceExclTaxUnit": 13.99,
+                "VAT": 0.1
+            },
+            {
+                "id": "Veg6",
+                "label": "Lasagnes aux Épinards et Ricotta",
+                "priceExclTaxUnit": 16.50,
+                "VAT": 0.2
+            },
+            {
+                "id": "Veg7",
+                "label": "Taboulé aux Légumes Frais",
+                "priceExclTaxUnit": 10.95,
+                "VAT": 0.055
+            },
+            {
+                "id": "Veg8",
+                "label": "Ratatouille Provençale",
+                "priceExclTaxUnit": 11.25,
+                "VAT": 0.1
+            }
+        ]
+    },
+    {
+        "id": "cat4",
+        "name": "Desserts",
+        "products": [
+            {
+                "id": "Des1",
+                "label": "Tarte aux Pommes Maison",
+                "priceExclTaxUnit": 8.99,
+                "VAT": 0.1
+            },
+            {
+                "id": "Des2",
+                "label": "Fondant au Chocolat et sa Boule de Glace Vanille",
+                "priceExclTaxUnit": 10.50,
+                "VAT": 0.2
+            },
+            {
+                "id": "Des3",
+                "label": "Crème Brûlée à la Vanille Bourbon",
+                "priceExclTaxUnit": 9.75,
+                "VAT": 0.1
+            },
+            {
+                "id": "Des4",
+                "label": "Tiramisu Classique",
+                "priceExclTaxUnit": 11.80,
+                "VAT": 0.055
+            },
+            {
+                "id": "Des5",
+                "label": "Cheesecake aux Fruits Rouges",
+                "priceExclTaxUnit": 12.99,
+                "VAT": 0.1
+            },
+            {
+                "id": "Des6",
+                "label": "Mousse au Chocolat Légère",
+                "priceExclTaxUnit": 9.50,
+                "VAT": 0.2
+            },
+            {
+                "id": "Des7",
+                "label": "Profiteroles au Caramel",
+                "priceExclTaxUnit": 10.95,
+                "VAT": 0.055
+            },
+            {
+                "id": "Des8",
+                "label": "Gâteau aux Carottes et Noix",
+                "priceExclTaxUnit": 8.25,
+                "VAT": 0.1
+            }
+        ]
+    },
+    {
+        "id": "cat5",
+        "name": "Fromages",
+        "products": [
+            {
+                "id": "Fro1",
+                "label": "Plateau de Fromages Affinés",
+                "priceExclTaxUnit": 15.99,
+                "VAT": 0.1
+            },
+            {
+                "id": "Fro2",
+                "label": "Brie de Meaux",
+                "priceExclTaxUnit": 12.50,
+                "VAT": 0.2
+            },
+            {
+                "id": "Fro3",
+                "label": "Roquefort AOP",
+                "priceExclTaxUnit": 14.75,
+                "VAT": 0.1
+            },
+            {
+                "id": "Fro4",
+                "label": "Camembert au Calvados",
+                "priceExclTaxUnit": 13.80,
+                "VAT": 0.055
+            },
+            {
+                "id": "Fro5",
+                "label": "Comté 24 Mois d'Affinage",
+                "priceExclTaxUnit": 16.99,
+                "VAT": 0.1
+            },
+            {
+                "id": "Fro6",
+                "label": "Chèvre Frais aux Herbes",
+                "priceExclTaxUnit": 11.50,
+                "VAT": 0.2
+            },
+            {
+                "id": "Fro7",
+                "label": "Emmental Français",
+                "priceExclTaxUnit": 10.95,
+                "VAT": 0.055
+            },
+            {
+                "id": "Fro8",
+                "label": "Morbier AOP",
+                "priceExclTaxUnit": 13.25,
+                "VAT": 0.1
+            }
+        ]
+    },
+    {
+        "id": "cat6",
+        "name": "Boissons soft",
+        "products": [
+            {
+                "id": "Boi1",
+                "label": "Jus d'Orange Frais Pressé",
+                "priceExclTaxUnit": 4.99,
+                "VAT": 0.1
+            },
+            {
+                "id": "Boi2",
+                "label": "Limonade Artisanale",
+                "priceExclTaxUnit": 3.50,
+                "VAT": 0.2
+            },
+            {
+                "id": "Boi3",
+                "label": "Smoothie Fraise-Banane",
+                "priceExclTaxUnit": 5.75,
+                "VAT": 0.1
+            },
+            {
+                "id": "Boi4",
+                "label": "Eau de Coco Naturelle",
+                "priceExclTaxUnit": 3.80,
+                "VAT": 0.055
+            },
+            {
+                "id": "Boi5",
+                "label": "Thé Glacé Maison",
+                "priceExclTaxUnit": 4.99,
+                "VAT": 0.1
+            },
+            {
+                "id": "Boi6",
+                "label": "Café Filtré",
+                "priceExclTaxUnit": 2.50,
+                "VAT": 0.2
+            },
+            {
+                "id": "Boi7",
+                "label": "Soda au Gingembre",
+                "priceExclTaxUnit": 4.95,
+                "VAT": 0.055
+            },
+            {
+                "id": "Boi8",
+                "label": "Lait d'Amande",
+                "priceExclTaxUnit": 4.25,
+                "VAT": 0.1
+            }
+        ]
+    },
+    {
+        "id": "cat7",
+        "name": "Alcools",
+        "products": [
+            {
+                "id": "Alc1",
+                "label": "Vin Rouge Merlot, Domaine de la Vallée",
+                "priceExclTaxUnit": 22.99,
+                "VAT": 0.1
+            },
+            {
+                "id": "Alc2",
+                "label": "Champagne Brut, Cuvée Prestige",
+                "priceExclTaxUnit": 45.50,
+                "VAT": 0.2
+            },
+            {
+                "id": "Alc3",
+                "label": "Whisky Single Malt, Glenlivet 12 ans",
+                "priceExclTaxUnit": 38.75,
+                "VAT": 0.1
+            },
+            {
+                "id": "Alc4",
+                "label": "Bières Artisanales Assorties (6 pack)",
+                "priceExclTaxUnit": 18.80,
+                "VAT": 0.055
+            },
+            {
+                "id": "Alc5",
+                "label": "Cocktail Mojito Frais",
+                "priceExclTaxUnit": 12.99,
+                "VAT": 0.1
+            },
+            {
+                "id": "Alc6",
+                "label": "Gin Tonique Premium, Bombay Sapphire",
+                "priceExclTaxUnit": 14.50,
+                "VAT": 0.2
+            },
+            {
+                "id": "Alc7",
+                "label": "Rhum Ambré, Diplomático Reserva Exclusiva",
+                "priceExclTaxUnit": 32.95,
+                "VAT": 0.055
+            },
+            {
+                "id": "Alc8",
+                "label": "Liqueur de Fruits des Bois",
+                "priceExclTaxUnit": 16.25,
+                "VAT": 0.1
+            }
+        ]
+    }
+]

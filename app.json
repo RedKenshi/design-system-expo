@@ -6,6 +6,7 @@
     "orientation": "portrait",
     "icon": "./assets/icon.png",
     "userInterfaceStyle": "light",
+    "scheme": "designsystemexpo",
     "plugins": [
       [
         "expo-font",
@@ -33,7 +34,8 @@
             "./assets/fonts/Axiforma Heavy Italic.otf"
           ]
         }
-      ]
+      ],
+      "expo-router"
     ],
     "splash": {
       "image": "./assets/splash.png",
@@ -52,7 +54,7 @@
         "UISupportedExternalAccessoryProtocols": [
           "com.epson.escpos"
         ]
-      },
+      }
     },
     "android": {
       "adaptiveIcon": {
@@ -62,6 +64,7 @@
       "package": "com.redkenshi.designsystem"
     },
     "web": {
+      "bundler": "metro",
       "favicon": "./assets/favicon.png"
     },
     "extra": {
