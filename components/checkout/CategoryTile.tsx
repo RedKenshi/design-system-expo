@@ -8,6 +8,7 @@ import CustomText from '../CustomText';
 interface Props {
     style?: ViewStyle;
     category: Category,
+    height: number
     selected: boolean,
     onPress: (categoryId: string) => void
 }
@@ -15,8 +16,9 @@ interface Props {
 export const CategoryTile: React.FC<Props> = ({
     category,
     style,
+    height,
     selected,
-    onPress
+    onPress,
 }) => {
 
     const theme = useTheme<Theme>();
@@ -26,6 +28,7 @@ export const CategoryTile: React.FC<Props> = ({
             backgroundColor: theme.colors.surface,
             borderColor: theme.colors.primary,
             borderBottomWidth: 2,
+            height: height
         }
         if (selected) {
             tmp = {
@@ -50,7 +53,6 @@ const styles = StyleSheet.create({
     categoryWrapper: {
         alignItems: "center",
         justifyContent: "center",
-        height: 56,
         borderRadius: 6
     },
 });

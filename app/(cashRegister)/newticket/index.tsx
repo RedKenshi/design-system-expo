@@ -1,4 +1,4 @@
-import { FlatList, ViewStyle } from "react-native"
+import { FlatList, ViewStyle, ScrollView } from "react-native"
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Theme } from "../../../constants/Palette"
 
@@ -11,7 +11,7 @@ import card from '../../../constants/fakeCard.json'
 import CategoryTile from "../../../components/checkout/CategoryTile";
 import ProductTile from "../../../components/checkout/ProductTile";
 import { CashRegisterContext } from "../../../contexts/CashRegisterContext";
-import { Product } from "../../../constants/types";
+import { Category, Product } from "../../../constants/types";
 
 type Props = {}
 
@@ -23,13 +23,15 @@ export const NewTicket = ({ }: Props) => {
 
     const [selectedCategory, setSelectedCategory] = useState<string | null>(card[0].id)
 
-    const categoryByRow = 2;
+    const categoryOnScreen = 2.3;
+    const categoryByColumn = 3;
     const productByRow = 3;
-    const spacingCategory = theme.spacing.m;
+    const spacingCategory = theme.spacing.s;
     const spacingProduct = theme.spacing.s;
+    const categoryHeight = 48;
 
     const categoryWidth = useMemo(() => {
-        return (widthAvailable - (spacingCategory * (categoryByRow - 1))) / categoryByRow
+        return (widthAvailable - (spacingCategory * ((categoryOnScreen) - 1))) / (categoryOnScreen)
     }, [widthAvailable, spacingCategory]);
     const productWidth = useMemo(() => {
         return (widthAvailable - (spacingProduct * (productByRow - 1))) / productByRow
@@ -46,13 +48,27 @@ export const NewTicket = ({ }: Props) => {
         addToCart(product, 1)
     }
 
+    const groupedCategories = useMemo<Category[][]>(() => {
+        const result = [];
+        for (let i = 0; i < card.length; i += categoryByColumn) {
+            result.push(card.slice(i, i + categoryByColumn));
+        }
+        return result;
+    }, [card])
+
     const categories = useMemo(() => {
         return (
-            <FlatList columnWrapperStyle={{ gap: spacingCategory }} contentContainerStyle={{ gap: spacingCategory }} numColumns={categoryByRow} data={card} renderItem={({ item, index }) => {
-                return <CategoryTile onPress={(catId) => setSelectedCategory(catId)} selected={selectedCategory == item.id} key={item.id} style={{ width: categoryWidth }} category={item} />
+            <FlatList horizontal style={{ overflow: "visible", flex: 0 }} contentContainerStyle={{ gap: theme.spacing.s }} data={groupedCategories} renderItem={({ item, index }) => {
+                return (
+                    <Box flexDirection={"column"} gap={"s"} marginBottom={'l'}>
+                        {item.map((cat, i) =>
+                            <CategoryTile height={categoryHeight} onPress={(catId) => setSelectedCategory(cat.id)} selected={selectedCategory == cat.id} key={cat.id} style={{ width: categoryWidth }} category={cat} />
+                        )}
+                    </Box>
+                )
             }} />
         )
-    }, [card, selectedCategory, categoryWidth])
+    }, [groupedCategories, selectedCategory, categoryWidth])
 
     const productsOfCategory = useMemo(() => {
         if (selectedCategory == null) return <></>
@@ -65,8 +81,8 @@ export const NewTicket = ({ }: Props) => {
 
     return (
         <>
-            <PageBlock style={{ ...padding, display: "flex", justifyContent: "center", alignItems: "center", flexDirection: 'row', width: "100%" }} >
-                <Box onLayout={e => setWidthAvailable(e.nativeEvent.layout.width)} marginHorizontal={{ tablet: 'l' }} justifyContent="space-evenly" style={{ width: "100%", paddingTop: theme.spacing.m, gap: theme.spacing.m, paddingBottom: "50%" }} >
+            <PageBlock style={{ ...padding, alignItems: "center", width: "100%", flex: 1, justifyContent: "flex-start" }} >
+                <Box onLayout={e => setWidthAvailable(e.nativeEvent.layout.width)} marginHorizontal={{ tablet: 'l' }} style={{ width: "100%", marginTop: theme.spacing.m, justifyContent: "flex-start" }} >
                     {categories}
                     {productsOfCategory}
                 </Box>

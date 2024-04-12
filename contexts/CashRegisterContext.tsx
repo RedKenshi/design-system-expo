@@ -5,6 +5,7 @@ import { CartItem, Product } from "../constants/types"
 type CashRegisterContext = {
     cart: CartItem[],
     addToCart: (product: Product, quantity: number) => void,
+    removeFromCart: (productId: string, quantity: number) => void,
     totalCartInclTax: number
 }
 type Props = {
@@ -14,6 +15,7 @@ type Props = {
 export const CashRegisterContext = createContext<CashRegisterContext>({
     cart: [],
     addToCart: (product: Product, quantity: number) => undefined,
+    removeFromCart: (productId: string, quantity: number) => undefined,
     totalCartInclTax: undefined,
 })
 
@@ -27,16 +29,25 @@ export const CashRegisterContextProvider = ({ children }: Props) => {
 
     const addToCart = useCallback((newProduct: Product, quantity: number) => {
         let tmpCart: CartItem[] = JSON.parse(JSON.stringify(cart))
-        //console.log({ tmpCart })
         const existingItemIndex = tmpCart.findIndex(item => item.product.id === newProduct.id);
-
         if (existingItemIndex !== -1) {
-            // If the item already exists, increase its quantity
             tmpCart[existingItemIndex].quantity += quantity;
             tmpCart[existingItemIndex].totalPriceInclTax = tmpCart[existingItemIndex].quantity * tmpCart[existingItemIndex].product.priceExclTaxUnit
         } else {
-            // If the item doesn't exist, add it to the cart
             tmpCart = [...tmpCart, { product: newProduct, quantity: quantity, totalPriceInclTax: newProduct.priceExclTaxUnit * quantity }];
+        }
+        setCart(tmpCart)
+    }, [cart]);
+
+    const removeFromCart = useCallback((productId: string, quantity: number) => {
+        let tmpCart: CartItem[] = JSON.parse(JSON.stringify(cart))
+        const existingItemIndex = tmpCart.findIndex(item => item.product.id === productId);
+        if (existingItemIndex !== -1) {
+            tmpCart[existingItemIndex].quantity -= quantity;
+            tmpCart[existingItemIndex].totalPriceInclTax = tmpCart[existingItemIndex].quantity * tmpCart[existingItemIndex].product.priceExclTaxUnit
+            if (tmpCart[existingItemIndex].quantity < 1) {
+                tmpCart.splice(existingItemIndex, 1);
+            }
         }
         setCart(tmpCart)
     }, [cart]);
@@ -44,6 +55,7 @@ export const CashRegisterContextProvider = ({ children }: Props) => {
     const values = {
         cart,
         addToCart,
+        removeFromCart,
         totalCartInclTax
     }
 

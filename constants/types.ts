@@ -95,13 +95,16 @@ interface ActionButton {
 /**
  * S 1 x 2
  * M 2 x 2
- * L 2 *x 4 or 4 x 2
+ * L 2 x 4 or 4 x 2
  */
 interface CashRegisterLayout {
     name: string;
+    description: string;
+    isDeleted: boolean;
     isEnabled: boolean;
     merchantId: string;
-    deviceTypes: ("DESKTOP" | "TABLET" | "MOBILE")[];
+    deviceType: "DESKTOP" | "TABLET" | "MOBILE";
+    cashRegisterItemsConfiguration: CashRegisterItemsConfiguration;
     visibility: {
         isEnabled: boolean;
         startTime: string;
@@ -114,14 +117,12 @@ interface CashRegisterLayout {
             endDate: string;
         };
     };
-    layout: {
-        type: "MENU" | "CATEGORY" | "PRODUCT" | "PRODUCT_GROUP" | "EMPTY";
-        size: "S" | "M" | "L";
-        orientation: "HORIZONTAL" | "VERTICAL"; // only  available for L
-        x: number;
-        y: number;
-        item: CashRegisterLayoutItem;
-    }[]; // TODO unbound array
+    // If no layout defined for selected resource, then display in order of appearance
+    layouts: {
+        menus: CashRegisterItemLayout[]; // TODO unbound array
+        categories: CashRegisterItemLayout[]; // TODO unbound array
+        productGroups: CashRegisterItemLayout[]; // TODO unbound array
+    };
     shortCutButtons: {
         name: string;
         icon: string;
@@ -133,10 +134,23 @@ interface CashRegisterLayout {
         | "LIQUID_SOLID_PRODUCTS";
     }[];
     actionButtons: {
-        orde: ActionButton[];
+        order: ActionButton[];
         payment: ActionButton[];
     };
-}// PLAN DE TOUCHE
+}
+
+interface CashRegisterItemLayout {
+    resourceId: string;
+    name: string;
+    color: string;
+    layout: {
+        size: "S" | "M" | "L";
+        orientation: "HORIZONTAL" | "VERTICAL"; // only  available for L
+        x: number;
+        y: number;
+        item: CashRegisterLayoutItem;
+    }[]; // TODO unbound array
+}
 
 export type Category = {
     id: string;

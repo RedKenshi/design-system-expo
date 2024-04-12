@@ -8,9 +8,10 @@ import { useMemo, useState } from "react";
 
 type Props = {
     children: JSX.Element | JSX.Element[],
+    style?: ViewStyle | ViewStyle[]
 }
 
-export const TicketTopBar = ({ children }: Props) => {
+export const TicketTopBar = ({ children, style }: Props) => {
 
     const theme = useTheme<Theme>();
     const [layout, setLayout] = useState<LayoutRectangle | null>(null)
@@ -46,7 +47,7 @@ export const TicketTopBar = ({ children }: Props) => {
 
     return (
         <>
-            <Box onLayout={(e) => setLayout(e.nativeEvent.layout)} backgroundColor='surface' style={[styles.topBarWrapper, theme.shadow]}>
+            <Box onLayout={(e) => setLayout(e.nativeEvent.layout)} backgroundColor='surface' style={[styles.topBarWrapper, theme.shadow, style]}>
                 <Box paddingTop={{ phone: 'xs', tablet: "m", largeTablet: "l" }} style={[styles.topBarContainer, padding]}>
                     {children}
                 </Box>

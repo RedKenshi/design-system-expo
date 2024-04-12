@@ -1,9 +1,8 @@
 import { Gesture, GestureDetector, GestureUpdateEvent, PanGestureHandlerEventPayload } from "react-native-gesture-handler";
 import Animated, { runOnJS, useAnimatedStyle, useSharedValue, withSpring } from "react-native-reanimated";
-import Item from "./Item";
 import { DnDContext, Item as ItemType } from "../../contexts/DragAndDropContext";
 import React, { useContext, useRef, useState } from "react";
-import { LayoutChangeEvent, Pressable } from "react-native";
+import { LayoutChangeEvent } from "react-native";
 import { useTheme } from "@shopify/restyle";
 import { Theme } from "../../constants/Palette";
 
