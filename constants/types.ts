@@ -156,6 +156,7 @@ export type Category = {
     id: string;
     name: string;
     products: Product[];
+    color: string;
 }
 export interface CartItem {
     quantity: number
@@ -167,4 +168,9 @@ export type Product = {
     label: string;
     priceExclTaxUnit: number;
     VAT: number;
+    color: string;
+}
+export type RegisterAbsoluteLayout = {
+    id: string
+    layout: { width: number, height: number, pageX: number, pageY: number }
 }

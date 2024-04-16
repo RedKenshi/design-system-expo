@@ -9,6 +9,7 @@ import { useContext } from 'react';
 import { AppContext } from '../../contexts/AppContext';
 import Button from '../../components/Button';
 import { IconSVGCode } from '../../components/IconSVG';
+import Drawer from '../../components/Drawer';
 
 export {
     ErrorBoundary,
@@ -20,6 +21,7 @@ const AppLayout = () => {
 
     return (
         <>
+            <Drawer />
             <TopBar>
                 <TopBarMenu />
             </TopBar>

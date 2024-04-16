@@ -1,5 +1,5 @@
 import { useContext, useEffect } from 'react';
-import { StyleSheet } from 'react-native';
+import { StyleSheet, ViewStyle } from 'react-native';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
 
 import { useFonts } from 'expo-font';
@@ -12,7 +12,7 @@ import { DnDProvider } from '../contexts/DragAndDropContext';
 import { AppContext, AppContextProvider } from '../contexts/AppContext';
 
 import { LIGHT_THEME, DARK_THEME } from '../constants/Palette';
-import { SafeAreaProvider } from 'react-native-safe-area-context';
+import { SafeAreaProvider, useSafeAreaInsets } from 'react-native-safe-area-context';
 import Drawer from '../components/Drawer';
 import { CashRegisterContextProvider } from '../contexts/CashRegisterContext';
 
@@ -83,15 +83,13 @@ export default RootLayout
 
 const RootLayoutNav = () => {
     const { darkMode } = useContext(AppContext)
+
     return (
         <CashRegisterContextProvider>
             <ThemeProvider theme={darkMode ? DARK_THEME : LIGHT_THEME}>
                 <SafeAreaProvider style={[StyleSheet.absoluteFill, { backgroundColor: darkMode ? DARK_THEME.colors.background : LIGHT_THEME.colors.background }]}>
                     <GestureHandlerRootView style={{ minHeight: "100%", width: "100%" }}>
-                        <SafeAreaProvider>
-                            <Drawer />
-                            <Slot />
-                        </SafeAreaProvider>
+                        <Slot />
                     </GestureHandlerRootView>
                 </SafeAreaProvider>
             </ThemeProvider>

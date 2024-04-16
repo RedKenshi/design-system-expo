@@ -4,6 +4,7 @@ import { Theme } from "../../constants/Palette";
 import { useTheme } from '@shopify/restyle';
 import { Category } from '../../constants/types';
 import CustomText from '../CustomText';
+import chroma from "chroma-js"
 
 interface Props {
     style?: ViewStyle;
@@ -25,16 +26,15 @@ export const CategoryTile: React.FC<Props> = ({
 
     const computedStyle = useMemo(() => {
         let tmp: ViewStyle = {
-            backgroundColor: theme.colors.surface,
-            borderColor: theme.colors.primary,
-            borderBottomWidth: 2,
+            backgroundColor: selected ? chroma.mix(category.color, "#fff", .1).hex() : theme.colors.surface,
+            borderColor: selected ? chroma(category.color).darken().hex() : category.color,
+            borderBottomWidth: selected ? 0 : 3,
             height: height
         }
         if (selected) {
             tmp = {
                 ...tmp,
-                borderWidth: 2,
-                borderRightWidth: 16,
+                borderRightWidth: 12,
             }
         }
         return tmp
@@ -42,7 +42,7 @@ export const CategoryTile: React.FC<Props> = ({
 
     return (
         <TouchableOpacity style={{ ...styles.categoryWrapper, ...computedStyle, ...style }} onPress={() => onPress(category.id)}>
-            <CustomText font='A600' size={18}>{category.name}</CustomText>
+            <CustomText color={selected ? "white" : undefined} font='A600' size={18}>{category.name}</CustomText>
         </TouchableOpacity>
     );
 };

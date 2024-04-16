@@ -58,7 +58,8 @@ export const CustomText = ({
             color: computedColor,
             fontSize: computedSize,
             lineHeight: computedHeight,
-            textAlign: computedTextAlign
+            textAlign: computedTextAlign,
+            maxWidth: "100%",
         }
     }, [variant, theme, color, font, size, lineHeight])
 

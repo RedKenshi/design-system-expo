@@ -1,4 +1,4 @@
-import { useContext, useEffect, useRef, useState } from 'react';
+import { useContext, useEffect, useRef } from 'react';
 import { Dimensions, FlatList, Pressable, StyleSheet, View } from 'react-native';
 
 import { Slot } from 'expo-router';
@@ -14,8 +14,9 @@ import { CashRegisterContext } from '../../contexts/CashRegisterContext';
 import CustomText from '../../components/CustomText';
 import Box from '../../components/Box';
 import { numberToMoney } from '../../constants/utils';
-import Animated, { runOnJS, SharedValue, useAnimatedStyle, useSharedValue, withTiming } from 'react-native-reanimated';
+import Animated, { SharedValue, useAnimatedStyle, useSharedValue, withTiming } from 'react-native-reanimated';
 import { Gesture, GestureDetector, PanGesture } from 'react-native-gesture-handler';
+import Drawer from '../../components/Drawer';
 
 const dishHeight = 24
 const originalContainerHeight = 234;
@@ -159,42 +160,45 @@ const CartItemList = ({ collapse, expand, expanded, pan }: { collapse: Function,
     }
 
     return (
-        <Box flex={1}>
-            <Box flex={1} flexDirection={"column"} justifyContent={"space-between"} paddingHorizontal={"s"} >
-                <FlatList scrollEnabled={true} style={{ flex: 1 }}
-                    getItemLayout={(data, index) => (
-                        { length: 24, offset: 24 * index, index }
-                    )}
-                    ref={list}
-                    data={cart}
-                    onContentSizeChange={() => list.current.scrollToEnd({ animated: true })}
-                    renderItem={({ item, index }) => {
-                        return (
-                            <Pressable onPress={() => handlePress(item.product.id)}>
-                                <Box flexDirection={"row"} height={24} justifyContent={"space-between"}>
-                                    <CustomText font='A600' color='textFadded'>{`${item.quantity} x`}</CustomText>
-                                    <CustomText font='A600' color='textOnSurface'>{`${item.product.label}`}</CustomText>
-                                    <Box flex={1} />
-                                    <CustomText font='A600' color='textFadded'>{`${numberToMoney(item.totalPriceInclTax)}`}</CustomText>
-                                </Box>
-                            </Pressable>
-                        )
-                    }} ListEmptyComponent={() =>
-                        <Box flex={1} justifyContent={"center"} alignItems={'center'}>
-                            <CustomText>Panier Vide</CustomText>
-                        </Box>
-                    } />
-            </Box>
-            <GestureDetector gesture={pan}>
-                <Box marginTop={expanded ? "l" : null}>
-                    <Box style={[styles.hr, { borderColor: theme.colors.offwhite }]} marginBottom={'m'} />
-                    <View style={{ flexDirection: "row", height: 24, justifyContent: "space-between" }}>
-                        <CustomText textAlign='right' font='A600' style={{ paddingHorizontal: theme.spacing.s }} color='textFadded'>{cart.length + " items"}</CustomText>
-                        <CustomText textAlign='right' font='A600' style={{ paddingHorizontal: theme.spacing.s }} color='textFadded'>{numberToMoney(totalCartInclTax)}</CustomText>
-                    </View>
+        <>
+            <Drawer />
+            <Box flex={1}>
+                <Box flex={1} flexDirection={"column"} justifyContent={"space-between"} paddingHorizontal={"s"} >
+                    <FlatList scrollEnabled={true} style={{ flex: 1 }}
+                        getItemLayout={(data, index) => (
+                            { length: 24, offset: 24 * index, index }
+                        )}
+                        ref={list}
+                        data={cart}
+                        onContentSizeChange={() => list.current.scrollToEnd({ animated: true })}
+                        renderItem={({ item, index }) => {
+                            return (
+                                <Pressable onPress={() => handlePress(item.product.id)}>
+                                    <Box flexDirection={"row"} height={24} justifyContent={"space-between"}>
+                                        <CustomText font='A600' color='textFadded'>{`${item.quantity} x`}</CustomText>
+                                        <CustomText font='A600' color='textOnSurface'>{`${item.product.label}`}</CustomText>
+                                        <Box flex={1} />
+                                        <CustomText font='A600' color='textFadded'>{`${numberToMoney(item.totalPriceInclTax)}`}</CustomText>
+                                    </Box>
+                                </Pressable>
+                            )
+                        }} ListEmptyComponent={() =>
+                            <Box flex={1} justifyContent={"center"} alignItems={'center'}>
+                                <CustomText>Panier Vide</CustomText>
+                            </Box>
+                        } />
                 </Box>
-            </GestureDetector>
-        </Box>
+                <GestureDetector gesture={pan}>
+                    <Box marginTop={expanded ? "l" : null}>
+                        <Box style={[styles.hr, { borderColor: theme.colors.offwhite }]} marginBottom={'m'} />
+                        <View style={{ flexDirection: "row", height: 24, justifyContent: "space-between" }}>
+                            <CustomText textAlign='right' font='A600' style={{ paddingHorizontal: theme.spacing.s }} color='textFadded'>{cart.length + " items"}</CustomText>
+                            <CustomText textAlign='right' font='A600' style={{ paddingHorizontal: theme.spacing.s }} color='textFadded'>{numberToMoney(totalCartInclTax)}</CustomText>
+                        </View>
+                    </Box>
+                </GestureDetector>
+            </Box>
+        </>
     )
 }
 

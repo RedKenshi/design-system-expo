@@ -23,6 +23,7 @@ export const Menu = ({ closeDrawer }: Props) => {
             <LI title={"Dnd"} page={"dnd"} selected={false} icon={IconSVGCode.drag_handle} pro />
             <LI title={"Printer"} page={"printer"} selected={false} icon={IconSVGCode.printer} pro />
             <LI title={"Settings"} page={"settings"} selected={false} icon={IconSVGCode.settings} pro />
+            <LI title={"Plan de touche"} page={"blueprint"} selected={false} icon={IconSVGCode.finger_point} pro />
             <Box flex={1} />
         </Box>
     )

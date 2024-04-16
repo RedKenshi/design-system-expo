@@ -28,3 +28,20 @@ export const numberToMoney = (value: number) => {
 export const numberToPercent = (value: number) => {
     return `${(value * 100).toFixed(2)} %`
 }
+
+export const isInside = ({ draggableX, draggableY, droppableX, droppableY, droppableW, droppableH }) => {
+    if (draggableX >= droppableX && draggableX <= (droppableX + droppableW) && draggableY >= droppableY && draggableY <= (droppableY + droppableH)) {
+    }
+    return draggableX >= droppableX && draggableX <= (droppableX + droppableW) &&
+        draggableY >= droppableY && draggableY <= (droppableY + droppableH);
+}
+
+export const overlapMarginError = ({ draggableX, draggableY, draggableH, draggableW, droppableX, droppableY, droppableW, droppableH }, minimumOverlap = 0) => {
+    const overlapLeft = Math.max(draggableX, droppableX);
+    const overlapRight = Math.min(draggableX + draggableW, droppableX + droppableW);
+    const overlapTop = Math.max(draggableY, droppableY);
+    const overlapBottom = Math.min(draggableY + draggableH, droppableY + droppableH);
+    const overlapWidth = overlapRight - overlapLeft;
+    const overlapHeight = overlapBottom - overlapTop;
+    return overlapWidth >= minimumOverlap && overlapHeight >= minimumOverlap;
+}

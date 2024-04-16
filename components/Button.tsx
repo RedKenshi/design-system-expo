@@ -43,18 +43,23 @@ export const Button: React.FC<Props> = ({
         switch (variant) {
             case 'primary':
                 baseColor = theme.colors.primary
+                textColor = { textColor: theme.colors.fullwhite }
                 break;
             case 'success':
                 baseColor = theme.colors.success
+                textColor = { textColor: theme.colors.fullwhite }
                 break;
             case 'warning':
                 baseColor = theme.colors.warning
+                textColor = { textColor: theme.colors.fullwhite }
                 break;
             case 'danger':
                 baseColor = theme.colors.danger
+                textColor = { textColor: theme.colors.fullwhite }
                 break;
             case 'info':
                 baseColor = theme.colors.info
+                textColor = { textColor: theme.colors.fullwhite }
                 break;
             case 'neutral':
                 baseColor = theme.colors.white
@@ -122,12 +127,14 @@ export const Button: React.FC<Props> = ({
 
     const computedTextStyle = useMemo(() => {
 
-        let variantStyles: TextStyle = {}
+        let variantStyles: TextStyle = {
+            color: theme.colors.textOnSurface
+        }
 
         switch (size) {
-            case 's': variantStyles = styles.textS; break;
-            case 'm': variantStyles = styles.textM; break;
-            case 'l': variantStyles = styles.textL; break;
+            case 's': variantStyles = { ...variantStyles, ...styles.textS }; break;
+            case 'm': variantStyles = { ...variantStyles, ...styles.textM }; break;
+            case 'l': variantStyles = { ...variantStyles, ...styles.textL }; break;
         }
 
         if (disabled) {
@@ -151,6 +158,7 @@ export const Button: React.FC<Props> = ({
             } else {
                 variantStyles = {
                     ...variantStyles,
+                    color: baseColors.textColor
                 }
             }
         }
@@ -168,13 +176,13 @@ export const Button: React.FC<Props> = ({
 
     return (
         <TouchableOpacity disabled={disabled || loading} style={[computedStyle, style]} onPress={onPress}>
-            {!loading && icon && iconPosition === 'left' && <IconSVG size={iconSize} icon={icon} fill={baseColors.textColor ?? computedTextStyle.color} />}
+            {!loading && icon && iconPosition === 'left' && <IconSVG size={iconSize} icon={icon} fill={computedTextStyle.color ?? baseColors.textColor} />}
             {loading ?
-                <ActivityIndicator color={baseColors.textColor ?? computedTextStyle.color} />
+                <ActivityIndicator color={computedTextStyle.color ?? baseColors.textColor} />
                 :
                 title ? <Text style={computedTextStyle}>{title}</Text> : null
             }
-            {!loading && icon && iconPosition === 'right' && <IconSVG size={iconSize} icon={icon} fill={baseColors.textColor ?? computedTextStyle.color} />}
+            {!loading && icon && iconPosition === 'right' && <IconSVG size={iconSize} icon={icon} fill={computedTextStyle.color ?? baseColors.textColor} />}
         </TouchableOpacity>
     );
 };
@@ -215,19 +223,16 @@ const styles = StyleSheet.create({
         fontFamily: FONTS.A600,
         fontSize: 12,
         lineHeight: 12,
-        color: '#FFFFFF',
     },
     textM: {
         fontFamily: FONTS.A600,
         fontSize: 16,
         lineHeight: 16,
-        color: '#FFFFFF',
     },
     textL: {
         fontFamily: FONTS.A600,
         fontSize: 24,
         lineHeight: 24,
-        color: '#FFFFFF',
     },
 });
 

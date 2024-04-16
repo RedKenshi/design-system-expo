@@ -17,21 +17,21 @@ type ModalAction = {
 
 interface Props {
     open: boolean,
-    setOpen: (value: boolean) => void,
+    close: () => void,
     actions?: ModalAction[]
     preventCloseOnDimmerPress?: boolean;
     children: JSX.Element | JSX.Element[],
 }
 
-export const ModalNative = ({ open, setOpen, actions, preventCloseOnDimmerPress = false, children }: Props) => {
+export const ModalNative = ({ open, close, actions, preventCloseOnDimmerPress = false, children }: Props) => {
 
     const theme = useTheme<Theme>();
 
     if (open) {
         return (
-            <NativeModal animationType='fade' transparent={true} visible={open} onRequestClose={() => setOpen(false)} >
+            <NativeModal animationType='fade' transparent={true} visible={open} onRequestClose={() => close()} >
                 <BlurView intensity={10} style={styles.blur} >
-                    <Pressable onPress={() => !preventCloseOnDimmerPress && setOpen(false)} style={styles.dimmer} />
+                    <Pressable onPress={() => !preventCloseOnDimmerPress && close()} style={styles.dimmer} />
                     <Box
                         backgroundColor='surface'
                         gap="m"

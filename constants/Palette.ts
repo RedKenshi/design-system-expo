@@ -158,8 +158,8 @@ export const lightColors = {
 export const darkColors = {
 
     //ELEMENTS COLORS
-    //background: "#0c0c0e",
-    background: "#121516",
+    background: "#0c0c0e",
+    //background: "#121516",
     //surface: "#202022",
     surface: "#202428",
     item: "#0c0c0e",
