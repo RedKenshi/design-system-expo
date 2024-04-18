@@ -65,7 +65,7 @@ export const CustomText = ({
 
     return (
         <Box margin={{ phone: 'xs' }}>
-            <Text style={{ ...computedStyle, ...style }} >
+            <Text adjustsFontSizeToFit style={{ ...computedStyle, ...style }} >
                 {children}
             </Text>
         </Box>
