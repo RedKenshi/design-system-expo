@@ -12,13 +12,15 @@ import { router } from "expo-router";
 
 import chroma from "chroma-js"
 import { Gesture, GestureDetector } from "react-native-gesture-handler";
-import Animated, { runOnJS, SharedValue, useAnimatedStyle, useSharedValue, withTiming } from "react-native-reanimated";
+import Animated, { runOnJS, SharedValue, useAnimatedStyle, useSharedValue, withSpring, withTiming } from "react-native-reanimated";
 import CustomText from "../../components/CustomText";
 import { Product, RegisterAbsoluteLayout } from "../../constants/types";
 import { overlapMarginError } from "../../constants/utils";
 
 import _ from 'lodash'
 import ModalNative from "../../components/ModalNative"
+
+import uuid from 'react-native-uuid';
 
 //TODO
 /*
@@ -70,11 +72,12 @@ export const Blueprint = ({ }: Props) => {
     const [scrollViewLayout, setScrollViewLayout] = useState<RegisterAbsoluteLayout | null>(null)
     const [onScrollEndContentOffset, setOnScrollEndContentOffset] = useState<number>(0)
     const [dragged, setDragged] = useState<Product | null>(null)
+    const [lastDragged, setLastDragged] = useState<Cell | null>(null)
     const [draggedOrigin, setDraggedOrigin] = useState<null | string>(null)
 
     const scrollHeight = useSharedValue(0)
 
-    const [hovered, setHovered] = useState<string[]>([])
+    const [hovered, setHovered] = useState<{ x: number, y: number }[]>([])
 
     const cellWidth = useMemo(() => {
         if (gridWidth) {
@@ -122,13 +125,12 @@ export const Blueprint = ({ }: Props) => {
     //blueprint is the list of product to whom has been added coordinates
     const blueprint = useMemo(() => {
         return products.map((product, index) => {
-            console.log("productId : " + product.id)
             return ({
-                id: product.coordinates.x + "x" + product.coordinates.y + "#" + product.content.id,
+                id: product.id,
                 placeId: product.coordinates.x + "x" + product.coordinates.y,
                 coordinates: product.coordinates,
                 layout: getPositionAndSizesFromXYCoordinates({ ...product.coordinates }),
-                content: product.content
+                content: product.content,
             })
         })
     }, [products, gridWidth])
@@ -146,7 +148,6 @@ export const Blueprint = ({ }: Props) => {
                             return null
                         }
                     })
-                    //console.log(indexX + "x" + indexY + " is occupied by " + (overlappedBy ? overlappedBy.content.label : "-----"))
                     res.push({
                         placeId: indexX + "x" + indexY,
                         id: indexX + "x" + indexY + "#-",
@@ -217,28 +218,30 @@ export const Blueprint = ({ }: Props) => {
                         droppableH: target.layout.height,
                         droppableW: target.layout.width,
                     }, overlapMinimum)) {
-                        ins.push(target.coordinates.x + "x" + target.coordinates.y)
+                        ins.push({ x: target.coordinates.x, y: target.coordinates.y })
                     }
                 });
             }
             setHovered(ins)
         }
     }
-    const addProductToDropIds = ({ product, dropIds, origin }: { product: Product, dropIds: string[], origin: string | null }) => {
+    const addProductToDropIds = ({ product, dropIds, origin }: { product: Product, dropIds: { x: number, y: number }[], origin: string | null }) => {
         const droppedOverOccupiedCells = grid.filter(c => {
-            return c.overlappedBy != null && dropIds.includes(c.placeId) && (!origin || (origin && c.placeId != origin))
-        })
-        const droppedOverProducts: Cell[] = droppedOverOccupiedCells.reduce((acc, cur) => {
-            if (!acc.map(x => x.id).includes(cur.id)) {
+            return c.overlappedBy != null &&
+                (!origin || (origin && c.overlappedBy != origin)) &&
+                dropIds.some(dropId => dropId.x == c.coordinates.x && dropId.y == c.coordinates.y)
+        }).map(x => x.overlappedBy)
+        const droppedOverProducts: string[] = droppedOverOccupiedCells.reduce((acc, cur) => {
+            if (!acc.map(x => x).includes(cur)) {
                 return [...acc, cur]
             }
             return acc
         }, [])
         if (droppedOverProducts.length == 0) {
-            let xMin = Math.min(...dropIds.map(x => parseInt(x.split('x')[0])))
-            let yMin = Math.min(...dropIds.map(x => parseInt(x.split('x')[1])))
-            let xMax = Math.max(...dropIds.map(x => parseInt(x.split('x')[0])))
-            let yMax = Math.max(...dropIds.map(x => parseInt(x.split('x')[1])))
+            let xMin = Math.min(...dropIds.map(x => x.x))
+            let yMin = Math.min(...dropIds.map(x => x.y))
+            let xMax = Math.max(...dropIds.map(x => x.x))
+            let yMax = Math.max(...dropIds.map(x => x.y))
             addProductToBlueprint({
                 product,
                 x: xMin,
@@ -249,42 +252,21 @@ export const Blueprint = ({ }: Props) => {
             })
         }
         if (droppedOverProducts.length == 1) {
-            console.log("Dropped over a single product")
-            console.log("+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++")
-            console.log("Looking for id 1 : " + origin)
-            console.log("Looking for id 2 : " + droppedOverProducts[0].overlappedBy)
-            products.map(x => {
-                console.log(x.id)
-            })
-            let cellOne = products.find(p => p.id == origin)
-            let cellTwo = products.find(p => p.id == droppedOverProducts[0].overlappedBy)
-            switchTwoProducts({
-                cellOne: products.find(p => p.id == origin),
-                cellTwo: products.find(p => p.id == droppedOverProducts[0].overlappedBy)
-            })
+            if (origin) {
+                switchTwoProducts({
+                    cellOne: products.find(p => p.id == origin),
+                    cellTwo: products.find(p => p.id == droppedOverProducts[0])
+                })
+            }
         }
         if (droppedOverProducts.length > 1) {
             console.log("Dropped over multiple products")
         }
     }
     const switchTwoProducts = ({ cellOne, cellTwo }: { cellOne: Cell, cellTwo: Cell }) => {
-        console.log("=====================================================================")
-        console.log(cellOne)
-        console.log("cellOne : " + cellOne.id)
-        console.log(cellTwo)
-        console.log("cellTwo : " + cellTwo.id)
-        let tmp = JSON.parse(JSON.stringify(products))
-        tmp = tmp.filter(x => x.id != cellOne.id && x.id != cellTwo.id)
-        tmp.push({
-            ...cellOne,
-            id: cellTwo.coordinates.x + "x" + cellTwo.coordinates.y + "#" + cellOne.content.id,
-            coordinates: cellTwo.coordinates
-        } as Cell)
-        tmp.push({
-            ...cellTwo,
-            id: cellOne.coordinates.x + "x" + cellOne.coordinates.y + "#" + cellOne.content.id,
-            coordinates: cellOne.coordinates
-        })
+        let tmp: Cell[] = JSON.parse(JSON.stringify(products))
+        tmp.find(x => x.id == cellOne.id).coordinates = cellTwo.coordinates
+        tmp.find(x => x.id == cellTwo.id).coordinates = cellOne.coordinates
         setProducts(tmp)
     }
 
@@ -294,7 +276,7 @@ export const Blueprint = ({ }: Props) => {
             tmp = tmp.filter(tmpCell => tmpCell.id !== origin)
         }
         tmp.push({
-            id: x + "x" + y + "#" + product.id,
+            id: origin ?? uuid.v4(),
             coordinates: { x, y, w, h },
             layout: null,
             content: product
@@ -314,10 +296,11 @@ export const Blueprint = ({ }: Props) => {
         }
         resetDrag()
     }
-    const handleGrab = (product: Product, originCellId: string | null) => {
+    const handleGrab = (product: Product, originCell: Cell | null) => {
         if (product) {
             setDragged(product)
-            setDraggedOrigin(originCellId)
+            if (originCell) setLastDragged(originCell)
+            setDraggedOrigin(originCell ? originCell.id : null)
         }
     }
     const resetDrag = () => {
@@ -347,7 +330,7 @@ export const Blueprint = ({ }: Props) => {
     }
     const grabPlacedItem = (cell: Cell) => {
         if (cell.content) {
-            handleGrab(cell.content, cell.id);
+            handleGrab(cell.content, cell);
         }
     }
     const removeFromBlueprint = (cell: Cell) => {
@@ -465,11 +448,13 @@ export const Blueprint = ({ }: Props) => {
                                     resetDrag={resetDrag}
                                     removeFromBlueprint={removeFromBlueprint}
                                     checkForScrollViewLimit={checkForScrollViewLimit}
+                                    isLastDragged={lastDragged != null && lastDragged.id == cell.id}
                                 />
                             )
                         } else {
                             return (
                                 <Box
+                                    key={cell.id}
                                     position={"absolute"}
                                     borderRadius={4}
                                     style={{ borderColor: chroma(theme.colors[isHovered(cell) ? 'success' : 'primary']).alpha(.8).hex(), borderStyle: "dashed", borderWidth: 1.5, backgroundColor: chroma(theme.colors[isHovered(cell) ? 'success' : 'primary']).alpha(.06).hex(), ...cell.layout }}
@@ -592,6 +577,7 @@ const DraggablePlacedProduct = ({
     handleDrop,
     removeFromBlueprint,
     checkForScrollViewLimit,
+    isLastDragged,
 }: {
     cell: Cell,
     product: Product,
@@ -605,6 +591,7 @@ const DraggablePlacedProduct = ({
     resetDrag: () => void,
     removeFromBlueprint: (cell: Cell) => void
     checkForScrollViewLimit: (y: number) => void
+    isLastDragged: boolean
 }) => {
     const [isPressed, setIsPressed] = useState<boolean>(false)
     const [isDragged, setIsDragged] = useState<boolean>(false)
@@ -632,16 +619,23 @@ const DraggablePlacedProduct = ({
             runOnJS(handleDrop)({ absX: e.absoluteX - .5 * cellWidth, absY: e.absoluteY - fingerDodge })
         })
 
-    const animatedTop = useSharedValue(0)
-    const animatedLeft = useSharedValue(0)
-    const animatedHeight = useSharedValue(20)
-    const animatedWidth = useSharedValue(20)
+    const animatedTop = useSharedValue(cell.layout.top)
+    const animatedLeft = useSharedValue(cell.layout.left)
+    const animatedHeight = useSharedValue(cell.layout.height)
+    const animatedWidth = useSharedValue(cell.layout.width)
 
     useEffect(() => {
-        animatedTop.value = withTiming(cell.layout.top, { duration: 500 })
-        animatedLeft.value = withTiming(cell.layout.left, { duration: 500 })
-        animatedHeight.value = withTiming(cell.layout.height, { duration: 500 })
-        animatedWidth.value = withTiming(cell.layout.width, { duration: 500 })
+        if (!isLastDragged) {
+            animatedTop.value = withTiming(cell.layout.top, { duration: 250 })
+            animatedLeft.value = withTiming(cell.layout.left, { duration: 250 })
+            animatedHeight.value = withTiming(cell.layout.height, { duration: 250 })
+            animatedWidth.value = withTiming(cell.layout.width, { duration: 250 })
+        } else {
+            animatedTop.value = cell.layout.top
+            animatedLeft.value = cell.layout.left
+            animatedHeight.value = cell.layout.height
+            animatedWidth.value = cell.layout.width
+        }
     }, [cell])
 
     const animatedStyle = useAnimatedStyle(() => {
@@ -657,7 +651,7 @@ const DraggablePlacedProduct = ({
         <>
             <GestureDetector gesture={fromPlacedPan}>
                 <Animated.View
-                    style={{
+                    style={[{
                         position: "absolute",
                         borderBottomWidth: 12,
                         padding: theme.spacing.xxs,
@@ -667,11 +661,11 @@ const DraggablePlacedProduct = ({
                         justifyContent: "center",
                         alignItems: "center",
                         opacity: isDragged ? .5 : 1,
-                        zIndex: 900000,
+                        zIndex: isLastDragged ? 100000000 : 900000,
                         backgroundColor: isPressed ? chroma(product.color).alpha(.1).hex() : theme.colors.surface,
                         borderColor: product.color,
                         ...cell.layout
-                    }}
+                    }, animatedStyle]}
                 >
                     <Pressable onPressIn={() => setIsPressed(true)} onPressOut={() => setIsPressed(false)} onPress={() => setEditionOpen(true)}>
                         <Box
