@@ -493,7 +493,7 @@ export const Blueprint = ({ }: Props) => {
                             animatedStyle,
                             styles.animatedView,
                             {
-                                backgroundColor: chroma.mix("#fff", dragged.color, .1).hex(),
+                                backgroundColor: chroma.mix(theme.colors.fullTheme, dragged.color, .1).hex(),
                                 borderColor: dragged.color,
                                 height: cellHeight,
                                 width: cellWidth,

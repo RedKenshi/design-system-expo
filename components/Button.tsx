@@ -43,34 +43,34 @@ export const Button: React.FC<Props> = ({
         switch (variant) {
             case 'primary':
                 baseColor = theme.colors.primary
-                textColor = { textColor: theme.colors.fullwhite }
+                textColor = { textColor: outline ? theme.colors.primary : theme.colors.fullwhite }
                 break;
             case 'success':
                 baseColor = theme.colors.success
-                textColor = { textColor: theme.colors.fullwhite }
+                textColor = { textColor: outline ? theme.colors.success : theme.colors.fullwhite }
                 break;
             case 'warning':
                 baseColor = theme.colors.warning
-                textColor = { textColor: theme.colors.fullwhite }
+                textColor = { textColor: outline ? theme.colors.warning : theme.colors.fullwhite }
                 break;
             case 'danger':
                 baseColor = theme.colors.danger
-                textColor = { textColor: theme.colors.fullwhite }
+                textColor = { textColor: outline ? theme.colors.danger : theme.colors.fullwhite }
                 break;
             case 'info':
                 baseColor = theme.colors.info
-                textColor = { textColor: theme.colors.fullwhite }
+                textColor = { textColor: outline ? theme.colors.info : theme.colors.fullwhite }
                 break;
             case 'neutral':
                 baseColor = theme.colors.white
-                textColor = { textColor: theme.colors.fullblack }
+                textColor = { textColor: outline ? theme.colors.white : theme.colors.fullblack }
                 break;
         }
         return {
             full: baseColor,
             darken: chroma(baseColor).darken(1.5).desaturate(1).hex(),
             brighten: chroma(baseColor).saturate(.5).hex(),
-            subtle: chroma(baseColor).alpha(.45).hex(),
+            subtle: chroma(baseColor).alpha(.55).hex(),
             fadded: chroma(baseColor).alpha(.075).hex(),
             ...textColor
         }
@@ -141,7 +141,7 @@ export const Button: React.FC<Props> = ({
             if (outline) {
                 variantStyles = {
                     ...variantStyles,
-                    color: baseColors.textColor ?? baseColors.subtle
+                    color: chroma(baseColors.textColor).alpha(.55).hex() ?? baseColors.subtle
                 }
             } else {
                 variantStyles = {
@@ -151,6 +151,7 @@ export const Button: React.FC<Props> = ({
             }
         } else {
             if (outline) {
+                console.log({ title: baseColors.textColor })
                 variantStyles = {
                     ...variantStyles,
                     color: baseColors.textColor ?? baseColors.full
