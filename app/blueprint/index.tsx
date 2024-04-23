@@ -27,7 +27,6 @@ import TextFormRow from "../../components/formRow/TextFormRow"
 import ColorFormRow from "../../components/formRow/ColorFormRow"
 import IconFormRow from "../../components/formRow/IconFormRow"
 import { FoodSVGCode } from "../../components/FoodSVG"
-import Alert from "../../components/Alert"
 import Panel from "../../components/Panel"
 
 type Props = {}
@@ -98,6 +97,10 @@ export const Blueprint = ({ }: Props) => {
     const floatingActions = useMemo<FloatingAction[]>(() => {
         let tmp = [
             {
+                color: "info" as ButtonVariant, icon: IconSVGCode.file, label: "Export console", onPress: () => exportConsole()
+            }, {
+                color: "danger" as ButtonVariant, icon: IconSVGCode.flame, label: "Purge", onPress: () => purge()
+            }, {
                 color: "success" as ButtonVariant, icon: IconSVGCode.save, label: "Sauvegarder et quitter", onPress: () => router.navigate(`/`)
             }, {
                 color: "primary" as ButtonVariant, icon: IconSVGCode.plus, label: "Ajouter un onglet", onPress: () => {
@@ -147,7 +150,7 @@ export const Blueprint = ({ }: Props) => {
         if (gridWidth) {
             return gridWidth / gridX - 3 // - 3 is there to compensate for total border width
         } else {
-            return 48
+            return 128
         }
     }, [gridWidth])
 
@@ -155,7 +158,7 @@ export const Blueprint = ({ }: Props) => {
         if (cellWidth) {
             return cellWidth * cellHWFactor
         } else {
-            return 48 * cellHWFactor
+            return 128 * cellHWFactor
         }
     }, [cellWidth])
 
@@ -257,8 +260,28 @@ export const Blueprint = ({ }: Props) => {
                 name: carCat.name
             })
         })
-        console.log(JSON.stringify(pdt))
         setPlanDeTouche(pdt)
+    }
+
+    const purge = () => {
+        setPlanDeTouche([])
+    }
+
+    const exportConsole = () => {
+        let tmp = JSON.parse(JSON.stringify(planDeTouche))
+        tmp = tmp.map(tab => {
+            return ({
+                ...tab,
+                blueprint: tab.blueprint.map(cell => {
+                    return ({
+                        id: cell.content.id,
+                        ...cell.coordinates
+                    })
+                }),
+            })
+        });
+        console.log(JSON.stringify(tmp))
+
     }
 
     //blueprint is the list of product to whom has been added coordinates
@@ -276,10 +299,6 @@ export const Blueprint = ({ }: Props) => {
             return []
         }
     }, [selectedTab, planDeTouche, gridWidth])
-
-    useEffect(() => {
-        //updateBlueprintOfTab(blueprint)
-    }, [blueprint])
 
     //grid is the list of the grid cells : if they are free or overlapped by a product
     const grid = useMemo(() => {
@@ -338,6 +357,7 @@ export const Blueprint = ({ }: Props) => {
     }, 200, { 'trailing': false });
 
     const highlightTargetUnder = ({ absX, absY }: { absX: number, absY: number }) => {
+        if (!scrollViewLayout) return
         if (dragged) {
             let ins = []
             let relY = absY - scrollViewLayout.layout.pageY + onScrollEndContentOffset
@@ -402,8 +422,8 @@ export const Blueprint = ({ }: Props) => {
         if (droppedOverProducts.length == 1) {
             if (origin) {
                 switchTwoProducts({
-                    cellOne: products.find(p => p.id == origin.id),
-                    cellTwo: products.find(p => p.id == droppedOverProducts[0])
+                    cellOne: planDeTouche[selectedTab].blueprint.find(p => p.id == origin.id),
+                    cellTwo: planDeTouche[selectedTab].blueprint.find(p => p.id == droppedOverProducts[0])
                 })
             }
         }
@@ -546,159 +566,169 @@ export const Blueprint = ({ }: Props) => {
 
     return (
         <SafeAreaView style={{ flex: 1 }}>
-            <Box flexDirection={"column"} padding={'s'} gap={'m'} flex={1} >
-                {selectedProduct != null ?
-                    <Box flexDirection={"column"} justifyContent={"center"} alignItems={"center"} height={220} position={'relative'} gap='m'>
-                        <CustomText font="A700" size={14} style={{ textAlign: "center", maxWidth: "100%" }}>Séléctioné : </CustomText>
-                        <View style={{ height: cellHeight * 1.25, width: cellWidth * 1.65 }}>
-                            <Box height={72} justifyContent={'center'} padding={"xxs"} flex={1} borderRadius={4} borderBottomWidth={6} style={{ backgroundColor: theme.colors.surface, borderColor: selectedProduct.color }} >
-                                <CustomText font="A700" size={14} style={{ textAlign: "center", maxWidth: "100%" }}>{selectedProduct.label}</CustomText>
-                            </Box>
-                        </View>
-                        <CustomText font="A700" size={14} style={{ textAlign: "center", maxWidth: "100%" }}>Touchez une case  [+]  pour placer le produit</CustomText>
-                        <Button size="s" variant="danger" onPress={() => setSelectedProduct(null)} icon={IconSVGCode.xmark} style={{ position: 'absolute', top: -4, right: -4 }} />
+            <Box flexDirection={"column"} flex={1} >
+                <Panel style={{ flexDirection: "row", borderRadius: 0, gap: theme.spacing.xxs, height: 220, marginTop: 0, marginBottom: theme.spacing.xs }}>
+                    {selectedProduct != null ?
+                        <Box flexDirection={"column"} justifyContent={"center"} alignItems={"center"} height={220} position={'relative'} gap='m' flex={1}>
+                            <CustomText font="A700" size={14} style={{ textAlign: "center", maxWidth: "100%" }}>Séléctioné : </CustomText>
+                            <View style={{ height: cellHeight * 1.25, width: cellWidth * 1.65 }}>
+                                <Box height={72} justifyContent={'center'} padding={"xxs"} flex={1} borderRadius={4} borderBottomWidth={6} style={{ backgroundColor: chroma(selectedProduct.color).alpha(.08).hex(), borderColor: selectedProduct.color }} >
+                                    <CustomText font="A700" size={14} style={{ textAlign: "center", maxWidth: "100%" }}>{selectedProduct.label}</CustomText>
+                                </Box>
+                            </View>
+                            <CustomText font="A700" size={14} style={{ textAlign: "center", maxWidth: "100%" }}>Touchez une case  [+]  pour placer le produit</CustomText>
+                            <Button size="s" variant="danger" onPress={() => setSelectedProduct(null)} icon={IconSVGCode.xmark} style={{ position: 'absolute', top: -4, right: -4 }} />
+                        </Box>
+                        :
+                        <>
+                            <FlatList
+                                keyExtractor={(item) => "cat" + item.id}
+                                style={{ flexGrow: 1, paddingRight: theme.spacing.m }}
+                                contentContainerStyle={{ gap: theme.spacing.xs }}
+                                data={card}
+                                renderItem={({ item, index }) => {
+                                    return <CategoryTile selected={item.id == selectedCategory} category={item} height={36} onPress={() => { setSelectedCategory(item.id) }} />
+                                }}
+                            />
+                            <FlatList
+                                numColumns={2}
+                                scrollEnabled={dragged == null}
+                                keyExtractor={(product) => "prod" + product.id}
+                                style={{ width: "65%" }}
+                                data={selectedCategory ? card.find(cat => cat.id == selectedCategory).products : []}
+                                contentContainerStyle={{ gap: theme.spacing.xs }}
+                                columnWrapperStyle={{ gap: theme.spacing.xs }}
+                                renderItem={({ item, index }) => {
+                                    return (
+                                        <DraggableProduct
+                                            product={item}
+                                            onPress={() => setSelectedProduct(item)}
+                                            onLongPress={() => { handleGrab(item, null); }}
+                                            cellHeight={cellHeight}
+                                            cellWidth={cellWidth}
+                                            handleDrop={handleDrop}
+                                            queueHighlightTargetUnder={queueHighlightTargetUnder}
+                                            resetDrag={resetDrag}
+                                            translateX={translateX}
+                                            translateY={translateY}
+                                            checkForScrollViewLimit={checkForScrollViewLimit}
+                                        />
+                                    )
+                                }}
+                            />
+                        </>
+                    }
+                </Panel>
+                <Box padding={'s'} flex={1} flexGrow={1} gap={'m'}>
+                    <Box style={{ flex: 0, flexGrow: 0, alignSelf: "stretch", flexDirection: "row" }}>
+                        <ScrollView horizontal contentContainerStyle={{ gap: theme.spacing.s, minWidth: "100%" }} style={{ marginRight: theme.spacing.s, width: "100%", marginBottom: -8, paddingBottom: 12 }}>
+                            {planDeTouche.map((tab, index) => {
+                                return (
+                                    <Pressable onPress={() => setSelectedTab(index)}>
+                                        <Pill food={tab.icon != FoodSVGCode.none ? tab.icon : null} color={tab.color} size="m" inverted={selectedTab != index} style={{ margin: 0 }} title={displayTabName && tab.name ? tab.name : null} />
+                                    </Pressable>
+                                )
+                            })}
+                        </ScrollView>
                     </Box>
-                    :
-                    <Box flexDirection={"row"} gap={'xxs'} height={220}>
-                        <FlatList
-                            keyExtractor={(item) => "cat" + item.id}
-                            style={{ flexGrow: 1, paddingRight: theme.spacing.m }}
-                            contentContainerStyle={{ gap: theme.spacing.xs }}
-                            data={card}
-                            renderItem={({ item, index }) => {
-                                return <CategoryTile selected={item.id == selectedCategory} category={item} height={36} onPress={() => { setSelectedCategory(item.id) }} />
-                            }}
-                        />
-                        <FlatList
-                            numColumns={2}
+                    {planDeTouche[selectedTab] ?
+                        <ScrollView
                             scrollEnabled={dragged == null}
-                            keyExtractor={(product) => "prod" + product.id}
-                            style={{ width: "65%" }}
-                            data={selectedCategory ? card.find(cat => cat.id == selectedCategory).products : []}
-                            contentContainerStyle={{ gap: theme.spacing.xs }}
-                            columnWrapperStyle={{ gap: theme.spacing.xs }}
-                            renderItem={({ item, index }) => {
-                                return (
-                                    <DraggableProduct
-                                        product={item}
-                                        onPress={() => setSelectedProduct(item)}
-                                        onLongPress={() => { handleGrab(item, null); }}
-                                        cellHeight={cellHeight}
-                                        cellWidth={cellWidth}
-                                        handleDrop={handleDrop}
-                                        queueHighlightTargetUnder={queueHighlightTargetUnder}
-                                        resetDrag={resetDrag}
-                                        translateX={translateX}
-                                        translateY={translateY}
-                                        checkForScrollViewLimit={checkForScrollViewLimit}
-                                    />
-                                )
-                            }}
-                        />
-                    </Box>
-                }
-                <Box style={{ flex: 0, flexGrow: 0, alignSelf: "stretch", flexDirection: "row" }}>
-                    <ScrollView horizontal contentContainerStyle={{ gap: theme.spacing.s, minWidth: "100%" }} style={{ marginRight: theme.spacing.s, width: "100%" }}>
-                        {planDeTouche.map((tab, index) => {
-                            return (
-                                <Pressable onPress={() => setSelectedTab(index)}>
-                                    <Pill food={tab.icon != FoodSVGCode.none ? tab.icon : null} color={tab.color} size="m" inverted={selectedTab != index} style={{ margin: 0 }} title={displayTabName && tab.name ? tab.name : null} />
-                                </Pressable>
-                            )
-                        })}
-                    </ScrollView>
-                </Box>
-                {planDeTouche[selectedTab] ?
-                    <ScrollView
-                        scrollEnabled={dragged == null}
-                        decelerationRate={0}
-                        ref={scrollRef}
-                        scrollEventThrottle={0}
-                        style={{ alignSelf: "stretch", flex: 1, flexGrow: 1 }}
-                        onLayout={e => { handleLayout(e) }}
-                        onScroll={(e) => { setOnScrollEndContentOffset(e.nativeEvent.contentOffset.y) }}
-                        onScrollEndDrag={(e) => { setOnScrollEndContentOffset(e.nativeEvent.contentOffset.y) }}
-                        onMomentumScrollEnd={(e) => { setOnScrollEndContentOffset(e.nativeEvent.contentOffset.y) }}
-                        contentContainerStyle={{ height: scrollHeight.value + (cellHeight + theme.spacing[gridGap]) }}
-                    >
-                        {objects.map((cell) => {
-                            if (cell.content) {
-                                return (
-                                    <DraggablePlacedProduct
-                                        key={"object-" + cell.id}
-                                        cell={cell}
-                                        product={cell.content}
-                                        onLongPress={() => grabPlacedItem(cell)}
-                                        cellHeight={cellHeight}
-                                        cellWidth={cellWidth}
-                                        handleDrop={handleDrop}
-                                        queueHighlightTargetUnder={queueHighlightTargetUnder}
-                                        translateX={translateX}
-                                        translateY={translateY}
-                                        resetDrag={resetDrag}
-                                        removeFromBlueprint={removeFromBlueprint}
-                                        checkForScrollViewLimit={checkForScrollViewLimit}
-                                        isLastDragged={lastDragged != null && lastDragged.id == cell.id}
-                                    />
-                                )
-                            } else {
-                                return (
-                                    <Box
-                                        key={cell.id}
-                                        position={"absolute"}
-                                        borderRadius={4}
-                                        style={{ borderColor: chroma(theme.colors[isHovered(cell) ? 'success' : 'primary']).alpha(.8).hex(), borderStyle: "dashed", borderWidth: 1.5, backgroundColor: chroma(theme.colors[isHovered(cell) ? 'success' : 'primary']).alpha(.06).hex(), ...cell.layout }}
-                                        width={cellWidth}
-                                        height={cellHeight}
-                                        justifyContent={"center"}
-                                        alignItems={"center"}
-                                    >
-                                        <Pressable
-                                            onPress={selectedProduct ? () => placeSelectedProductHere(cell) : null}
-                                            style={{
-                                                flex: 1,
-                                                width: "100%",
-                                                backgroundColor: "danger",
-                                                justifyContent: "center",
-                                                alignItems: "center",
-
-                                            }}
-                                        >
-                                            <IconSVG icon={isHovered(cell) ? IconSVGCode.check : IconSVGCode.plus} size="smaller" fill={theme.colors[isHovered(cell) ? 'success' : 'primary']} />
-                                        </Pressable>
-                                    </Box>
-                                )
-                            }
-                        })}
-                        <Pressable
-                            onPress={() => setGridY(gridY + 1)}
-                            style={{
-                                position: "absolute",
-                                borderRadius: 4,
-                                backgroundColor: chroma(theme.colors.primary).alpha(.08).hex(),
-                                justifyContent: "center",
-                                alignItems: "center",
-                                ...getPositionAndSizesFromXYCoordinates({ h: 1, w: gridX, x: 0, y: gridY })
-                            }}
+                            decelerationRate={0}
+                            ref={scrollRef}
+                            scrollEventThrottle={0}
+                            style={{ alignSelf: "stretch", flex: 1, flexGrow: 1 }}
+                            onLayout={e => { handleLayout(e) }}
+                            onScroll={(e) => { setOnScrollEndContentOffset(e.nativeEvent.contentOffset.y) }}
+                            onScrollEndDrag={(e) => { setOnScrollEndContentOffset(e.nativeEvent.contentOffset.y) }}
+                            onMomentumScrollEnd={(e) => { setOnScrollEndContentOffset(e.nativeEvent.contentOffset.y) }}
+                            contentContainerStyle={{ height: scrollHeight.value + (cellHeight + theme.spacing[gridGap]) }}
                         >
-                            <Box
-                                justifyContent={"center"}
-                                alignItems={"center"}
-                                flexDirection={"row"}
-                                gap="xs"
+                            {objects.map((cell) => {
+                                if (cell.content) {
+                                    return (
+                                        <DraggablePlacedProduct
+                                            key={"object-" + cell.id}
+                                            cell={cell}
+                                            product={cell.content}
+                                            onLongPress={() => grabPlacedItem(cell)}
+                                            cellHeight={cellHeight}
+                                            cellWidth={cellWidth}
+                                            handleDrop={handleDrop}
+                                            queueHighlightTargetUnder={queueHighlightTargetUnder}
+                                            translateX={translateX}
+                                            translateY={translateY}
+                                            resetDrag={resetDrag}
+                                            removeFromBlueprint={removeFromBlueprint}
+                                            checkForScrollViewLimit={checkForScrollViewLimit}
+                                            isLastDragged={lastDragged != null && lastDragged.id == cell.id}
+                                        />
+                                    )
+                                } else {
+                                    return (
+                                        <Box
+                                            key={cell.id}
+                                            position={"absolute"}
+                                            borderRadius={4}
+                                            style={{ borderColor: chroma(theme.colors[isHovered(cell) ? 'success' : 'primary']).alpha(.8).hex(), borderStyle: "dashed", borderWidth: 1.5, backgroundColor: chroma(theme.colors[isHovered(cell) ? 'success' : 'primary']).alpha(.08).hex(), ...cell.layout }}
+                                            width={cellWidth}
+                                            height={cellHeight}
+                                            justifyContent={"center"}
+                                            alignItems={"center"}
+                                        >
+                                            <Pressable
+                                                onPress={selectedProduct ? () => placeSelectedProductHere(cell) : null}
+                                                style={{
+                                                    flex: 1,
+                                                    width: "100%",
+                                                    backgroundColor: "danger",
+                                                    justifyContent: "center",
+                                                    alignItems: "center",
+
+                                                }}
+                                            >
+                                                <IconSVG icon={isHovered(cell) ? IconSVGCode.check : IconSVGCode.plus} size="smaller" fill={theme.colors[isHovered(cell) ? 'success' : 'primary']} />
+                                            </Pressable>
+                                        </Box>
+                                    )
+                                }
+                            })}
+                            <Pressable
+                                onPress={() => setGridY(gridY + 1)}
+                                style={{
+                                    position: "absolute",
+                                    borderRadius: 4,
+                                    backgroundColor: chroma(theme.colors.primary).alpha(.08).hex(),
+                                    justifyContent: "center",
+                                    alignItems: "center",
+                                    ...getPositionAndSizesFromXYCoordinates({ h: 1, w: gridX, x: 0, y: gridY })
+                                }}
                             >
-                                <CustomText size={18} color="primary">Add a row</CustomText>
-                                <IconSVG size="small" icon={IconSVGCode.plus} fill={theme.colors.primary} />
-                            </Box>
-                        </Pressable>
-                    </ScrollView>
-                    :
-                    <Panel style={{ flex: 1, flexGrow: 1, justifyContent: "center", alignItems: "center", paddingHorizontal: theme.spacing.xxl }}>
-                        <CustomText font="A500" lineHeight={32} size={22} style={{ textAlign: "center" }} >Vous n'avez aucun onglet dans ce plan de touche ...</CustomText>
-                        <CustomText font="A500" lineHeight={32} size={22} style={{ textAlign: "center" }} >Créer en un pour commencer à ajouter des produits !</CustomText>
-                        <Button onPress={() => { setTabColor(tabColors[planDeTouche.length + 1]); setTabName("Onglet " + (planDeTouche.length + 1)); setTabIcon(FoodSVGCode.none); setNewTabOpen(true) }} title="Créer un onglet" icon={IconSVGCode.plus} size="l" iconPosition="right" style={{ marginTop: theme.spacing.xxl }} />
-                    </Panel>
-                }
+                                <Box
+                                    justifyContent={"center"}
+                                    alignItems={"center"}
+                                    flexDirection={"row"}
+                                    gap="xs"
+                                >
+                                    <CustomText size={18} color="primary">Add a row</CustomText>
+                                    <IconSVG size="small" icon={IconSVGCode.plus} fill={theme.colors.primary} />
+                                </Box>
+                            </Pressable>
+                        </ScrollView>
+                        :
+                        <>
+                            <View style={{ flex: 1, flexGrow: 1 }} />
+                            <Panel style={{ justifyContent: "center", alignItems: "center", paddingHorizontal: theme.spacing.xxl, marginHorizontal: theme.spacing.xxl }}>
+                                <CustomText font="A500" lineHeight={26} size={20} style={{ textAlign: "center" }} >Vous n'avez aucun onglet dans ce plan de touche ...</CustomText>
+                                <CustomText font="A500" lineHeight={26} size={20} style={{ textAlign: "center", marginTop: theme.spacing.s }} >Créer en un pour commencer à ajouter des produits !</CustomText>
+                                <Button outline onPress={() => { setTabColor(tabColors[planDeTouche.length + 1]); setTabName("Onglet " + (planDeTouche.length + 1)); setTabIcon(FoodSVGCode.none); setNewTabOpen(true) }} title="Créer un onglet" icon={IconSVGCode.plus} size="m" iconPosition="right" style={{ marginTop: theme.spacing.m }} />
+                                <CustomText font="A500" lineHeight={26} size={20} style={{ textAlign: "center", marginTop: theme.spacing.s }} >Ou essayez l'auto layout</CustomText>
+                                <Button outline onPress={() => { setAutoLayoutOpen(true) }} title="Auto layout" variant="info" icon={IconSVGCode.layer_group} size="m" iconPosition="right" style={{ marginTop: theme.spacing.m }} />
+                            </Panel>
+                            <View style={{ flex: 1, flexGrow: 1 }} />
+                        </>
+                    }
+                </Box>
             </Box>
             {scrollTriggerInterval && <>
                 <Box pointerEvents="none" backgroundColor="warning" opacity={0} style={{ position: 'absolute', zIndex: 1000000000, top: scrollTriggerInterval.intervalDown.from, left: 10, right: 10, height: scrollTriggerInterval.intervalDown.to - scrollTriggerInterval.intervalDown.from }} />
@@ -713,8 +743,8 @@ export const Blueprint = ({ }: Props) => {
                             {
                                 backgroundColor: chroma.mix(theme.colors.fullTheme, dragged.color, .1).hex(),
                                 borderColor: dragged.color,
-                                height: cellHeight,
                                 width: cellWidth,
+                                height: cellHeight,
                                 padding: theme.spacing.xs,
                             }
                         ]}
@@ -848,7 +878,7 @@ const DraggableProduct = ({
         return (
             <GestureDetector gesture={fromListPan}>
                 <Pressable style={{ flex: 1 }} onPress={onPress ?? null} onPressIn={() => setIsPressed(true)} onPressOut={() => setIsPressed(false)} >
-                    <Box height={72} justifyContent={'center'} padding={"xxs"} flex={1} borderRadius={4} borderBottomWidth={6} style={{ backgroundColor: isPressed ? chroma(theme.colors.primary).alpha(.1).hex() : theme.colors.surface, borderColor: product.color }} >
+                    <Box height={72} justifyContent={'center'} padding={"xxs"} flex={1} borderRadius={4} borderBottomWidth={6} style={{ backgroundColor: isPressed ? chroma(theme.colors.primary).alpha(.1).hex() : chroma(product.color).alpha(.08).hex(), borderColor: product.color }} >
                         <CustomText font="A700" size={14} style={{ textAlign: "center", maxWidth: "100%" }}>{product.label}</CustomText>
                     </Box>
                 </Pressable>
@@ -857,7 +887,7 @@ const DraggableProduct = ({
     } else {
         return (
             <View style={{ flex: 1 }}>
-                <Box height={72} justifyContent={'center'} padding={"xxs"} flex={1} borderRadius={4} borderBottomWidth={6} style={{ backgroundColor: isPressed ? chroma(theme.colors.primary).alpha(.1).hex() : theme.colors.surface, borderColor: product.color }} >
+                <Box height={72} justifyContent={'center'} padding={"xxs"} flex={1} borderRadius={4} borderBottomWidth={6} style={{ backgroundColor: isPressed ? chroma(theme.colors.primary).alpha(.1).hex() : chroma(product.color).alpha(.08).hex(), borderColor: product.color }} >
                     <CustomText font="A700" size={14} style={{ textAlign: "center", maxWidth: "100%" }}>{product.label}</CustomText>
                 </Box>
             </View>

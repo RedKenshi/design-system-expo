@@ -76,7 +76,7 @@ export const Button: React.FC<Props> = ({
             fadded: chroma(baseColor).alpha(.075).hex(),
             ...textColor
         }
-    }, [variant, theme])
+    }, [variant, theme, outline])
 
     const computedStyle = useMemo(() => {
         let variantStyles: ViewStyle = {}
@@ -125,7 +125,7 @@ export const Button: React.FC<Props> = ({
         }
 
         return { ...styles.container, ...variantStyles }
-    }, [baseColors, outline, disabled, loading])
+    }, [baseColors, outline, disabled, loading, size])
 
     const computedTextStyle = useMemo(() => {
 

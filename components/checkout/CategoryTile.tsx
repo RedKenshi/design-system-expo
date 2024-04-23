@@ -26,7 +26,7 @@ export const CategoryTile: React.FC<Props> = ({
 
     const computedStyle = useMemo(() => {
         let tmp: ViewStyle = {
-            backgroundColor: selected ? chroma.mix(category.color, "#fff", .1).hex() : theme.colors.surface,
+            backgroundColor: selected ? chroma.mix(category.color, "#fff", .1).hex() : chroma(category.color).alpha(.1).hex(),
             borderColor: selected ? chroma(category.color).darken().hex() : category.color,
             borderBottomWidth: selected ? 0 : 3,
             height: height
