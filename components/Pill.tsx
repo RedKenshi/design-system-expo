@@ -154,7 +154,7 @@ export const Pill: React.FC<Props> = ({
             case 'l': variantStyles = { ...variantStyles, ...styles.textL }; break;
         }
         return { ...variantStyles, ...textStyle }
-    }, [baseColors, size])
+    }, [baseColors, size, textStyle])
 
     return (
         <View style={[computedStyle, style]} >
@@ -170,32 +170,32 @@ export const Pill: React.FC<Props> = ({
 
 const styles = StyleSheet.create({
     sizeXS: {
-        height: 20,
-        minWidth: 20,
+        height: 22,
+        minWidth: 22,
         gap: PALETTE.spacing.xs,
         paddingHorizontal: PALETTE.spacing.xs,
         paddingVertical: PALETTE.spacing.xxs,
         borderRadius: 3,
     },
     sizeS: {
-        height: 28,
-        minWidth: 28,
+        height: 32,
+        minWidth: 32,
         gap: PALETTE.spacing.xs,
         paddingHorizontal: PALETTE.spacing.xs,
         paddingVertical: PALETTE.spacing.xs,
         borderRadius: 3,
     },
     sizeM: {
-        height: 32,
-        minWidth: 32,
+        height: 34,
+        minWidth: 34,
         gap: PALETTE.spacing.s,
         paddingHorizontal: PALETTE.spacing.s,
-        paddingVertical: PALETTE.spacing.s,
+        paddingVertical: PALETTE.spacing.xs,
         borderRadius: 4,
     },
     sizeL: {
-        height: 42,
-        minWidth: 42,
+        height: 46,
+        minWidth: 46,
         gap: PALETTE.spacing.m,
         paddingHorizontal: PALETTE.spacing.m,
         paddingVertical: PALETTE.spacing.s,
@@ -210,23 +210,23 @@ const styles = StyleSheet.create({
     },
     textXS: {
         fontFamily: FONTS.A600,
-        fontSize: 11,
-        lineHeight: 11,
+        fontSize: 10,
+        lineHeight: 12,
     },
     textS: {
         fontFamily: FONTS.A600,
-        fontSize: 13,
-        lineHeight: 13,
+        fontSize: 12,
+        lineHeight: 14,
     },
     textM: {
         fontFamily: FONTS.A600,
-        fontSize: 16,
-        lineHeight: 16,
+        fontSize: 15,
+        lineHeight: 17,
     },
     textL: {
         fontFamily: FONTS.A600,
-        fontSize: 20,
-        lineHeight: 20,
+        fontSize: 19,
+        lineHeight: 21,
     },
 });
 

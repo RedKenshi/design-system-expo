@@ -3,7 +3,7 @@ import { Theme } from "../../constants/Palette"
 import card from '../../constants/fakeCard.json'
 
 import Box from "../../components/Box"
-import { useTheme } from "@shopify/restyle"
+import { useTheme, useResponsiveProp } from "@shopify/restyle"
 import CategoryTile from "../../components/checkout/CategoryTile";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import Button, { ButtonVariant } from "../../components/Button";
@@ -59,8 +59,6 @@ type TabDeTouche = {
 type PlanDeTouche = TabDeTouche[]
 
 const displayTabName = true;
-const baseGridX = 3;
-const baseGridY = 4;
 const cellHWFactor = .7;
 const gridGap = 'xs';
 const delayLongPress = 100;
@@ -68,6 +66,11 @@ const fingerDodge = 80;
 const overlapMinimum = 20;
 
 export const Blueprint = ({ }: Props) => {
+
+    const numColumnsAvailable = useResponsiveProp({ phone: 2, tablet: 4, largeTablet: 6 })
+
+    const baseGridX = useResponsiveProp({ phone: 3, tablet: 5, largeTablet: 6 });
+    const baseGridY = 5;
 
     const [gridX, setGridX] = useState(baseGridX);
     const [gridY, setGridY] = useState(baseGridY);
@@ -133,9 +136,9 @@ export const Blueprint = ({ }: Props) => {
         return (tmp)
     }, [planDeTouche, selectedTab])
 
-    const [products, setProducts] = useState<Cell[]>([])
     const [selectedCategory, setSelectedCategory] = useState<string>()
     const [gridWidth, setGridWidth] = useState<number | null>()
+    const [availableProductGridWidth, setAvailableProductGridWidth] = useState<number | null>(null)
     const [scrollViewLayout, setScrollViewLayout] = useState<RegisterAbsoluteLayout | null>(null)
     const [onScrollEndContentOffset, setOnScrollEndContentOffset] = useState<number>(0)
     const [dragged, setDragged] = useState<Product | null>(null)
@@ -147,12 +150,21 @@ export const Blueprint = ({ }: Props) => {
     const [hovered, setHovered] = useState<{ x: number, y: number }[]>([])
 
     const cellWidth = useMemo(() => {
+        theme.spacing[gridGap]
         if (gridWidth) {
-            return gridWidth / gridX - 3 // - 3 is there to compensate for total border width
+            return ((gridWidth - (theme.spacing[gridGap] * (gridX - 1))) / gridX) - 1
         } else {
             return 128
         }
     }, [gridWidth])
+
+    const cellWidthAvailable = useMemo(() => {
+        if (availableProductGridWidth && numColumnsAvailable) {
+            return (availableProductGridWidth - (theme.spacing[gridGap] * (numColumnsAvailable - 1))) / numColumnsAvailable
+        } else {
+            return 140
+        }
+    }, [availableProductGridWidth, numColumnsAvailable])
 
     const cellHeight = useMemo(() => {
         if (cellWidth) {
@@ -281,7 +293,6 @@ export const Blueprint = ({ }: Props) => {
             })
         });
         console.log(JSON.stringify(tmp))
-
     }
 
     //blueprint is the list of product to whom has been added coordinates
@@ -352,11 +363,8 @@ export const Blueprint = ({ }: Props) => {
         }
     }, [onScrollEndContentOffset, grid, scrollViewLayout])
 
-    const queueHighlightTargetUnder = _.throttle(({ absX, absY }: { absX: number, absY: number }) => {
-        highlightTargetUnder({ absX, absY })
-    }, 200, { 'trailing': false });
-
     const highlightTargetUnder = ({ absX, absY }: { absX: number, absY: number }) => {
+        console.log('compute ' + absX + " " + absY)
         if (!scrollViewLayout) return
         if (dragged) {
             let ins = []
@@ -390,6 +398,12 @@ export const Blueprint = ({ }: Props) => {
             setHovered(ins)
         }
     }
+
+    const queueHighlightTargetUnder = _.throttle(({ absX, absY }: { absX: number, absY: number }) => {
+        console.log('queue ' + absX + " " + absY)
+        highlightTargetUnder({ absX, absY })
+    }, 350, { 'leading': true, 'trailing': false });
+
     const addProductToDropIds = ({ product, dropIds, origin }: { product: Product, dropIds: { x: number, y: number }[], origin: Cell | null }) => {
         if (dropIds.some(di => di.y == (gridY - 1))) {
             setGridY(gridY + 1)
@@ -583,43 +597,45 @@ export const Blueprint = ({ }: Props) => {
                         <>
                             <FlatList
                                 keyExtractor={(item) => "cat" + item.id}
-                                style={{ flexGrow: 1, paddingRight: theme.spacing.m }}
-                                contentContainerStyle={{ gap: theme.spacing.xs }}
+                                style={{ flex: 0, flexGrow: 0, width: 150, paddingRight: theme.spacing.m }}
+                                contentContainerStyle={{ gap: theme.spacing[gridGap] }}
                                 data={card}
                                 renderItem={({ item, index }) => {
                                     return <CategoryTile selected={item.id == selectedCategory} category={item} height={36} onPress={() => { setSelectedCategory(item.id) }} />
                                 }}
                             />
-                            <FlatList
-                                numColumns={2}
-                                scrollEnabled={dragged == null}
-                                keyExtractor={(product) => "prod" + product.id}
-                                style={{ width: "65%" }}
-                                data={selectedCategory ? card.find(cat => cat.id == selectedCategory).products : []}
-                                contentContainerStyle={{ gap: theme.spacing.xs }}
-                                columnWrapperStyle={{ gap: theme.spacing.xs }}
-                                renderItem={({ item, index }) => {
-                                    return (
-                                        <DraggableProduct
-                                            product={item}
-                                            onPress={() => setSelectedProduct(item)}
-                                            onLongPress={() => { handleGrab(item, null); }}
-                                            cellHeight={cellHeight}
-                                            cellWidth={cellWidth}
-                                            handleDrop={handleDrop}
-                                            queueHighlightTargetUnder={queueHighlightTargetUnder}
-                                            resetDrag={resetDrag}
-                                            translateX={translateX}
-                                            translateY={translateY}
-                                            checkForScrollViewLimit={checkForScrollViewLimit}
-                                        />
-                                    )
-                                }}
-                            />
+                            <View style={{ flex: 1, flexGrow: 1 }}>
+                                <FlatList
+                                    numColumns={numColumnsAvailable}
+                                    scrollEnabled={dragged == null}
+                                    keyExtractor={(product) => "prod" + product.id}
+                                    onLayout={(e) => setAvailableProductGridWidth(e.nativeEvent.layout.width)}
+                                    data={selectedCategory ? card.find(cat => cat.id == selectedCategory).products : []}
+                                    contentContainerStyle={{ gap: theme.spacing[gridGap] }}
+                                    columnWrapperStyle={{ gap: theme.spacing[gridGap] }}
+                                    renderItem={({ item, index }) => {
+                                        return (
+                                            <DraggableProduct
+                                                product={item}
+                                                onPress={() => setSelectedProduct(item)}
+                                                onLongPress={() => { handleGrab(item, null); }}
+                                                cellHeight={cellWidthAvailable * cellHWFactor}
+                                                cellWidth={cellWidthAvailable}
+                                                handleDrop={handleDrop}
+                                                queueHighlightTargetUnder={queueHighlightTargetUnder}
+                                                resetDrag={resetDrag}
+                                                translateX={translateX}
+                                                translateY={translateY}
+                                                checkForScrollViewLimit={checkForScrollViewLimit}
+                                            />
+                                        )
+                                    }}
+                                />
+                            </View>
                         </>
                     }
                 </Panel>
-                <Box padding={'s'} flex={1} flexGrow={1} gap={'m'}>
+                <Box paddingVertical={'s'} paddingHorizontal={{ phone: 's', tablet: 'xl', largeTablet: 'xxxxl' }} flex={1} flexGrow={1} gap={'m'}>
                     <Box style={{ flex: 0, flexGrow: 0, alignSelf: "stretch", flexDirection: "row" }}>
                         <ScrollView horizontal contentContainerStyle={{ gap: theme.spacing.s, minWidth: "100%" }} style={{ marginRight: theme.spacing.s, width: "100%", marginBottom: -8, paddingBottom: 12 }}>
                             {planDeTouche.map((tab, index) => {
@@ -877,7 +893,7 @@ const DraggableProduct = ({
     if (onLongPress) {
         return (
             <GestureDetector gesture={fromListPan}>
-                <Pressable style={{ flex: 1 }} onPress={onPress ?? null} onPressIn={() => setIsPressed(true)} onPressOut={() => setIsPressed(false)} >
+                <Pressable style={{ width: cellWidth }} onPress={onPress ?? null} onPressIn={() => setIsPressed(true)} onPressOut={() => setIsPressed(false)} >
                     <Box height={72} justifyContent={'center'} padding={"xxs"} flex={1} borderRadius={4} borderBottomWidth={6} style={{ backgroundColor: isPressed ? chroma(theme.colors.primary).alpha(.1).hex() : chroma(product.color).alpha(.08).hex(), borderColor: product.color }} >
                         <CustomText font="A700" size={14} style={{ textAlign: "center", maxWidth: "100%" }}>{product.label}</CustomText>
                     </Box>
@@ -886,7 +902,7 @@ const DraggableProduct = ({
         )
     } else {
         return (
-            <View style={{ flex: 1 }}>
+            <View style={{ width: cellWidth }}>
                 <Box height={72} justifyContent={'center'} padding={"xxs"} flex={1} borderRadius={4} borderBottomWidth={6} style={{ backgroundColor: isPressed ? chroma(theme.colors.primary).alpha(.1).hex() : chroma(product.color).alpha(.08).hex(), borderColor: product.color }} >
                     <CustomText font="A700" size={14} style={{ textAlign: "center", maxWidth: "100%" }}>{product.label}</CustomText>
                 </Box>

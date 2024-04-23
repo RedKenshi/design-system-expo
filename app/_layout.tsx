@@ -1,5 +1,5 @@
 import { useContext, useEffect } from 'react';
-import { StyleSheet, ViewStyle } from 'react-native';
+import { StyleSheet } from 'react-native';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
 
 import { useFonts } from 'expo-font';
@@ -12,8 +12,7 @@ import { DnDProvider } from '../contexts/DragAndDropContext';
 import { AppContext, AppContextProvider } from '../contexts/AppContext';
 
 import { LIGHT_THEME, DARK_THEME } from '../constants/Palette';
-import { SafeAreaProvider, useSafeAreaInsets } from 'react-native-safe-area-context';
-import Drawer from '../components/Drawer';
+import { SafeAreaProvider } from 'react-native-safe-area-context';
 import { CashRegisterContextProvider } from '../contexts/CashRegisterContext';
 
 export {

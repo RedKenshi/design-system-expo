@@ -5,8 +5,8 @@ import { Theme } from "../constants/Palette"
 import Box from "../components/Box"
 import PageBlock from "../components/PageBlock"
 import { useTheme } from "@shopify/restyle"
-import { Link } from "expo-router";
-import Pill from "../components/Pill";
+import { router } from "expo-router";
+import Button from "../components/Button";
 
 type Props = {}
 
@@ -24,9 +24,7 @@ export const Buttons = ({ }: Props) => {
         <>
             <PageBlock style={{ display: "flex", justifyContent: "center", alignItems: "center", flexDirection: 'row', marginTop: 400 }} >
                 <Box marginHorizontal={{ tablet: 'l' }} justifyContent="space-evenly" style={[padding, { maxWidth: "100%", paddingBottom: "50%" }]} >
-                    <Link push href="/_sitemap">
-                        <Pill title={"MAP"} variant='info' />
-                    </Link>
+                    <Button onPress={() => router.navigate('/_sitemap')} title={"MAP"} variant='info' />
                 </Box>
             </PageBlock>
         </>

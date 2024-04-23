@@ -227,6 +227,8 @@ export const spacing = {
     'l': 16,
     'xl': 24,
     'xxl': 32,
+    'xxxl': 64,
+    'xxxxl': 96,
 }
 export const breakpoints = {
     phone: 0,
