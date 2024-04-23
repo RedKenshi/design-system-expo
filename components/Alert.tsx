@@ -69,6 +69,7 @@ export const Alert: React.FC<Props> = ({
 
     return (
         <Box
+
             minHeight={48}
             marginHorizontal='m'
             flexDirection='column'
@@ -87,7 +88,7 @@ export const Alert: React.FC<Props> = ({
                 </Box>
             </Box>
             {description &&
-                <Box>
+                <Box flex={1}>
                     <Text style={[computedTextStyle, styles.description]}>{description}</Text>
                 </Box>
             }
@@ -97,7 +98,6 @@ export const Alert: React.FC<Props> = ({
 
 const styles = StyleSheet.create({
     headRow: {
-        flex: 1,
         display: "flex",
         flexDirection: "row",
         alignItems: "center",
@@ -106,7 +106,8 @@ const styles = StyleSheet.create({
     },
     title: {
         fontFamily: FONTS.A600,
-        fontSize: 16,
+        fontSize: 22,
+        lineHeight: 22,
         marginTop: 2
     },
     description: {

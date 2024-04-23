@@ -2,18 +2,11 @@ import React from 'react';
 import { Modal as NativeModal, Pressable, ScrollView, StyleSheet } from 'react-native';
 import { Theme } from "../constants/Palette";
 
-import { IconSVGCode } from './IconSVG';
 import { BlurView } from 'expo-blur';
-import Button, { ButtonVariant } from './Button';
+import Button from './Button';
 import Box from './Box';
 import { useTheme } from '@shopify/restyle';
-
-type ModalAction = {
-    variant: ButtonVariant
-    title: string
-    icon?: IconSVGCode
-    onPress: Function
-}
+import { ModalAction } from '../constants/types';
 
 interface Props {
     open: boolean,
@@ -50,7 +43,7 @@ export const ModalNative = ({ open, close, actions, preventCloseOnDimmerPress = 
                         <Box flexDirection="row" padding='s' paddingTop='l' gap='xxs' alignSelf={"stretch"}>
                             {actions.map((action, i) => {
                                 return (
-                                    <Button key={`actions-${i}-${action.title}`} iconPosition="right" style={{ flex: 1 }} onPress={action.onPress} icon={action.icon} title={action.title} variant={action.variant} />
+                                    <Button disabled={action.disabled} key={`actions-${i}-${action.title}`} iconPosition="right" style={{ flex: 1 }} onPress={action.onPress} icon={action.icon} title={action.title} variant={action.variant} />
                                 )
                             })}
                         </Box>

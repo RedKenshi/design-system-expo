@@ -15,7 +15,8 @@ interface Props {
     isSuccess?: boolean
     isError?: boolean
     isWarning?: boolean
-    onBackground?: boolean
+    onBackground?: boolean,
+    defaultValue?: string
 }
 const infoBorderWith = 2;
 
@@ -28,7 +29,8 @@ export const CustomTextField = ({
     isSuccess,
     isError,
     isWarning,
-    onBackground
+    onBackground,
+    defaultValue
 }: Props) => {
 
     const theme = useTheme<Theme>();

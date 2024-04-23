@@ -27,7 +27,6 @@ export const SwipeDetector = ({ children, onSwipeUp, onSwipeDown, onTap }: Props
     const [touchIn, setTouchIn] = useState<GestureStateChangeEvent<PanGestureHandlerEventPayload>>(null)
 
     const pan = Gesture.Pan().onStart(e => {
-        console.log("in")
         runOnJS(setTouchIn)(e)
     }).onEnd(e => {
         if (touchIn) {

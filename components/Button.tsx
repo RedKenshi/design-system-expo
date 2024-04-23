@@ -1,5 +1,5 @@
 import React, { useMemo } from 'react';
-import { Text, TouchableOpacity, StyleSheet, TextStyle, ViewStyle, ActivityIndicator } from 'react-native';
+import { Text, TouchableOpacity, StyleSheet, TextStyle, ViewStyle, ActivityIndicator, Pressable } from 'react-native';
 import { IconSVG, IconSVGCode } from './IconSVG';
 import PALETTE, { FONTS, Theme } from "../constants/Palette"
 import chroma from "chroma-js"
@@ -19,6 +19,7 @@ interface Props {
     iconPosition?: 'left' | 'right';
     style?: ViewStyle;
     textStyle?: TextStyle;
+    pointerEvents?: 'auto' | 'box-none' | 'box-only' | 'none'
 }
 
 export const Button: React.FC<Props> = ({
@@ -33,6 +34,7 @@ export const Button: React.FC<Props> = ({
     loading = false,
     style,
     textStyle,
+    pointerEvents
 }) => {
 
     const theme = useTheme<Theme>();
@@ -151,7 +153,6 @@ export const Button: React.FC<Props> = ({
             }
         } else {
             if (outline) {
-                console.log({ title: baseColors.textColor })
                 variantStyles = {
                     ...variantStyles,
                     color: baseColors.textColor ?? baseColors.full
@@ -176,7 +177,7 @@ export const Button: React.FC<Props> = ({
     }, [size])
 
     return (
-        <TouchableOpacity disabled={disabled || loading} style={[computedStyle, style]} onPress={onPress}>
+        <Pressable pointerEvents={pointerEvents ?? 'auto'} disabled={disabled || loading} style={[computedStyle, style]} onPress={() => onPress()}>
             {!loading && icon && iconPosition === 'left' && <IconSVG size={iconSize} icon={icon} fill={computedTextStyle.color ?? baseColors.textColor} />}
             {loading ?
                 <ActivityIndicator color={computedTextStyle.color ?? baseColors.textColor} />
@@ -184,7 +185,7 @@ export const Button: React.FC<Props> = ({
                 title ? <Text style={computedTextStyle}>{title}</Text> : null
             }
             {!loading && icon && iconPosition === 'right' && <IconSVG size={iconSize} icon={icon} fill={computedTextStyle.color ?? baseColors.textColor} />}
-        </TouchableOpacity>
+        </Pressable>
     );
 };
 

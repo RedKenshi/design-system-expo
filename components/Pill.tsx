@@ -3,9 +3,13 @@ import { Text, StyleSheet, TextStyle, ViewStyle, ActivityIndicator, View } from 
 import PALETTE, { FONTS, Theme } from "../constants/Palette"
 import chroma from "chroma-js"
 import { useTheme } from '@shopify/restyle';
+import { IconSVG, IconSVGCode } from './IconSVG';
+import { getBestContrast } from '../constants/utils';
+import { FoodSVG, FoodSVGCode } from './FoodSVG';
 
 interface Props {
     title?: string;
+    icon?: IconSVGCode;
     rounded?: boolean;
     size?: "xs" | "s" | "m" | "l";
     variant?: 'primary' | 'success' | 'warning' | 'danger' | 'info' | 'neutral';
@@ -13,10 +17,13 @@ interface Props {
     loading?: boolean;
     style?: ViewStyle;
     textStyle?: TextStyle;
+    color?: string;
+    food?: FoodSVGCode;
 }
 
 export const Pill: React.FC<Props> = ({
     title,
+    icon,
     rounded = false,
     size = "m",
     variant = "primary",
@@ -24,11 +31,26 @@ export const Pill: React.FC<Props> = ({
     loading = false,
     style,
     textStyle,
+    color,
+    food,
 }) => {
 
     const theme = useTheme<Theme>();
 
     const baseColors = useMemo(() => {
+        if (color && chroma.valid(color)) {
+            if (inverted) {
+                return {
+                    background: chroma(color).alpha(.2).hex(),
+                    text: chroma(color).saturate(.75).darken(.75).hex()
+                }
+            } else {
+                return {
+                    background: color,
+                    text: theme.colors.fullTheme
+                }
+            }
+        }
         switch (variant) {
             case 'primary':
                 if (inverted) {
@@ -136,10 +158,11 @@ export const Pill: React.FC<Props> = ({
 
     return (
         <View style={[computedStyle, style]} >
+            {food ? <FoodSVG size={"small"} icon={food} fill={computedTextStyle.color} /> : null}
             {loading ?
                 <ActivityIndicator color={computedTextStyle.color} />
                 :
-                title ? <Text style={[computedTextStyle, { marginTop: 3 }]}>{title}</Text> : null
+                title ? <Text style={[computedTextStyle, { marginTop: 3 }]}>{title}</Text> : icon ? <IconSVG icon={icon} fill={computedTextStyle.color} /> : null
             }
         </View>
     );
@@ -150,7 +173,7 @@ const styles = StyleSheet.create({
         height: 20,
         minWidth: 20,
         gap: PALETTE.spacing.xs,
-        paddingHorizontal: PALETTE.spacing.s,
+        paddingHorizontal: PALETTE.spacing.xs,
         paddingVertical: PALETTE.spacing.xxs,
         borderRadius: 3,
     },
@@ -158,7 +181,7 @@ const styles = StyleSheet.create({
         height: 28,
         minWidth: 28,
         gap: PALETTE.spacing.xs,
-        paddingHorizontal: PALETTE.spacing.s,
+        paddingHorizontal: PALETTE.spacing.xs,
         paddingVertical: PALETTE.spacing.xs,
         borderRadius: 3,
     },
@@ -166,7 +189,7 @@ const styles = StyleSheet.create({
         height: 32,
         minWidth: 32,
         gap: PALETTE.spacing.s,
-        paddingHorizontal: PALETTE.spacing.m,
+        paddingHorizontal: PALETTE.spacing.s,
         paddingVertical: PALETTE.spacing.s,
         borderRadius: 4,
     },
@@ -174,7 +197,7 @@ const styles = StyleSheet.create({
         height: 42,
         minWidth: 42,
         gap: PALETTE.spacing.m,
-        paddingHorizontal: PALETTE.spacing.l,
+        paddingHorizontal: PALETTE.spacing.m,
         paddingVertical: PALETTE.spacing.s,
         borderRadius: 6,
     },
@@ -192,18 +215,18 @@ const styles = StyleSheet.create({
     },
     textS: {
         fontFamily: FONTS.A600,
-        fontSize: 14,
-        lineHeight: 14,
+        fontSize: 13,
+        lineHeight: 13,
     },
     textM: {
         fontFamily: FONTS.A600,
-        fontSize: 18,
-        lineHeight: 18,
+        fontSize: 16,
+        lineHeight: 16,
     },
     textL: {
         fontFamily: FONTS.A600,
-        fontSize: 22,
-        lineHeight: 22,
+        fontSize: 20,
+        lineHeight: 20,
     },
 });
 

@@ -14,7 +14,8 @@ interface Props {
     isSuccess?: boolean
     isError?: boolean
     isWarning?: boolean
-    onBackground?: boolean
+    onBackground?: boolean,
+    placeholder?: string
 }
 
 export const TextFormRow = ({
@@ -26,7 +27,8 @@ export const TextFormRow = ({
     isSuccess,
     isError,
     isWarning,
-    onBackground
+    onBackground,
+    placeholder
 }: Props) => {
 
     const theme = useTheme<Theme>();

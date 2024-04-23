@@ -1,3 +1,7 @@
+import chroma from "chroma-js"
+
+export const tabColors = ["#e74c33", "#3498db", "#9b59b6", "#1abc9c", "#e67e22", "#74b9ff", "#9980FA", "#f39c12", "#273c75", "#05c46b"]
+
 export const isCloseEnough = (string: string, filter: string) => {
 
     const accentMap = {
@@ -44,4 +48,8 @@ export const overlapMarginError = ({ draggableX, draggableY, draggableH, draggab
     const overlapWidth = overlapRight - overlapLeft;
     const overlapHeight = overlapBottom - overlapTop;
     return overlapWidth >= minimumOverlap && overlapHeight >= minimumOverlap;
+}
+
+export const getBestContrast = (value: string, cadidate1: string, cadidate2: string) => {
+    return chroma.contrast(value, cadidate1) > chroma.contrast(value, cadidate2) ? cadidate1 : cadidate2
 }

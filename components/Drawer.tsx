@@ -9,8 +9,8 @@ import { EiwieSVG, IconSVGCode } from "./IconSVG";
 import { BlurView } from "expo-blur";
 import Box from "./Box";
 import { useTheme } from "@shopify/restyle";
-import Button from "./Button";
 import { AppContext } from "../contexts/AppContext";
+import Button from "./Button";
 
 type Props = {
 }
@@ -20,6 +20,7 @@ export const Drawer = ({ }: Props) => {
     const theme = useTheme<Theme>();
     const { darkMode, setDarkMode, open, setOpen } = useContext(AppContext);
     const windowWidth = Dimensions.get('window').width;
+    const windowHeight = Dimensions.get('window').height;
     const insets = useSafeAreaInsets();
     const padding = {
         paddingTop: insets.top,
@@ -49,7 +50,7 @@ export const Drawer = ({ }: Props) => {
 
     return (
         <Animated.View style={[styles.drawerWrapper, animatedStyles]}>
-            <Box width={{ phone: 320, tablet: 380, largeTablet: 420 }} style={[styles.drawerContainer, padding, { backgroundColor: theme.colors.background }]}>
+            <Box width={{ phone: 320, tablet: 380, largeTablet: 420 }} style={[padding, { backgroundColor: theme.colors.background, height: windowHeight }]}>
                 <Box style={styles.logoWrapper}>
                     <EiwieSVG color={theme.colors.primary} neutral={theme.colors.textOnSurface} />
                 </Box>
@@ -86,8 +87,8 @@ const styles = StyleSheet.create({
         zIndex: 100000,
         height: "100%",
         top: 0,
-        bottom: 200,
         left: 0,
+        bottom: 200,
         display: "flex",
         flexDirection: "row",
         overflow: "hidden"
@@ -99,12 +100,6 @@ const styles = StyleSheet.create({
         paddingTop: PALETTE.spacing.xl,
         paddingBottom: PALETTE.spacing.l,
         paddingLeft: PALETTE.spacing.l
-    },
-    drawerContainer: {
-        position: "relative",
-        top: 0,
-        bottom: 0,
-        left: 0,
     },
     dimmer: {
         flex: 1,

@@ -1,3 +1,6 @@
+import { ButtonVariant } from "../components/Button";
+import { IconSVGCode } from "../components/IconSVG";
+
 interface Price {
     isEnabled: boolean;
 
@@ -173,4 +176,12 @@ export type Product = {
 export type RegisterAbsoluteLayout = {
     id: string
     layout: { width: number, height: number, pageX: number, pageY: number }
+}
+
+export type ModalAction = {
+    variant: ButtonVariant
+    title: string
+    icon?: IconSVGCode
+    onPress: Function,
+    disabled?: boolean
 }
