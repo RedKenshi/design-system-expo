@@ -26,6 +26,7 @@ export const Buttons = ({ }: Props) => {
                 <Box marginHorizontal={{ tablet: 'l' }} justifyContent="space-evenly" style={[padding, { maxWidth: "100%", paddingBottom: "50%" }]} >
                     <Button onPress={() => router.navigate('/_sitemap')} title={"MAP"} variant='info' />
                 </Box>
+                <Button onPress={() => router.navigate('/blueprint')} title={"BLUEPRINT"} variant='info' />
             </PageBlock>
         </>
     )

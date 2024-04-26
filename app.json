@@ -9,6 +9,12 @@
     "scheme": "designsystemexpo",
     "plugins": [
       [
+        "expo-screen-orientation",
+        {
+          "initialOrientation": "DEFAULT"
+        }
+      ],
+      [
         "expo-font",
         {
           "fonts": [

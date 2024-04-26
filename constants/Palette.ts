@@ -320,8 +320,8 @@ export default DARK_THEME;
 export const FieldSizes = {
     width: {
         phone: 168,
-        tablet: 192,
-        largeTablet: 240
+        tablet: 240,
+        largeTablet: 320
     },
     height: {
         phone: 48,

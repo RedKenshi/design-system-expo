@@ -41,6 +41,10 @@ export const isInside = ({ draggableX, draggableY, droppableX, droppableY, dropp
 }
 
 export const overlapMarginError = ({ draggableX, draggableY, draggableH, draggableW, droppableX, droppableY, droppableW, droppableH }, minimumOverlap = 0) => {
+    if (draggableX + draggableW < droppableX) return false // draggable is on the left
+    if (draggableX > droppableX + droppableW) return false // draggable is on the right
+    if (draggableY + draggableH < droppableY) return false // draggable is on the top
+    if (draggableY > droppableY + droppableH) return false // draggable is on the bottom
     const overlapLeft = Math.max(draggableX, droppableX);
     const overlapRight = Math.min(draggableX + draggableW, droppableX + droppableW);
     const overlapTop = Math.max(draggableY, droppableY);

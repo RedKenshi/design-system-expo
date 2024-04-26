@@ -3,6 +3,7 @@
         "id": "cat1",
         "color": "#e74c33",
         "name": "Viandes",
+        "icon": "chicken",
         "products": [
             {
                 "id": "Via1",
@@ -66,6 +67,7 @@
         "id": "cat2",
         "color": "#3498db",
         "name": "Poissons",
+        "icon": "fish",
         "products": [
             {
                 "id": "Poi1",
@@ -127,61 +129,62 @@
     },
     {
         "id": "cat3",
-        "color": "#9b59b6",
+        "color": "#1abc9c",
         "name": "Végétarien",
+        "icon": "leaf",
         "products": [
             {
                 "id": "Veg1",
-                "color": "#9b59b6",
+                "color": "#1abc9c",
                 "label": "Raviolis aux Champignons Sauvages",
                 "priceExclTaxUnit": 18.99,
                 "VAT": 0.1
             },
             {
                 "id": "Veg2",
-                "color": "#9b59b6",
+                "color": "#1abc9c",
                 "label": "Salade Méditerranéenne",
                 "priceExclTaxUnit": 12.50,
                 "VAT": 0.2
             },
             {
                 "id": "Veg3",
-                "color": "#9b59b6",
+                "color": "#1abc9c",
                 "label": "Curry de Légumes et Lentilles",
                 "priceExclTaxUnit": 15.75,
                 "VAT": 0.1
             },
             {
                 "id": "Veg4",
-                "color": "#9b59b6",
+                "color": "#1abc9c",
                 "label": "Tarte aux Poireaux et Chèvre",
                 "priceExclTaxUnit": 14.80,
                 "VAT": 0.055
             },
             {
                 "id": "Veg5",
-                "color": "#9b59b6",
+                "color": "#1abc9c",
                 "label": "Burger Végétarien aux Haricots Noirs",
                 "priceExclTaxUnit": 13.99,
                 "VAT": 0.1
             },
             {
                 "id": "Veg6",
-                "color": "#9b59b6",
+                "color": "#1abc9c",
                 "label": "Lasagnes aux Épinards et Ricotta",
                 "priceExclTaxUnit": 16.50,
                 "VAT": 0.2
             },
             {
                 "id": "Veg7",
-                "color": "#9b59b6",
+                "color": "#1abc9c",
                 "label": "Taboulé aux Légumes Frais",
                 "priceExclTaxUnit": 10.95,
                 "VAT": 0.055
             },
             {
                 "id": "Veg8",
-                "color": "#9b59b6",
+                "color": "#1abc9c",
                 "label": "Ratatouille Provençale",
                 "priceExclTaxUnit": 11.25,
                 "VAT": 0.1
@@ -190,61 +193,62 @@
     },
     {
         "id": "cat4",
-        "color": "#1abc9c",
+        "color": "#9b59b6",
         "name": "Desserts",
+        "icon": "dessert",
         "products": [
             {
                 "id": "Des1",
-                "color": "#1abc9c",
+                "color": "#9b59b6",
                 "label": "Tarte aux Pommes Maison",
                 "priceExclTaxUnit": 8.99,
                 "VAT": 0.1
             },
             {
                 "id": "Des2",
-                "color": "#1abc9c",
+                "color": "#9b59b6",
                 "label": "Fondant au Chocolat et sa Boule de Glace Vanille",
                 "priceExclTaxUnit": 10.50,
                 "VAT": 0.2
             },
             {
                 "id": "Des3",
-                "color": "#1abc9c",
+                "color": "#9b59b6",
                 "label": "Crème Brûlée à la Vanille Bourbon",
                 "priceExclTaxUnit": 9.75,
                 "VAT": 0.1
             },
             {
                 "id": "Des4",
-                "color": "#1abc9c",
+                "color": "#9b59b6",
                 "label": "Tiramisu Classique",
                 "priceExclTaxUnit": 11.80,
                 "VAT": 0.055
             },
             {
                 "id": "Des5",
-                "color": "#1abc9c",
+                "color": "#9b59b6",
                 "label": "Cheesecake aux Fruits Rouges",
                 "priceExclTaxUnit": 12.99,
                 "VAT": 0.1
             },
             {
                 "id": "Des6",
-                "color": "#1abc9c",
+                "color": "#9b59b6",
                 "label": "Mousse au Chocolat Légère",
                 "priceExclTaxUnit": 9.50,
                 "VAT": 0.2
             },
             {
                 "id": "Des7",
-                "color": "#1abc9c",
+                "color": "#9b59b6",
                 "label": "Profiteroles au Caramel",
                 "priceExclTaxUnit": 10.95,
                 "VAT": 0.055
             },
             {
                 "id": "Des8",
-                "color": "#1abc9c",
+                "color": "#9b59b6",
                 "label": "Gâteau aux Carottes et Noix",
                 "priceExclTaxUnit": 8.25,
                 "VAT": 0.1
@@ -255,6 +259,7 @@
         "id": "cat5",
         "color": "#e67e22",
         "name": "Fromages",
+        "icon": "cheese",
         "products": [
             {
                 "id": "Fro1",
@@ -318,6 +323,7 @@
         "id": "cat6",
         "color": "#74b9ff",
         "name": "Boissons soft",
+        "icon": "soft",
         "products": [
             {
                 "id": "Boi1",
@@ -381,6 +387,7 @@
         "id": "cat7",
         "color": "#9980FA",
         "name": "Alcools",
+        "icon": "cocktail",
         "products": [
             {
                 "id": "Alc1",

@@ -33,7 +33,7 @@ export const CustomText = ({
     const computedStyle = useMemo((): TextStyle => {
         let computedColor = theme.colors.textOnSurface;
         let computedSize = size;
-        let computedHeight = lineHeight ?? size;
+        let computedHeight = lineHeight;
         let computedTextAlign = textAlign;
         if (color) {
             computedColor = theme.colors[color]
@@ -65,7 +65,7 @@ export const CustomText = ({
 
     return (
         <Box margin={{ phone: 'xs' }}>
-            <Text adjustsFontSizeToFit style={{ ...computedStyle, ...style }} >
+            <Text style={{ ...computedStyle, ...style }} >
                 {children}
             </Text>
         </Box>

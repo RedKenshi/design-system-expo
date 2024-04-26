@@ -12,9 +12,9 @@ import { router } from "expo-router";
 
 import chroma from "chroma-js"
 import { Gesture, GestureDetector } from "react-native-gesture-handler";
-import Animated, { runOnJS, SharedValue, useAnimatedStyle, useSharedValue, withTiming } from "react-native-reanimated";
+import Animated, { Easing, runOnJS, SharedValue, useAnimatedStyle, useSharedValue, withTiming } from "react-native-reanimated";
 import CustomText from "../../components/CustomText";
-import { Product, RegisterAbsoluteLayout } from "../../constants/types";
+import { Category, Product, RegisterAbsoluteLayout } from "../../constants/types";
 import { overlapMarginError, tabColors } from "../../constants/utils";
 
 import _ from 'lodash'
@@ -26,8 +26,21 @@ import Pill from "../../components/Pill"
 import TextFormRow from "../../components/formRow/TextFormRow"
 import ColorFormRow from "../../components/formRow/ColorFormRow"
 import IconFormRow from "../../components/formRow/IconFormRow"
-import { FoodSVGCode } from "../../components/FoodSVG"
+import { FoodSVG, FoodSVGCode } from "../../components/FoodSVG"
 import Panel from "../../components/Panel"
+
+import { useThrottledCallback } from 'use-debounce';
+
+import * as ScreenOrientation from 'expo-screen-orientation';
+import Header from "../../components/Header"
+
+/*
+- Find new way to trigger a move with animated:true/flase for placed item ?
+- Lock orientation sur cette page a la valeur a l'arrivée
+- Quelle numColumnsAvailable utiliser si pas la meme entre Landscape et Portrait ?
+- Rework pour se raprocher de la maquette
+*/
+
 
 type Props = {}
 
@@ -59,23 +72,68 @@ type TabDeTouche = {
 type PlanDeTouche = TabDeTouche[]
 
 const displayTabName = true;
-const cellHWFactor = .7;
-const gridGap = 'xs';
+const cellHWFactor = .75;
+const gridGap = 's';
 const delayLongPress = 100;
 const fingerDodge = 80;
-const overlapMinimum = 20;
+const overlapMinimum = 15;
+
+let computeTargetUnder = ({ absX, absY, dragged, scrollViewLayout, onScrollEndContentOffset, cellHeight, cellWidth, potentialDropTargets }: { absX: number, absY: number, dragged: Product, scrollViewLayout: RegisterAbsoluteLayout | null, onScrollEndContentOffset: number, cellHeight: number, cellWidth: number, potentialDropTargets: Cell[] }) => {
+    //return [] // TEST
+    if (!scrollViewLayout) return []
+    if (dragged) {
+        let ins = []
+        let relY = absY - scrollViewLayout.layout.pageY + onScrollEndContentOffset
+        let relX = absX - scrollViewLayout.layout.pageX
+        if (overlapMarginError({
+            draggableX: absX,
+            draggableY: absY,
+            draggableH: cellHeight,
+            draggableW: cellWidth,
+            droppableX: scrollViewLayout.layout.pageX,
+            droppableY: scrollViewLayout.layout.pageY,
+            droppableH: scrollViewLayout.layout.height,
+            droppableW: scrollViewLayout.layout.width,
+        }, overlapMinimum)) {
+            potentialDropTargets.forEach(target => {
+                if (overlapMarginError({
+                    draggableX: relX,
+                    draggableY: relY,
+                    draggableH: cellHeight,
+                    draggableW: cellWidth,
+                    droppableX: target.layout.left,
+                    droppableY: target.layout.top,
+                    droppableH: target.layout.height,
+                    droppableW: target.layout.width,
+                }, overlapMinimum)) {
+                    ins.push({ x: target.coordinates.x, y: target.coordinates.y })
+                }
+            });
+        }
+        return ins
+    }
+    return []
+}
+
+let computeTargetUnderThrottled = _.throttle(computeTargetUnder, 200, { 'leading': true, 'trailing': false });
 
 export const Blueprint = ({ }: Props) => {
 
-    const numColumnsAvailable = useResponsiveProp({ phone: 2, tablet: 4, largeTablet: 6 })
+    const theme = useTheme<Theme>();
 
-    const baseGridX = useResponsiveProp({ phone: 3, tablet: 5, largeTablet: 6 });
+    const isTablet = useResponsiveProp({ phone: 0, tablet: 1 })
+
+    const numColumnsAvailable = useResponsiveProp({ phone: 3, tablet: 3, largeTablet: 4 })
+
+    const headerHeight = useResponsiveProp({ phone: 250, longPhone: 320 })
+
+    const baseGridX = useResponsiveProp({ phone: 3, tablet: 5 });
     const baseGridY = 5;
+
+    const scrollViewHorizontalPadding = useResponsiveProp({ phone: null, tablet: theme.spacing.l, largeTablet: theme.spacing.xxxl });
 
     const [gridX, setGridX] = useState(baseGridX);
     const [gridY, setGridY] = useState(baseGridY);
-
-    const theme = useTheme<Theme>();
 
     const translateX = useSharedValue(0);
     const translateY = useSharedValue(0);
@@ -136,7 +194,7 @@ export const Blueprint = ({ }: Props) => {
         return (tmp)
     }, [planDeTouche, selectedTab])
 
-    const [selectedCategory, setSelectedCategory] = useState<string>()
+    const [selectedCategory, setSelectedCategory] = useState<string | null>(null)
     const [gridWidth, setGridWidth] = useState<number | null>()
     const [availableProductGridWidth, setAvailableProductGridWidth] = useState<number | null>(null)
     const [scrollViewLayout, setScrollViewLayout] = useState<RegisterAbsoluteLayout | null>(null)
@@ -165,6 +223,8 @@ export const Blueprint = ({ }: Props) => {
             return 140
         }
     }, [availableProductGridWidth, numColumnsAvailable])
+
+
 
     const cellHeight = useMemo(() => {
         if (cellWidth) {
@@ -268,7 +328,7 @@ export const Blueprint = ({ }: Props) => {
             pdt.push({
                 blueprint: productInCells,
                 color: carCat.color,
-                icon: FoodSVGCode[Object.keys(FoodSVGCode)[index]],
+                icon: carCat.icon as FoodSVGCode,
                 name: carCat.name
             })
         })
@@ -359,50 +419,9 @@ export const Blueprint = ({ }: Props) => {
             });
             return tmp
         } else {
-            return null
+            return []
         }
     }, [onScrollEndContentOffset, grid, scrollViewLayout])
-
-    const highlightTargetUnder = ({ absX, absY }: { absX: number, absY: number }) => {
-        console.log('compute ' + absX + " " + absY)
-        if (!scrollViewLayout) return
-        if (dragged) {
-            let ins = []
-            let relY = absY - scrollViewLayout.layout.pageY + onScrollEndContentOffset
-            let relX = absX - scrollViewLayout.layout.pageX
-            if (overlapMarginError({
-                draggableX: absX,
-                draggableY: absY,
-                draggableH: cellHeight,
-                draggableW: cellWidth,
-                droppableX: scrollViewLayout.layout.pageX,
-                droppableY: scrollViewLayout.layout.pageY,
-                droppableH: scrollViewLayout.layout.height,
-                droppableW: scrollViewLayout.layout.width,
-            }, overlapMinimum)) {
-                potentialDropTargets.forEach(target => {
-                    if (overlapMarginError({
-                        draggableX: relX,
-                        draggableY: relY,
-                        draggableH: cellHeight,
-                        draggableW: cellWidth,
-                        droppableX: target.layout.left,
-                        droppableY: target.layout.top,
-                        droppableH: target.layout.height,
-                        droppableW: target.layout.width,
-                    }, overlapMinimum)) {
-                        ins.push({ x: target.coordinates.x, y: target.coordinates.y })
-                    }
-                });
-            }
-            setHovered(ins)
-        }
-    }
-
-    const queueHighlightTargetUnder = _.throttle(({ absX, absY }: { absX: number, absY: number }) => {
-        console.log('queue ' + absX + " " + absY)
-        highlightTargetUnder({ absX, absY })
-    }, 350, { 'leading': true, 'trailing': false });
 
     const addProductToDropIds = ({ product, dropIds, origin }: { product: Product, dropIds: { x: number, y: number }[], origin: Cell | null }) => {
         if (dropIds.some(di => di.y == (gridY - 1))) {
@@ -452,6 +471,20 @@ export const Blueprint = ({ }: Props) => {
         updateBlueprintOfTab(tmp)
     }
 
+    const highlightTargetUnder = ({ absX, absY }: { absX: number, absY: number }) => {
+        let tmpUnder = computeTargetUnderThrottled({
+            absX,
+            absY,
+            dragged,
+            scrollViewLayout,
+            onScrollEndContentOffset,
+            cellHeight,
+            cellWidth,
+            potentialDropTargets
+        })
+        setHovered(tmpUnder)
+    } // PREVIOUSLY THROTTLED
+
     const addProductToBlueprint = ({ product, x, y, w, h, origin }: { product: Product, x: number, y: number, w: number, h: number, origin: Cell | null }) => {
         let tmp: Cell[] = JSON.parse(JSON.stringify(planDeTouche[selectedTab].blueprint))
         if (origin) {
@@ -468,11 +501,14 @@ export const Blueprint = ({ }: Props) => {
     }
     const handleDrop = ({ absX, absY }: { absX: number, absY: number }) => {
         if (dragged) {
-            if (hovered.length > 0) {
+            let targets = computeTargetUnder({
+                absX, absY, cellHeight, cellWidth, dragged, onScrollEndContentOffset, potentialDropTargets, scrollViewLayout
+            })
+            if (targets.length > 0) {
                 //product do not overlap with any other product already placed
                 addProductToDropIds({
                     product: dragged,
-                    dropIds: hovered,
+                    dropIds: targets,
                     origin: draggedOrigin ?? null
                 })
             }
@@ -534,11 +570,12 @@ export const Blueprint = ({ }: Props) => {
         }
     };
 
-    const scroll = _.throttle((target: number) => {
+    const scroll = useThrottledCallback((target: number) => {
         if (wantoToGo != null) {
             scrollRef.current?.scrollTo({ y: target, animated: true });
         }
-    }, 600, { leading: false, trailing: true });
+    }
+        , 600, { leading: false, trailing: true });
 
     useEffect(() => {
         if (autoScrollTarget !== null) {
@@ -578,178 +615,311 @@ export const Blueprint = ({ }: Props) => {
         }
     }
 
+    const availableProductList = useMemo(() => {
+        return (
+            <Panel style={{ flex: 1 }} title={selectedCategory ? card.find(x => x.id == selectedCategory).name : ""} titleIcon={IconSVGCode.chevron_left} titleOnPress={() => setSelectedCategory(null)}>
+                <FlatList
+                    key={selectedCategory + numColumnsAvailable.toString()}
+                    numColumns={numColumnsAvailable}
+                    scrollEnabled={dragged == null}
+                    keyExtractor={(product) => "prod" + product.id}
+                    onLayout={(e) => setAvailableProductGridWidth(e.nativeEvent.layout.width)}
+                    data={selectedCategory ? card.find(cat => cat.id == selectedCategory).products : []}
+                    contentContainerStyle={{ gap: theme.spacing[gridGap] }}
+                    columnWrapperStyle={{ gap: theme.spacing[gridGap] }}
+                    renderItem={({ item, index }) => {
+                        return (
+                            <DraggableProduct
+                                product={item}
+                                onPress={() => setSelectedProduct(item)}
+                                onLongPress={() => { handleGrab(item, null); }}
+                                cellHeight={cellWidthAvailable * cellHWFactor}
+                                cellWidth={cellWidthAvailable}
+                                handleDrop={handleDrop}
+                                queueHighlightTargetUnder={highlightTargetUnder}
+                                resetDrag={resetDrag}
+                                translateX={translateX}
+                                translateY={translateY}
+                                checkForScrollViewLimit={checkForScrollViewLimit}
+                            />
+                        )
+                    }}
+                />
+            </Panel>
+        )
+    }, [numColumnsAvailable, dragged, setAvailableProductGridWidth, selectedCategory, gridGap, cellWidthAvailable, cellHWFactor])
+
+    const selectedProductPanel = useMemo(() => {
+        if (!selectedProduct) return
+        return (
+            <Box flexDirection={"column"} justifyContent={"center"} alignItems={"center"} position={'relative'} gap='m' flex={1}>
+                <CustomText font="A700" size={14} style={{ textAlign: "center", maxWidth: "100%" }}>Séléctioné : </CustomText>
+                <View style={{ height: cellHeight * 1.25, width: cellWidth * 1.65 }}>
+                    <Box height={72} justifyContent={'center'} padding={"xxs"} flex={1} borderRadius={4} borderBottomWidth={6} style={{ backgroundColor: theme.colors.surface, borderColor: selectedProduct.color }} >
+                        <CustomText font="A700" size={14} style={{ textAlign: "center", maxWidth: "100%" }}>{selectedProduct.label}</CustomText>
+                    </Box>
+                </View>
+                <CustomText font="A700" size={14} style={{ textAlign: "center", maxWidth: "100%" }}>Touchez une case  [+]  pour placer le produit</CustomText>
+                <Button size="s" variant="danger" onPress={() => setSelectedProduct(null)} icon={IconSVGCode.xmark} style={{ position: 'absolute', top: -4, right: -4 }} />
+            </Box>
+        )
+    }, [selectedProduct, cellHeight, setSelectedProduct, cellWidth])
+
+    const availableCategoriesList = useMemo(() => {
+        return (
+            <Panel style={{ flex: 1 }} title={"CARTE : Carte été"} >
+                <FlatList
+                    keyExtractor={(item) => "cat" + item.id}
+                    style={{ flex: 0, flexGrow: 0, paddingRight: theme.spacing.m, marginRight: -theme.spacing.s }}
+                    contentContainerStyle={{ gap: theme.spacing[gridGap] }}
+                    data={card}
+                    renderItem={({ item, index }) => {
+                        return (
+                            <Pressable style={{ flex: 1, paddingVertical: theme.spacing.s, paddingHorizontal: theme.spacing.s, borderRadius: 4, flexDirection: "row", backgroundColor: theme.colors.background, alignItems: 'center' }} onPress={() => setSelectedCategory(item.id)}>
+                                <FoodSVG icon={item.icon as FoodSVGCode} fill={item.color} size="normal" />
+                                <CustomText style={{ marginLeft: theme.spacing.s, marginTop: 2 }} color={item.id == selectedCategory ? "white" : undefined} font='A600' size={18}>{item.name}</CustomText>
+                                <Box flex={1} />
+                                <CustomText font={"A400_I"} size={11} color={item.id == selectedCategory ? "white" : 'textFadded'} style={{ marginRight: theme.spacing.xxs, marginTop: 3 }}>{`${item.products.length} produits`}</CustomText>
+                                <IconSVG icon={IconSVGCode.folder} fill={theme.colors.textFadded} />
+                            </Pressable>
+                        )
+                        return (
+                            <CategoryTile selected={item.id == selectedCategory} category={item as Category} height={36} onPress={() => { setSelectedCategory(item.id) }} />
+                        )
+                    }}
+                />
+            </Panel>
+        )
+    }, [numColumnsAvailable, dragged, setAvailableProductGridWidth, selectedCategory, gridGap, cellWidthAvailable, cellHWFactor])
+
+    const categoriesList = useMemo(() => {
+        if (isTablet) {
+            return (
+                <Box flex={{ phone: 1, tablet: 4 }} flexGrow={{ phone: 1, tablet: 4 }} >
+                    <Header style={{ marginTop: 0, marginBottom: 4 }} size={5}>MES ONGLETS</Header>
+                    <FlatList
+                        data={planDeTouche}
+                        key={"productOfCategory:" + selectedCategory}
+                        numColumns={2}
+                        contentContainerStyle={{ gap: theme.spacing.m, minHeight: "100%" }}
+                        columnWrapperStyle={{ gap: theme.spacing.m, justifyContent: "space-between" }}
+                        style={{
+                            width: "100%",
+                            marginBottom: -8,
+                            paddingRight: 2
+                        }}
+                        renderItem={({ item, index }) => {
+                            return (
+                                <Pressable
+                                    onPress={() => setSelectedTab(index)}
+                                    onLongPress={() => {
+                                        setSelectedTab(index)
+                                        setEditTabOpen(true)
+                                    }}
+                                    style={[
+                                        styles.categorie,
+                                        {
+                                            height: 48,
+                                            borderColor: selectedTab == index ? chroma(item.color).darken().hex() : item.color,
+                                            backgroundColor: selectedTab == index ? chroma(item.color).alpha(.8).hex() : theme.colors.surface,
+                                            width: "49%",
+                                            paddingHorizontal: theme.spacing.s
+                                        }
+                                    ]}
+                                >
+                                    {item.icon &&
+                                        <FoodSVG icon={item.icon} fill={selectedTab == index ? theme.colors.fullwhite : item.color} size="normal" />
+                                    }
+                                    {displayTabName &&
+                                        <CustomText color={selectedTab == index ? 'fullwhite' : null} >{item.name}</CustomText>
+                                    }
+                                </Pressable>
+                            )
+                        }}
+                        ListEmptyComponent={() => {
+                            return (
+                                <Box flex={1} height={"100%"} alignItems={"center"} justifyContent={"center"} >
+                                    <CustomText color={"textFadded"} font="A400_I" size={18} textAlign="center" >Aucun onglet</CustomText>
+                                </Box>
+                            )
+                        }}
+                    />
+                </Box>
+            )
+        } else {
+            return (
+                <Box height={50} style={{ marginBottom: -10 }}>
+                    <FlatList
+                        data={planDeTouche}
+                        horizontal
+                        scrollEnabled={planDeTouche.length > 0}
+                        contentContainerStyle={{ gap: theme.spacing.s, minWidth: "100%", paddingHorizontal: 4 }}
+                        style={{
+                            marginRight: theme.spacing.s,
+                            width: "100%",
+                        }}
+                        renderItem={({ item, index }) => {
+                            return (
+                                <Pressable
+                                    style={[
+                                        styles.categorie,
+                                        {
+                                            paddingLeft: 8,
+                                            height: 40,
+                                            borderColor: selectedTab == index ? chroma(item.color).darken().hex() : item.color,
+                                            backgroundColor: selectedTab == index ? chroma(item.color).alpha(.8).hex() : theme.colors.surface,
+                                            paddingHorizontal: theme.spacing.s
+                                        }
+                                    ]}
+                                    onPress={() => setSelectedTab(index)}
+                                    onLongPress={() => {
+                                        setSelectedTab(index)
+                                        setEditTabOpen(true)
+                                    }}
+                                >
+                                    {item.icon &&
+                                        <FoodSVG icon={item.icon} fill={selectedTab == index ? theme.colors.fullwhite : item.color} size="normal" />
+                                    }
+                                    {displayTabName &&
+                                        <CustomText color={selectedTab == index ? 'fullwhite' : null} >{item.name}</CustomText>
+                                    }
+                                </Pressable>
+                            )
+                        }}
+                        ListEmptyComponent={() => {
+                            return (
+                                <Box flex={1} height={"100%"} alignItems={"center"} justifyContent={"center"}>
+                                    <CustomText color={"textFadded"} size={20} lineHeight={22} font="A400_I" textAlign="center" >Aucun onglet</CustomText>
+                                </Box>
+                            )
+                        }}
+                    />
+                </Box>
+            )
+        }
+    }, [isTablet, planDeTouche, selectedTab])
+
     return (
         <SafeAreaView style={{ flex: 1 }}>
-            <Box flexDirection={"column"} flex={1} >
-                <Panel style={{ flexDirection: "row", borderRadius: 0, gap: theme.spacing.xxs, height: 220, marginTop: 0, marginBottom: theme.spacing.xs }}>
-                    {selectedProduct != null ?
-                        <Box flexDirection={"column"} justifyContent={"center"} alignItems={"center"} height={220} position={'relative'} gap='m' flex={1}>
-                            <CustomText font="A700" size={14} style={{ textAlign: "center", maxWidth: "100%" }}>Séléctioné : </CustomText>
-                            <View style={{ height: cellHeight * 1.25, width: cellWidth * 1.65 }}>
-                                <Box height={72} justifyContent={'center'} padding={"xxs"} flex={1} borderRadius={4} borderBottomWidth={6} style={{ backgroundColor: chroma(selectedProduct.color).alpha(.08).hex(), borderColor: selectedProduct.color }} >
-                                    <CustomText font="A700" size={14} style={{ textAlign: "center", maxWidth: "100%" }}>{selectedProduct.label}</CustomText>
-                                </Box>
-                            </View>
-                            <CustomText font="A700" size={14} style={{ textAlign: "center", maxWidth: "100%" }}>Touchez une case  [+]  pour placer le produit</CustomText>
-                            <Button size="s" variant="danger" onPress={() => setSelectedProduct(null)} icon={IconSVGCode.xmark} style={{ position: 'absolute', top: -4, right: -4 }} />
-                        </Box>
-                        :
-                        <>
-                            <FlatList
-                                keyExtractor={(item) => "cat" + item.id}
-                                style={{ flex: 0, flexGrow: 0, width: 150, paddingRight: theme.spacing.m }}
-                                contentContainerStyle={{ gap: theme.spacing[gridGap] }}
-                                data={card}
-                                renderItem={({ item, index }) => {
-                                    return <CategoryTile selected={item.id == selectedCategory} category={item} height={36} onPress={() => { setSelectedCategory(item.id) }} />
-                                }}
-                            />
-                            <View style={{ flex: 1, flexGrow: 1 }}>
-                                <FlatList
-                                    numColumns={numColumnsAvailable}
-                                    scrollEnabled={dragged == null}
-                                    keyExtractor={(product) => "prod" + product.id}
-                                    onLayout={(e) => setAvailableProductGridWidth(e.nativeEvent.layout.width)}
-                                    data={selectedCategory ? card.find(cat => cat.id == selectedCategory).products : []}
-                                    contentContainerStyle={{ gap: theme.spacing[gridGap] }}
-                                    columnWrapperStyle={{ gap: theme.spacing[gridGap] }}
-                                    renderItem={({ item, index }) => {
+            <Box flex={1} paddingVertical={{ phone: 's', tablet: "l" }}>
+                <Box flexDirection={{ phone: "column", tablet: "row" }} gap={"m"} marginBottom={'m'} height={headerHeight} marginHorizontal={'m'} >
+                    <Box flex={{ phone: 1, tablet: 5 }} flexGrow={{ phone: 1, tablet: 5 }} flexDirection="row">
+                        {selectedProduct != null ?
+                            selectedProductPanel
+                            :
+                            selectedCategory != null ?
+                                availableProductList
+                                :
+                                availableCategoriesList
+                        }
+                    </Box>
+                    {categoriesList}
+                </Box>
+                <Box flex={1} flexGrow={1} gap={'m'} marginHorizontal={'l'}>
+                    <Box flex={1} flexGrow={1} >
+                        {planDeTouche[selectedTab] ?
+                            <ScrollView
+                                scrollEnabled={dragged == null}
+                                decelerationRate={0}
+                                ref={scrollRef}
+                                scrollEventThrottle={0}
+                                style={{ alignSelf: "stretch", flex: 1, flexGrow: 1, marginHorizontal: scrollViewHorizontalPadding }}
+                                onLayout={e => { handleLayout(e) }}
+                                onScroll={(e) => { setOnScrollEndContentOffset(e.nativeEvent.contentOffset.y) }}
+                                onScrollEndDrag={(e) => { setOnScrollEndContentOffset(e.nativeEvent.contentOffset.y) }}
+                                onMomentumScrollEnd={(e) => { setOnScrollEndContentOffset(e.nativeEvent.contentOffset.y) }}
+                                contentContainerStyle={{ height: scrollHeight.value + (cellHeight + theme.spacing[gridGap]) }}
+                            >
+                                {objects.map((cell) => {
+                                    if (cell.content) {
                                         return (
-                                            <DraggableProduct
-                                                product={item}
-                                                onPress={() => setSelectedProduct(item)}
-                                                onLongPress={() => { handleGrab(item, null); }}
-                                                cellHeight={cellWidthAvailable * cellHWFactor}
-                                                cellWidth={cellWidthAvailable}
+                                            <DraggablePlacedProduct
+                                                key={"object-" + cell.id}
+                                                cell={cell}
+                                                product={cell.content}
+                                                onLongPress={() => grabPlacedItem(cell)}
+                                                cellHeight={cellHeight}
+                                                cellWidth={cellWidth}
                                                 handleDrop={handleDrop}
-                                                queueHighlightTargetUnder={queueHighlightTargetUnder}
-                                                resetDrag={resetDrag}
+                                                queueHighlightTargetUnder={highlightTargetUnder}
                                                 translateX={translateX}
                                                 translateY={translateY}
+                                                resetDrag={resetDrag}
+                                                removeFromBlueprint={removeFromBlueprint}
                                                 checkForScrollViewLimit={checkForScrollViewLimit}
+                                                isLastDragged={lastDragged != null && lastDragged.id == cell.id}
                                             />
                                         )
-                                    }}
-                                />
-                            </View>
-                        </>
-                    }
-                </Panel>
-                <Box paddingVertical={'s'} paddingHorizontal={{ phone: 's', tablet: 'xl', largeTablet: 'xxxxl' }} flex={1} flexGrow={1} gap={'m'}>
-                    <Box style={{ flex: 0, flexGrow: 0, alignSelf: "stretch", flexDirection: "row" }}>
-                        <ScrollView horizontal contentContainerStyle={{ gap: theme.spacing.s, minWidth: "100%" }} style={{ marginRight: theme.spacing.s, width: "100%", marginBottom: -8, paddingBottom: 12 }}>
-                            {planDeTouche.map((tab, index) => {
-                                return (
-                                    <Pressable onPress={() => setSelectedTab(index)}>
-                                        <Pill food={tab.icon != FoodSVGCode.none ? tab.icon : null} color={tab.color} size="m" inverted={selectedTab != index} style={{ margin: 0 }} title={displayTabName && tab.name ? tab.name : null} />
-                                    </Pressable>
-                                )
-                            })}
-                        </ScrollView>
-                    </Box>
-                    {planDeTouche[selectedTab] ?
-                        <ScrollView
-                            scrollEnabled={dragged == null}
-                            decelerationRate={0}
-                            ref={scrollRef}
-                            scrollEventThrottle={0}
-                            style={{ alignSelf: "stretch", flex: 1, flexGrow: 1 }}
-                            onLayout={e => { handleLayout(e) }}
-                            onScroll={(e) => { setOnScrollEndContentOffset(e.nativeEvent.contentOffset.y) }}
-                            onScrollEndDrag={(e) => { setOnScrollEndContentOffset(e.nativeEvent.contentOffset.y) }}
-                            onMomentumScrollEnd={(e) => { setOnScrollEndContentOffset(e.nativeEvent.contentOffset.y) }}
-                            contentContainerStyle={{ height: scrollHeight.value + (cellHeight + theme.spacing[gridGap]) }}
-                        >
-                            {objects.map((cell) => {
-                                if (cell.content) {
-                                    return (
-                                        <DraggablePlacedProduct
-                                            key={"object-" + cell.id}
-                                            cell={cell}
-                                            product={cell.content}
-                                            onLongPress={() => grabPlacedItem(cell)}
-                                            cellHeight={cellHeight}
-                                            cellWidth={cellWidth}
-                                            handleDrop={handleDrop}
-                                            queueHighlightTargetUnder={queueHighlightTargetUnder}
-                                            translateX={translateX}
-                                            translateY={translateY}
-                                            resetDrag={resetDrag}
-                                            removeFromBlueprint={removeFromBlueprint}
-                                            checkForScrollViewLimit={checkForScrollViewLimit}
-                                            isLastDragged={lastDragged != null && lastDragged.id == cell.id}
-                                        />
-                                    )
-                                } else {
-                                    return (
-                                        <Box
-                                            key={cell.id}
-                                            position={"absolute"}
-                                            borderRadius={4}
-                                            style={{ borderColor: chroma(theme.colors[isHovered(cell) ? 'success' : 'primary']).alpha(.8).hex(), borderStyle: "dashed", borderWidth: 1.5, backgroundColor: chroma(theme.colors[isHovered(cell) ? 'success' : 'primary']).alpha(.08).hex(), ...cell.layout }}
-                                            width={cellWidth}
-                                            height={cellHeight}
-                                            justifyContent={"center"}
-                                            alignItems={"center"}
-                                        >
-                                            <Pressable
-                                                onPress={selectedProduct ? () => placeSelectedProductHere(cell) : null}
-                                                style={{
-                                                    flex: 1,
-                                                    width: "100%",
-                                                    backgroundColor: "danger",
-                                                    justifyContent: "center",
-                                                    alignItems: "center",
-
-                                                }}
+                                    } else {
+                                        return (
+                                            <Box
+                                                key={cell.id}
+                                                position={"absolute"}
+                                                borderRadius={4}
+                                                style={{ borderColor: chroma(theme.colors[isHovered(cell) ? 'success' : 'primary']).alpha(.8).hex(), borderStyle: "dashed", borderWidth: 1.5, backgroundColor: chroma(theme.colors[isHovered(cell) ? 'success' : 'primary']).alpha(.08).hex(), ...cell.layout }}
+                                                width={cellWidth}
+                                                height={cellHeight}
+                                                justifyContent={"center"}
+                                                alignItems={"center"}
                                             >
-                                                <IconSVG icon={isHovered(cell) ? IconSVGCode.check : IconSVGCode.plus} size="smaller" fill={theme.colors[isHovered(cell) ? 'success' : 'primary']} />
-                                            </Pressable>
-                                        </Box>
-                                    )
-                                }
-                            })}
-                            <Pressable
-                                onPress={() => setGridY(gridY + 1)}
-                                style={{
-                                    position: "absolute",
-                                    borderRadius: 4,
-                                    backgroundColor: chroma(theme.colors.primary).alpha(.08).hex(),
-                                    justifyContent: "center",
-                                    alignItems: "center",
-                                    ...getPositionAndSizesFromXYCoordinates({ h: 1, w: gridX, x: 0, y: gridY })
-                                }}
-                            >
-                                <Box
-                                    justifyContent={"center"}
-                                    alignItems={"center"}
-                                    flexDirection={"row"}
-                                    gap="xs"
+                                                <Pressable
+                                                    onPress={selectedProduct ? () => placeSelectedProductHere(cell) : null}
+                                                    style={{
+                                                        flex: 1,
+                                                        width: "100%",
+                                                        justifyContent: "center",
+                                                        alignItems: "center",
+
+                                                    }}
+                                                >
+                                                    <IconSVG icon={isHovered(cell) ? IconSVGCode.check : IconSVGCode.plus} size="smaller" fill={theme.colors[isHovered(cell) ? 'success' : 'primary']} />
+                                                </Pressable>
+                                            </Box>
+                                        )
+                                    }
+                                })}
+                                <Pressable
+                                    onPress={() => setGridY(gridY + 1)}
+                                    style={{
+                                        position: "absolute",
+                                        borderRadius: 4,
+                                        backgroundColor: chroma(theme.colors.primary).alpha(.08).hex(),
+                                        justifyContent: "center",
+                                        alignItems: "center",
+                                        ...getPositionAndSizesFromXYCoordinates({ h: 1, w: gridX, x: 0, y: gridY })
+                                    }}
                                 >
-                                    <CustomText size={18} color="primary">Add a row</CustomText>
-                                    <IconSVG size="small" icon={IconSVGCode.plus} fill={theme.colors.primary} />
-                                </Box>
-                            </Pressable>
-                        </ScrollView>
-                        :
-                        <>
-                            <View style={{ flex: 1, flexGrow: 1 }} />
-                            <Panel style={{ justifyContent: "center", alignItems: "center", paddingHorizontal: theme.spacing.xxl, marginHorizontal: theme.spacing.xxl }}>
-                                <CustomText font="A500" lineHeight={26} size={20} style={{ textAlign: "center" }} >Vous n'avez aucun onglet dans ce plan de touche ...</CustomText>
-                                <CustomText font="A500" lineHeight={26} size={20} style={{ textAlign: "center", marginTop: theme.spacing.s }} >Créer en un pour commencer à ajouter des produits !</CustomText>
-                                <Button outline onPress={() => { setTabColor(tabColors[planDeTouche.length + 1]); setTabName("Onglet " + (planDeTouche.length + 1)); setTabIcon(FoodSVGCode.none); setNewTabOpen(true) }} title="Créer un onglet" icon={IconSVGCode.plus} size="m" iconPosition="right" style={{ marginTop: theme.spacing.m }} />
-                                <CustomText font="A500" lineHeight={26} size={20} style={{ textAlign: "center", marginTop: theme.spacing.s }} >Ou essayez l'auto layout</CustomText>
-                                <Button outline onPress={() => { setAutoLayoutOpen(true) }} title="Auto layout" variant="info" icon={IconSVGCode.layer_group} size="m" iconPosition="right" style={{ marginTop: theme.spacing.m }} />
-                            </Panel>
-                            <View style={{ flex: 1, flexGrow: 1 }} />
-                        </>
-                    }
+                                    <Box
+                                        justifyContent={"center"}
+                                        alignItems={"center"}
+                                        flexDirection={"row"}
+                                        gap="xs"
+                                    >
+                                        <CustomText size={18} color="primary">Add a row</CustomText>
+                                        <IconSVG size="small" icon={IconSVGCode.plus} fill={theme.colors.primary} />
+                                    </Box>
+                                </Pressable>
+                            </ScrollView>
+                            :
+                            <Box flex={1} flexGrow={1} justifyContent={"center"} alignItems={"center"} >
+                                <Panel style={{ flex: 1, alignSelf: "stretch" }} contentInnerStyle={{ justifyContent: "center", alignItems: "center" }}>
+                                    <CustomText font="A500" lineHeight={18} size={16} style={{ textAlign: "center" }} >Vous n'avez aucun onglet dans ce plan de touche ...</CustomText>
+                                    <CustomText font="A500" lineHeight={18} size={16} style={{ textAlign: "center", marginTop: theme.spacing.s }} >Créer en un pour commencer à ajouter des produits !</CustomText>
+                                    <Button outline onPress={() => { setTabColor(tabColors[planDeTouche.length + 1]); setTabName("Onglet " + (planDeTouche.length + 1)); setTabIcon(FoodSVGCode.none); setNewTabOpen(true) }} title="Créer un onglet" icon={IconSVGCode.plus} size="m" iconPosition="right" style={{ marginTop: theme.spacing.m }} />
+                                    <CustomText font="A500" lineHeight={18} size={16} style={{ textAlign: "center", marginTop: theme.spacing.s }} >Ou essayez l'auto layout</CustomText>
+                                    <Button outline onPress={() => { setAutoLayoutOpen(true) }} title="Auto layout" variant="info" icon={IconSVGCode.layer_group} size="m" iconPosition="right" style={{ marginTop: theme.spacing.m }} />
+                                </Panel>
+                            </Box>
+                        }
+                    </Box>
                 </Box>
             </Box>
-            {scrollTriggerInterval && <>
-                <Box pointerEvents="none" backgroundColor="warning" opacity={0} style={{ position: 'absolute', zIndex: 1000000000, top: scrollTriggerInterval.intervalDown.from, left: 10, right: 10, height: scrollTriggerInterval.intervalDown.to - scrollTriggerInterval.intervalDown.from }} />
-                <Box pointerEvents="none" backgroundColor="primary" opacity={0} style={{ position: 'absolute', zIndex: 1000000000, top: scrollTriggerInterval.intervalUp.from, left: 10, right: 10, height: scrollTriggerInterval.intervalUp.to - scrollTriggerInterval.intervalUp.from }} />
-            </>}
+            {
+                scrollTriggerInterval && <>
+                    <Box pointerEvents="none" backgroundColor="warning" opacity={0} style={{ position: 'absolute', zIndex: 1000000000, top: scrollTriggerInterval.intervalDown.from, left: 10, right: 10, height: scrollTriggerInterval.intervalDown.to - scrollTriggerInterval.intervalDown.from }} />
+                    <Box pointerEvents="none" backgroundColor="primary" opacity={0} style={{ position: 'absolute', zIndex: 1000000000, top: scrollTriggerInterval.intervalUp.from, left: 10, right: 10, height: scrollTriggerInterval.intervalUp.to - scrollTriggerInterval.intervalUp.from }} />
+                </>
+            }
             <View style={{ position: "absolute", top: 0, bottom: 0, left: 0, right: 0 }} pointerEvents="none">
                 {dragged &&
                     <Animated.View
@@ -781,47 +951,49 @@ export const Blueprint = ({ }: Props) => {
                 <ColorFormRow handleChange={(e) => setTabColor(e)} title="Couleur" value={tabColor} />
                 <IconFormRow handleChange={(e) => setTabIcon(e as FoodSVGCode)} title="Icone" value={tabIcon} />
             </ModalNative>
-            {planDeTouche[selectedTab] && <>
-                <ModalNative // DELETE TAB MODAL
-                    open={deleteTabOpen}
-                    close={() => setDeleteTabOpen(false)}
-                    actions={[
-                        { title: "Retour", icon: IconSVGCode.arrow_left, onPress: () => setDeleteTabOpen(false), variant: "neutral" },
-                        { title: "Supprimer", icon: IconSVGCode.trash, onPress: () => { setDeleteTabOpen(false); deleteSelectedTab() }, variant: "danger" }
-                    ]}
-                >
-                    <Box flexDirection={"column"} alignItems={"center"} width={"100%"} marginTop={"l"}>
-                        <CustomText>Supprimer l'onglet {planDeTouche[selectedTab].name} ?</CustomText>
-                        <CustomText>Celui ci contient {planDeTouche[selectedTab].blueprint.length.toString()} produit(s)</CustomText>
-                        <CustomText color="danger">Attention, cette action est irréversible</CustomText>
-                    </Box>
-                </ModalNative>
-                <ModalNative // EDIT TAB MODAL
-                    open={editTabOpen}
-                    close={() => setEditTabOpen(false)}
-                    actions={[
-                        { title: "Retour", icon: IconSVGCode.arrow_left, onPress: () => setEditTabOpen(false), variant: "neutral" },
-                        { title: "Sauvegarder", icon: IconSVGCode.save, onPress: () => { setEditTabOpen(false); editTab() }, variant: "success" }
-                    ]}
-                >
-                    <TextFormRow handleChange={(e) => setTabName(e)} title="Nom" value={tabName} />
-                    <ColorFormRow handleChange={(e) => setTabColor(e)} title="Couleur" value={tabColor} />
-                    <IconFormRow handleChange={(e) => setTabIcon(e as FoodSVGCode)} title="Icone" value={tabIcon} />
-                </ModalNative>
-                <ModalNative // EMPTY TAB MODAL
-                    open={emptyTabOpen}
-                    close={() => setEmptyTabOpen(false)}
-                    actions={[
-                        { title: "Retour", icon: IconSVGCode.arrow_left, onPress: () => setEmptyTabOpen(false), variant: "neutral" },
-                        { title: "Vider", icon: IconSVGCode.xmark, onPress: () => { setEmptyTabOpen(false); emptyTab() }, variant: "danger" }
-                    ]}
-                >
-                    <Box justifyContent="center" alignItems="center" style={{ flex: 1, paddingVertical: theme.spacing.m, paddingHorizontal: theme.spacing.m }} >
-                        <CustomText style={{ textAlign: "center" }}>Supprimer les {planDeTouche[selectedTab].blueprint.length.toString()} produit(s) de l'onglet {planDeTouche[selectedTab].name} ?</CustomText>
-                        <CustomText style={{ textAlign: "center" }} color="danger">Attention, cette action est irréversible</CustomText>
-                    </Box>
-                </ModalNative>
-            </>}
+            {
+                planDeTouche[selectedTab] && <>
+                    <ModalNative // DELETE TAB MODAL
+                        open={deleteTabOpen}
+                        close={() => setDeleteTabOpen(false)}
+                        actions={[
+                            { title: "Retour", icon: IconSVGCode.arrow_left, onPress: () => setDeleteTabOpen(false), variant: "neutral" },
+                            { title: "Supprimer", icon: IconSVGCode.trash, onPress: () => { setDeleteTabOpen(false); deleteSelectedTab() }, variant: "danger" }
+                        ]}
+                    >
+                        <Box flexDirection={"column"} alignItems={"center"} width={"100%"} marginTop={"l"}>
+                            <CustomText>Supprimer l'onglet {planDeTouche[selectedTab].name} ?</CustomText>
+                            <CustomText>Celui ci contient {planDeTouche[selectedTab].blueprint.length.toString()} produit(s)</CustomText>
+                            <CustomText color="danger">Attention, cette action est irréversible</CustomText>
+                        </Box>
+                    </ModalNative>
+                    <ModalNative // EDIT TAB MODAL
+                        open={editTabOpen}
+                        close={() => setEditTabOpen(false)}
+                        actions={[
+                            { title: "Retour", icon: IconSVGCode.arrow_left, onPress: () => setEditTabOpen(false), variant: "neutral" },
+                            { title: "Sauvegarder", icon: IconSVGCode.save, onPress: () => { setEditTabOpen(false); editTab() }, variant: "success" }
+                        ]}
+                    >
+                        <TextFormRow handleChange={(e) => setTabName(e)} title="Nom" value={tabName} />
+                        <ColorFormRow handleChange={(e) => setTabColor(e)} title="Couleur" value={tabColor} />
+                        <IconFormRow handleChange={(e) => setTabIcon(e as FoodSVGCode)} title="Icone" value={tabIcon} />
+                    </ModalNative>
+                    <ModalNative // EMPTY TAB MODAL
+                        open={emptyTabOpen}
+                        close={() => setEmptyTabOpen(false)}
+                        actions={[
+                            { title: "Retour", icon: IconSVGCode.arrow_left, onPress: () => setEmptyTabOpen(false), variant: "neutral" },
+                            { title: "Vider", icon: IconSVGCode.xmark, onPress: () => { setEmptyTabOpen(false); emptyTab() }, variant: "danger" }
+                        ]}
+                    >
+                        <Box justifyContent="center" alignItems="center" style={{ flex: 1, paddingVertical: theme.spacing.m, paddingHorizontal: theme.spacing.m }} >
+                            <CustomText style={{ textAlign: "center" }}>Supprimer les {planDeTouche[selectedTab].blueprint.length.toString()} produit(s) de l'onglet {planDeTouche[selectedTab].name} ?</CustomText>
+                            <CustomText style={{ textAlign: "center" }} color="danger">Attention, cette action est irréversible</CustomText>
+                        </Box>
+                    </ModalNative>
+                </>
+            }
             <ModalNative // AUTO LAYOUT MODAL
                 open={autoLayoutOpen}
                 close={() => setAutoLayoutOpen(false)}
@@ -861,7 +1033,7 @@ const DraggableProduct = ({
     onLongPress: () => void | null,
     translateX: SharedValue<number>,
     translateY: SharedValue<number>,
-    queueHighlightTargetUnder: ({ absX, absY }: { absX: number, absY: number }) => void,
+    queueHighlightTargetUnder: ({ absX, absY }: { absX: number, absY: number }) => any,
     cellWidth: number,
     cellHeight: number,
     handleDrop: ({ absX, absY }: { absX: number, absY: number }) => void,
@@ -930,7 +1102,7 @@ const DraggablePlacedProduct = ({
     onLongPress: () => void,
     translateX: SharedValue<number>,
     translateY: SharedValue<number>,
-    queueHighlightTargetUnder: ({ absX, absY }: { absX: number, absY: number }) => void,
+    queueHighlightTargetUnder: ({ absX, absY }: { absX: number, absY: number }) => any,
     cellWidth: number,
     cellHeight: number,
     handleDrop: ({ absX, absY }: { absX: number, absY: number }) => void,
@@ -984,10 +1156,10 @@ const DraggablePlacedProduct = ({
 
     useEffect(() => {
         if (!isLastDragged) {
-            animatedTop.value = withTiming(cell.layout.top, { duration: 250 })
-            animatedLeft.value = withTiming(cell.layout.left, { duration: 250 })
-            animatedHeight.value = withTiming(cell.layout.height, { duration: 250 })
-            animatedWidth.value = withTiming(cell.layout.width, { duration: 250 })
+            animatedTop.value = withTiming(cell.layout.top, { easing: Easing.out(Easing.ease), })
+            animatedLeft.value = withTiming(cell.layout.left, { easing: Easing.out(Easing.ease), })
+            animatedHeight.value = withTiming(cell.layout.height, { easing: Easing.linear, })
+            animatedWidth.value = withTiming(cell.layout.width, { easing: Easing.linear, })
         } else {
             animatedTop.value = cell.layout.top
             animatedLeft.value = cell.layout.left
@@ -1055,6 +1227,20 @@ const DraggablePlacedProduct = ({
 }
 
 const styles = StyleSheet.create({
+    categorie: {
+        borderRadius: 6,
+        flexDirection: "row",
+        gap: 6,
+        justifyContent: "flex-start",
+        alignItems: "center",
+        borderRightWidth: 8
+    },
+    hr: {
+        alignSelf: "center",
+        width: "100%",
+        margin: "auto",
+        borderBottomWidth: 1,
+    },
     animatedView: {
         position: "absolute",
         alignItems: "center",

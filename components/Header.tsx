@@ -7,6 +7,7 @@ import { useTheme } from '@shopify/restyle';
 interface Props {
     children: string | string[],
     style?: TextStyle,
+    margin?: number,
     size: 1 | 2 | 3 | 4 | 5,
     variant?: "primary" | "onPrimary" | "onBackground" | "onSurface"
 }
@@ -14,6 +15,7 @@ interface Props {
 export const Header = ({
     children,
     style,
+    margin,
     size,
     variant = "primary"
 }: Props) => {
@@ -74,12 +76,12 @@ export const Header = ({
             lineHeight: fontSize + 8,
             fontFamily: family,
             color: color,
-            marginTop: marginTop,
-            marginBottom: marginBottom,
+            marginTop: margin ?? marginTop,
+            marginBottom: margin ?? marginBottom,
             letterSpacing: ls,
 
         }
-    }, [size, variant, theme])
+    }, [size, variant, theme, style, margin])
 
     return (
         <Text style={{ ...computedStyle, ...style }} >

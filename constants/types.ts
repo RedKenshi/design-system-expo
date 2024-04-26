@@ -1,4 +1,5 @@
 import { ButtonVariant } from "../components/Button";
+import { FoodSVGCode } from "../components/FoodSVG";
 import { IconSVGCode } from "../components/IconSVG";
 
 interface Price {
@@ -159,6 +160,7 @@ export type Category = {
     id: string;
     name: string;
     products: Product[];
+    icon: FoodSVGCode,
     color: string;
 }
 export interface CartItem {

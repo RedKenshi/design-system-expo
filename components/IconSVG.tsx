@@ -65,6 +65,7 @@ export enum IconSVGCode {
     download = "download",
     drop = "drop",
     edit = "edit",
+    folder = "folder",
     menu_bars = "menu_bars",
     menu_ellipsis = "menu_ellipsis",
     menu_ellipsis_vertical = "menu_ellipsis_vertical",
@@ -849,6 +850,12 @@ export const IconSVG = ({ icon, size = "normal", style, iconPadding, fill }: Pro
             return (
                 <Svg style={iconStyle} viewBox="0 0 512 512">
                     <Path fill={fill} d="M135.2 117.4L109.1 192H402.9l-26.1-74.6C372.3 104.6 360.2 96 346.6 96H165.4c-13.6 0-25.7 8.6-30.2 21.4zM39.6 196.8L74.8 96.3C88.3 57.8 124.6 32 165.4 32H346.6c40.8 0 77.1 25.8 90.6 64.3l35.2 100.5c23.2 9.6 39.6 32.5 39.6 59.2V400v48c0 17.7-14.3 32-32 32H448c-17.7 0-32-14.3-32-32V400H96v48c0 17.7-14.3 32-32 32H32c-17.7 0-32-14.3-32-32V400 256c0-26.7 16.4-49.6 39.6-59.2zM128 288a32 32 0 1 0 -64 0 32 32 0 1 0 64 0zm288 32a32 32 0 1 0 0-64 32 32 0 1 0 0 64z" />
+                </Svg>
+            )
+        case IconSVGCode.folder:
+            return (
+                <Svg style={iconStyle} viewBox="0 0 512 512">
+                    <Path fill={fill} d="M64 480H448c35.3 0 64-28.7 64-64V160c0-35.3-28.7-64-64-64H288c-10.1 0-19.6-4.7-25.6-12.8L243.2 57.6C231.1 41.5 212.1 32 192 32H64C28.7 32 0 60.7 0 96V416c0 35.3 28.7 64 64 64z" />
                 </Svg>
             )
         case IconSVGCode.plus:
