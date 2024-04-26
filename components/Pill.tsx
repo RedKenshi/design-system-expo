@@ -164,6 +164,7 @@ export const Pill: React.FC<Props> = ({
                 :
                 title ? <Text style={[computedTextStyle, { marginTop: 3 }]}>{title}</Text> : icon ? <IconSVG icon={icon} fill={computedTextStyle.color} /> : null
             }
+            {icon ? <IconSVG size={"small"} icon={icon} fill={computedTextStyle.color} /> : null}
         </View>
     );
 };

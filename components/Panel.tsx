@@ -1,13 +1,13 @@
 
 import React, { useState } from 'react';
-import { LayoutRectangle, Pressable, View, ViewStyle } from 'react-native';
+import { LayoutRectangle, View, ViewStyle } from 'react-native';
 import Box from './Box';
 import { useResponsiveProp, useTheme } from '@shopify/restyle';
 import { Theme } from '../constants/Palette';
-import Header from './Header';
 import { IconSVG, IconSVGCode } from './IconSVG';
 
 interface Props {
+    header?: JSX.Element,
     children: JSX.Element | JSX.Element[],
     style?: ViewStyle,
     contentInnerStyle?: ViewStyle,
@@ -20,6 +20,7 @@ export const Panel = (props: Props) => {
 
     const {
         children,
+        header,
         style,
         contentInnerStyle,
         titleIcon,
@@ -41,14 +42,9 @@ export const Panel = (props: Props) => {
             borderRadius={{ phone: 8, tablet: 12 }}
             style={style}
         >
-            {title && layout &&
+            {header &&
                 <View style={{}}>
-                    <Pressable style={{ flexDirection: "row", alignItems: "center", paddingHorizontal: theme.spacing.m, padding: theme.spacing.s }} disabled={!titleOnPress} onPress={() => titleOnPress && titleOnPress()}>
-                        {titleIcon &&
-                            <IconSVG icon={titleIcon} fill={'primary'} size='normal' />
-                        }
-                        <Header margin={0} style={{ marginTop: 4, marginLeft: titleIcon ? 8 : 0 }} size={4} variant="primary">{title}</Header>
-                    </Pressable>
+                    {header}
                     <View style={{
                         borderColor: theme.colors.textFadded,
                         borderBottomWidth: 1

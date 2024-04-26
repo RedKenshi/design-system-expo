@@ -1,4 +1,4 @@
-import { FlatList, ViewStyle, ScrollView } from "react-native"
+import { FlatList, ViewStyle, ScrollView, Pressable } from "react-native"
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Theme } from "../../../constants/Palette"
 
@@ -12,6 +12,9 @@ import CategoryTile from "../../../components/checkout/CategoryTile";
 import ProductTile from "../../../components/checkout/ProductTile";
 import { CashRegisterContext } from "../../../contexts/CashRegisterContext";
 import { Category, Product } from "../../../constants/types";
+import CustomText from "../../../components/CustomText";
+import { FoodSVG, FoodSVGCode } from "../../../components/FoodSVG";
+import { IconSVG, IconSVGCode } from "../../../components/IconSVG";
 
 type Props = {}
 
@@ -61,9 +64,17 @@ export const NewTicket = ({ }: Props) => {
             <FlatList horizontal style={{ overflow: "visible", flex: 0 }} contentContainerStyle={{ gap: theme.spacing.s }} data={groupedCategories} renderItem={({ item, index }) => {
                 return (
                     <Box flexDirection={"column"} gap={"s"} marginBottom={'l'}>
-                        {item.map((cat, i) =>
-                            <CategoryTile height={categoryHeight} onPress={(catId) => setSelectedCategory(cat.id)} selected={selectedCategory == cat.id} key={cat.id} style={{ width: categoryWidth }} category={cat} />
-                        )}
+                        {item.map((cat, i) => {
+                            return (
+                                <Pressable style={{ flex: 1, paddingVertical: theme.spacing.s, paddingHorizontal: theme.spacing.s, borderRadius: 4, flexDirection: "row", backgroundColor: theme.colors.background, alignItems: 'center', height: categoryHeight }} onPress={() => setSelectedCategory(cat.id)}>
+                                    <FoodSVG icon={cat.icon as FoodSVGCode} fill={cat.color} size="normal" />
+                                    <CustomText style={{ marginLeft: theme.spacing.s, marginTop: 2 }} color={cat.id == selectedCategory ? "white" : undefined} font='A600' size={18}>{cat.name}</CustomText>
+                                    <Box flex={1} />
+                                    <CustomText font={"A400_I"} size={11} color={cat.id == selectedCategory ? "white" : 'textFadded'} style={{ marginRight: theme.spacing.xxs, marginTop: 3 }}>{`${cat.products.length} produits`}</CustomText>
+                                    <IconSVG icon={IconSVGCode.folder} fill={theme.colors.textFadded} />
+                                </Pressable>
+                            )
+                        })}
                     </Box>
                 )
             }} />

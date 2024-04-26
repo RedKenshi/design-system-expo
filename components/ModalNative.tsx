@@ -28,9 +28,9 @@ export const ModalNative = ({ open, close, actions, preventCloseOnDimmerPress = 
                     <Box
                         backgroundColor='surface'
                         gap="m"
-                        padding='m'
+                        padding='s'
                         maxHeight="80%"
-                        width={{ phone: '90%', tablet: 460 }}
+                        width={{ phone: '96%', tablet: 480 }}
                         zIndex={20}
                         justifyContent='center'
                         alignItems='center'
@@ -40,7 +40,7 @@ export const ModalNative = ({ open, close, actions, preventCloseOnDimmerPress = 
                         <ScrollView style={{ width: "100%", alignSelf: "stretch" }} contentContainerStyle={{ paddingBottom: "5%", paddingHorizontal: theme.spacing.s }} automaticallyAdjustKeyboardInsets={true}>
                             {children}
                         </ScrollView>
-                        <Box flexDirection="row" padding='s' paddingTop='l' gap='xxs' alignSelf={"stretch"}>
+                        <Box flexDirection="row" padding='xs' paddingTop='l' gap='xxs' alignSelf={"stretch"}>
                             {actions.map((action, i) => {
                                 return (
                                     <Button disabled={action.disabled} key={`actions-${i}-${action.title}`} iconPosition="right" style={{ flex: 1 }} onPress={action.onPress} icon={action.icon} title={action.title} variant={action.variant} />

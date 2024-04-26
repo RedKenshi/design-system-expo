@@ -4,7 +4,6 @@ import card from '../../constants/fakeCard.json'
 
 import Box from "../../components/Box"
 import { useTheme, useResponsiveProp } from "@shopify/restyle"
-import CategoryTile from "../../components/checkout/CategoryTile";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import Button, { ButtonVariant } from "../../components/Button";
 import { IconSVG, IconSVGCode } from "../../components/IconSVG";
@@ -14,7 +13,7 @@ import chroma from "chroma-js"
 import { Gesture, GestureDetector } from "react-native-gesture-handler";
 import Animated, { Easing, runOnJS, SharedValue, useAnimatedStyle, useSharedValue, withTiming } from "react-native-reanimated";
 import CustomText from "../../components/CustomText";
-import { Category, Product, RegisterAbsoluteLayout } from "../../constants/types";
+import { Product, RegisterAbsoluteLayout } from "../../constants/types";
 import { overlapMarginError, tabColors } from "../../constants/utils";
 
 import _ from 'lodash'
@@ -22,7 +21,6 @@ import ModalNative from "../../components/ModalNative"
 
 import uuid from 'react-native-uuid';
 import CollapsingFloatingMenu, { FloatingAction } from "../../components/CollapsingFloatingMenu"
-import Pill from "../../components/Pill"
 import TextFormRow from "../../components/formRow/TextFormRow"
 import ColorFormRow from "../../components/formRow/ColorFormRow"
 import IconFormRow from "../../components/formRow/IconFormRow"
@@ -31,16 +29,17 @@ import Panel from "../../components/Panel"
 
 import { useThrottledCallback } from 'use-debounce';
 
-import * as ScreenOrientation from 'expo-screen-orientation';
 import Header from "../../components/Header"
+import Pill from "../../components/Pill"
 
 /*
-- Find new way to trigger a move with animated:true/flase for placed item ?
-- Lock orientation sur cette page a la valeur a l'arrivée
-- Quelle numColumnsAvailable utiliser si pas la meme entre Landscape et Portrait ?
-- Rework pour se raprocher de la maquette
-*/
+- Highlight on over : 4 square to 1 big square
+- Pass needToScrollCheck in UIThread
 
+- Create product group on drop of a product on another one (open modal onDrop to ask : create group or swap))
+
+- Find new way to trigger a move with animated:true/flase for placed item ?
+*/
 
 type Props = {}
 
@@ -122,12 +121,10 @@ export const Blueprint = ({ }: Props) => {
     const theme = useTheme<Theme>();
 
     const isTablet = useResponsiveProp({ phone: 0, tablet: 1 })
-
     const numColumnsAvailable = useResponsiveProp({ phone: 3, tablet: 3, largeTablet: 4 })
-
     const headerHeight = useResponsiveProp({ phone: 250, longPhone: 320 })
 
-    const baseGridX = useResponsiveProp({ phone: 3, tablet: 5 });
+    const baseGridX = useResponsiveProp({ phone: 3, tablet: 5 }); // WILL BE FIXED BY SELECTED PLAN DE TOUCHE
     const baseGridY = 5;
 
     const scrollViewHorizontalPadding = useResponsiveProp({ phone: null, tablet: theme.spacing.l, largeTablet: theme.spacing.xxxl });
@@ -141,7 +138,8 @@ export const Blueprint = ({ }: Props) => {
     const scrollRef = useRef<View>();
 
     const [selectedProduct, setSelectedProduct] = useState<Product | null>(null)
-    const [selectedTab, setSelectedTab] = useState<number>(0)
+    const [selectedTabIndex, setSelectedTabIndex] = useState<number>(0)
+    const [selectedTab, setSelectedTab] = useState<TabDeTouche | null>(null)
 
     const [editTabOpen, setEditTabOpen] = useState<boolean>(null)
     const [newTabOpen, setNewTabOpen] = useState<boolean>(null)
@@ -172,18 +170,18 @@ export const Blueprint = ({ }: Props) => {
                 }
             },
         ]
-        if (planDeTouche[selectedTab]) {
+        if (planDeTouche[selectedTabIndex]) {
             tmp = [...tmp, {
-                color: "primary" as ButtonVariant, icon: IconSVGCode.edit, label: `Modifier  "${planDeTouche[selectedTab].name}"`, onPress: () => {
-                    setTabColor(planDeTouche[selectedTab].color);
-                    setTabName(planDeTouche[selectedTab].name);
-                    setTabIcon(planDeTouche[selectedTab].icon as FoodSVGCode);
+                color: "primary" as ButtonVariant, icon: IconSVGCode.edit, label: `Modifier  "${planDeTouche[selectedTabIndex].name}"`, onPress: () => {
+                    setTabColor(planDeTouche[selectedTabIndex].color);
+                    setTabName(planDeTouche[selectedTabIndex].name);
+                    setTabIcon(planDeTouche[selectedTabIndex].icon as FoodSVGCode);
                     setEditTabOpen(true);
                 }
             }, {
-                color: "danger" as ButtonVariant, icon: IconSVGCode.xmark, label: `Vider  "${planDeTouche[selectedTab].name}"`, onPress: () => setEmptyTabOpen(true)
+                color: "danger" as ButtonVariant, icon: IconSVGCode.xmark, label: `Vider  "${planDeTouche[selectedTabIndex].name}"`, onPress: () => setEmptyTabOpen(true)
             }, {
-                color: "danger" as ButtonVariant, icon: IconSVGCode.trash, label: `Supprimer  "${planDeTouche[selectedTab].name}"`, onPress: () => setDeleteTabOpen(true)
+                color: "danger" as ButtonVariant, icon: IconSVGCode.trash, label: `Supprimer  "${planDeTouche[selectedTabIndex].name}"`, onPress: () => setDeleteTabOpen(true)
             }]
         }
 
@@ -192,7 +190,7 @@ export const Blueprint = ({ }: Props) => {
         }]
 
         return (tmp)
-    }, [planDeTouche, selectedTab])
+    }, [planDeTouche, selectedTabIndex])
 
     const [selectedCategory, setSelectedCategory] = useState<string | null>(null)
     const [gridWidth, setGridWidth] = useState<number | null>()
@@ -266,13 +264,13 @@ export const Blueprint = ({ }: Props) => {
     }
     const deleteSelectedTab = () => {
         let tmp: PlanDeTouche = JSON.parse(JSON.stringify(planDeTouche))
-        tmp.splice(selectedTab, 1)
+        tmp.splice(selectedTabIndex, 1)
         setPlanDeTouche(tmp)
     }
     const editTab = () => {
         let tmp: PlanDeTouche = JSON.parse(JSON.stringify(planDeTouche))
-        let editedTab: TabDeTouche = tmp.splice(selectedTab, 1)[0]
-        tmp.splice(selectedTab, 0, {
+        let editedTab: TabDeTouche = tmp.splice(selectedTabIndex, 1)[0]
+        tmp.splice(selectedTabIndex, 0, {
             ...editedTab,
             name: tabName,
             color: tabColor,
@@ -282,8 +280,8 @@ export const Blueprint = ({ }: Props) => {
     }
     const emptyTab = () => {
         let tmp: PlanDeTouche = JSON.parse(JSON.stringify(planDeTouche))
-        let editedTab: TabDeTouche = tmp.splice(selectedTab, 1)[0]
-        tmp.splice(selectedTab, 0, {
+        let editedTab: TabDeTouche = tmp.splice(selectedTabIndex, 1)[0]
+        tmp.splice(selectedTabIndex, 0, {
             ...editedTab,
             blueprint: []
         })
@@ -291,9 +289,9 @@ export const Blueprint = ({ }: Props) => {
     }
     const updateBlueprintOfTab = (blueprint: Cell[]) => {
         let tmp: PlanDeTouche = JSON.parse(JSON.stringify(planDeTouche))
-        let editedTab: TabDeTouche = tmp.splice(selectedTab, 1)[0]
+        let editedTab: TabDeTouche = tmp.splice(selectedTabIndex, 1)[0]
         if (editedTab) {
-            tmp.splice(selectedTab, 0, {
+            tmp.splice(selectedTabIndex, 0, {
                 ...editedTab,
                 blueprint: blueprint
             })
@@ -334,6 +332,39 @@ export const Blueprint = ({ }: Props) => {
         })
         setPlanDeTouche(pdt)
     }
+    const autoLayoutCategory = useCallback(() => {
+        const category = card.find(x => x.id == selectedCategory)
+        let productInCells: Cell[] = []
+        let x = 0;
+        let y = 0;
+        category.products.forEach(product => {
+            productInCells.push({
+                id: uuid.v4().toString(),
+                content: product,
+                coordinates: {
+                    x: x,
+                    y: y,
+                    w: 1,
+                    h: 1
+                },
+                layout: null
+            })
+            if (x == gridX - 1) {
+                x = 0;
+                y++;
+            } else {
+                x++;
+            }
+        })
+        const newTabPdt = {
+            blueprint: productInCells,
+            color: category.color,
+            icon: category.icon as FoodSVGCode,
+            name: category.name
+        }
+        setPlanDeTouche([...planDeTouche, newTabPdt])
+    }, [card, selectedCategory, planDeTouche,])
+
 
     const purge = () => {
         setPlanDeTouche([])
@@ -357,8 +388,8 @@ export const Blueprint = ({ }: Props) => {
 
     //blueprint is the list of product to whom has been added coordinates
     const blueprint = useMemo(() => {
-        if (planDeTouche[selectedTab]) {
-            return planDeTouche[selectedTab].blueprint.map((product, index) => {
+        if (planDeTouche[selectedTabIndex]) {
+            return planDeTouche[selectedTabIndex].blueprint.map((product, index) => {
                 return ({
                     id: product.id,
                     coordinates: product.coordinates,
@@ -369,7 +400,7 @@ export const Blueprint = ({ }: Props) => {
         } else {
             return []
         }
-    }, [selectedTab, planDeTouche, gridWidth])
+    }, [selectedTabIndex, planDeTouche, gridWidth])
 
     //grid is the list of the grid cells : if they are free or overlapped by a product
     const grid = useMemo(() => {
@@ -455,8 +486,8 @@ export const Blueprint = ({ }: Props) => {
         if (droppedOverProducts.length == 1) {
             if (origin) {
                 switchTwoProducts({
-                    cellOne: planDeTouche[selectedTab].blueprint.find(p => p.id == origin.id),
-                    cellTwo: planDeTouche[selectedTab].blueprint.find(p => p.id == droppedOverProducts[0])
+                    cellOne: planDeTouche[selectedTabIndex].blueprint.find(p => p.id == origin.id),
+                    cellTwo: planDeTouche[selectedTabIndex].blueprint.find(p => p.id == droppedOverProducts[0])
                 })
             }
         }
@@ -465,7 +496,7 @@ export const Blueprint = ({ }: Props) => {
         }
     }
     const switchTwoProducts = ({ cellOne, cellTwo }: { cellOne: Cell, cellTwo: Cell }) => {
-        let tmp: Cell[] = JSON.parse(JSON.stringify(planDeTouche[selectedTab].blueprint))
+        let tmp: Cell[] = JSON.parse(JSON.stringify(planDeTouche[selectedTabIndex].blueprint))
         tmp.find(x => x.id == cellOne.id).coordinates = cellTwo.coordinates
         tmp.find(x => x.id == cellTwo.id).coordinates = cellOne.coordinates
         updateBlueprintOfTab(tmp)
@@ -482,11 +513,12 @@ export const Blueprint = ({ }: Props) => {
             cellWidth,
             potentialDropTargets
         })
+        console.log("EXECUTED")
         setHovered(tmpUnder)
     } // PREVIOUSLY THROTTLED
 
     const addProductToBlueprint = ({ product, x, y, w, h, origin }: { product: Product, x: number, y: number, w: number, h: number, origin: Cell | null }) => {
-        let tmp: Cell[] = JSON.parse(JSON.stringify(planDeTouche[selectedTab].blueprint))
+        let tmp: Cell[] = JSON.parse(JSON.stringify(planDeTouche[selectedTabIndex].blueprint))
         if (origin) {
             tmp = tmp.filter(tmpCell => tmpCell.id !== origin.id)
         }
@@ -553,7 +585,7 @@ export const Blueprint = ({ }: Props) => {
         }
     }
     const removeFromBlueprint = (cell: Cell) => {
-        let tmp: Cell[] = JSON.parse(JSON.stringify(planDeTouche[selectedTab].blueprint.filter(x => x.id != cell.id)))
+        let tmp: Cell[] = JSON.parse(JSON.stringify(planDeTouche[selectedTabIndex].blueprint.filter(x => x.id != cell.id)))
         updateBlueprintOfTab(tmp)
     }
 
@@ -574,8 +606,7 @@ export const Blueprint = ({ }: Props) => {
         if (wantoToGo != null) {
             scrollRef.current?.scrollTo({ y: target, animated: true });
         }
-    }
-        , 600, { leading: false, trailing: true });
+    }, 600, { leading: false, trailing: true });
 
     useEffect(() => {
         if (autoScrollTarget !== null) {
@@ -617,7 +648,20 @@ export const Blueprint = ({ }: Props) => {
 
     const availableProductList = useMemo(() => {
         return (
-            <Panel style={{ flex: 1 }} title={selectedCategory ? card.find(x => x.id == selectedCategory).name : ""} titleIcon={IconSVGCode.chevron_left} titleOnPress={() => setSelectedCategory(null)}>
+            <Panel
+                style={{ flex: 1 }}
+                header={
+                    <Box flexDirection={"row"} justifyContent={"space-between"}>
+                        <Pressable style={{ flexDirection: "row", alignItems: "center", paddingRight: theme.spacing.xxxl, paddingHorizontal: theme.spacing.m, padding: theme.spacing.s }} onPress={() => setSelectedCategory(null)}>
+                            <IconSVG icon={IconSVGCode.chevron_left} fill={'primary'} size='normal' />
+                            <Header margin={0} style={{ marginTop: 4, marginLeft: theme.spacing.m }} size={4} variant="primary">{selectedCategory ? card.find(x => x.id == selectedCategory).name : ""}</Header>
+                        </Pressable>
+                        <Pressable style={{ flexDirection: "row", alignItems: "center", paddingHorizontal: theme.spacing.m, padding: theme.spacing.s }} onPress={() => autoLayoutCategory()}>
+                            <Pill icon={IconSVGCode.layer_group} size="s" style={{ margin: 0, paddingHorizontal: theme.spacing.m }} variant="info" title="Auto layout" />
+                        </Pressable>
+                    </Box>
+                }
+            >
                 <FlatList
                     key={selectedCategory + numColumnsAvailable.toString()}
                     numColumns={numColumnsAvailable}
@@ -667,7 +711,13 @@ export const Blueprint = ({ }: Props) => {
 
     const availableCategoriesList = useMemo(() => {
         return (
-            <Panel style={{ flex: 1 }} title={"CARTE : Carte été"} >
+            <Panel style={{ flex: 1 }}
+                header={
+                    <Box style={{ flexDirection: "row", alignItems: "center", paddingHorizontal: theme.spacing.m, padding: theme.spacing.s }}>
+                        <Header margin={0} style={{ marginTop: 4 }} size={4} variant="primary">{"CARTE : Carte été"}</Header>
+                    </Box>
+                }
+                title={"CARTE : Carte été"} >
                 <FlatList
                     keyExtractor={(item) => "cat" + item.id}
                     style={{ flex: 0, flexGrow: 0, paddingRight: theme.spacing.m, marginRight: -theme.spacing.s }}
@@ -683,22 +733,19 @@ export const Blueprint = ({ }: Props) => {
                                 <IconSVG icon={IconSVGCode.folder} fill={theme.colors.textFadded} />
                             </Pressable>
                         )
-                        return (
-                            <CategoryTile selected={item.id == selectedCategory} category={item as Category} height={36} onPress={() => { setSelectedCategory(item.id) }} />
-                        )
                     }}
                 />
             </Panel>
         )
     }, [numColumnsAvailable, dragged, setAvailableProductGridWidth, selectedCategory, gridGap, cellWidthAvailable, cellHWFactor])
 
-    const categoriesList = useMemo(() => {
+    const tabList = useMemo(() => {
         if (isTablet) {
             return (
                 <Box flex={{ phone: 1, tablet: 4 }} flexGrow={{ phone: 1, tablet: 4 }} >
                     <Header style={{ marginTop: 0, marginBottom: 4 }} size={5}>MES ONGLETS</Header>
                     <FlatList
-                        data={planDeTouche}
+                        data={planDeTouche.length > 0 ? [...planDeTouche, null] : []}
                         key={"productOfCategory:" + selectedCategory}
                         numColumns={2}
                         contentContainerStyle={{ gap: theme.spacing.m, minHeight: "100%" }}
@@ -706,32 +753,55 @@ export const Blueprint = ({ }: Props) => {
                         style={{
                             width: "100%",
                             marginBottom: -8,
-                            paddingRight: 2
+                            paddingRight: theme.spacing.s
                         }}
                         renderItem={({ item, index }) => {
+                            if (!item) {
+                                return (
+                                    <Pressable
+                                        style={[styles.addTab, {
+                                            flex: 1,
+                                            justifyContent: "center",
+                                            paddingHorizontal: theme.spacing.m,
+                                            height: 48,
+                                            borderColor: theme.colors.primary,
+                                            backgroundColor: theme.colors.surface,
+                                        }]}
+                                        onPress={() => {
+                                            setTabColor(tabColors[planDeTouche.length + 1]);
+                                            setTabName("Onglet " + (planDeTouche.length + 1));
+                                            setTabIcon(FoodSVGCode.none);
+                                            setNewTabOpen(true)
+                                        }}
+                                    >
+                                        <CustomText font="A500" color="primary">Créer un onglet</CustomText>
+                                        <IconSVG icon={IconSVGCode.plus} fill={theme.colors.primary} size="small" />
+                                    </Pressable>
+                                )
+                            }
                             return (
                                 <Pressable
-                                    onPress={() => setSelectedTab(index)}
+                                    onPress={() => setSelectedTabIndex(index)}
                                     onLongPress={() => {
-                                        setSelectedTab(index)
+                                        setSelectedTabIndex(index)
                                         setEditTabOpen(true)
                                     }}
                                     style={[
-                                        styles.categorie,
+                                        styles.tab,
                                         {
                                             height: 48,
-                                            borderColor: selectedTab == index ? chroma(item.color).darken().hex() : item.color,
-                                            backgroundColor: selectedTab == index ? chroma(item.color).alpha(.8).hex() : theme.colors.surface,
-                                            width: "49%",
+                                            borderColor: selectedTabIndex == index ? chroma(item.color).darken().hex() : item.color,
+                                            backgroundColor: selectedTabIndex == index ? chroma(item.color).alpha(.8).hex() : theme.colors.surface,
+                                            width: "48.5%",
                                             paddingHorizontal: theme.spacing.s
                                         }
                                     ]}
                                 >
                                     {item.icon &&
-                                        <FoodSVG icon={item.icon} fill={selectedTab == index ? theme.colors.fullwhite : item.color} size="normal" />
+                                        <FoodSVG icon={item.icon} fill={selectedTabIndex == index ? theme.colors.fullwhite : item.color} size="normal" />
                                     }
                                     {displayTabName &&
-                                        <CustomText color={selectedTab == index ? 'fullwhite' : null} >{item.name}</CustomText>
+                                        <CustomText color={selectedTabIndex == index ? 'fullwhite' : null} >{item.name}</CustomText>
                                     }
                                 </Pressable>
                             )
@@ -750,7 +820,7 @@ export const Blueprint = ({ }: Props) => {
             return (
                 <Box height={50} style={{ marginBottom: -10 }}>
                     <FlatList
-                        data={planDeTouche}
+                        data={planDeTouche.length > 0 ? [...planDeTouche, null] : []}
                         horizontal
                         scrollEnabled={planDeTouche.length > 0}
                         contentContainerStyle={{ gap: theme.spacing.s, minWidth: "100%", paddingHorizontal: 4 }}
@@ -759,29 +829,54 @@ export const Blueprint = ({ }: Props) => {
                             width: "100%",
                         }}
                         renderItem={({ item, index }) => {
+                            if (!item) {
+                                return (
+                                    <Pressable
+                                        style={[styles.addTab, {
+                                            paddingHorizontal: theme.spacing.m,
+                                            height: 40,
+                                            borderColor: theme.colors.primary,
+                                            backgroundColor: theme.colors.surface,
+                                        }]}
+                                        onPress={() => {
+                                            setTabColor(tabColors[planDeTouche.length + 1]);
+                                            setTabName("Onglet " + (planDeTouche.length + 1));
+                                            setTabIcon(FoodSVGCode.none);
+                                            setNewTabOpen(true)
+                                        }}
+                                    >
+                                        <CustomText font="A500" color="primary">Créer un onglet</CustomText>
+                                        <IconSVG icon={IconSVGCode.plus} fill={theme.colors.primary} size="small" />
+                                    </Pressable>
+                                )
+                            }
                             return (
                                 <Pressable
                                     style={[
-                                        styles.categorie,
+                                        styles.tab,
                                         {
                                             paddingLeft: 8,
                                             height: 40,
-                                            borderColor: selectedTab == index ? chroma(item.color).darken().hex() : item.color,
-                                            backgroundColor: selectedTab == index ? chroma(item.color).alpha(.8).hex() : theme.colors.surface,
+                                            borderColor: selectedTabIndex == index ? chroma(item.color).darken().hex() : item.color,
+                                            backgroundColor: selectedTabIndex == index ? chroma(item.color).alpha(.8).hex() : theme.colors.surface,
                                             paddingHorizontal: theme.spacing.s
                                         }
                                     ]}
-                                    onPress={() => setSelectedTab(index)}
+                                    onPress={() => setSelectedTabIndex(index)}
                                     onLongPress={() => {
-                                        setSelectedTab(index)
-                                        setEditTabOpen(true)
+                                        setSelectedTabIndex(index)
+                                        setSelectedTab(item)
+                                        setTabColor(item.color);
+                                        setTabName(item.name);
+                                        setTabIcon(item.icon as FoodSVGCode);
+                                        setEditTabOpen(true);
                                     }}
                                 >
                                     {item.icon &&
-                                        <FoodSVG icon={item.icon} fill={selectedTab == index ? theme.colors.fullwhite : item.color} size="normal" />
+                                        <FoodSVG icon={item.icon} fill={selectedTabIndex == index ? theme.colors.fullwhite : item.color} size="normal" />
                                     }
                                     {displayTabName &&
-                                        <CustomText color={selectedTab == index ? 'fullwhite' : null} >{item.name}</CustomText>
+                                        <CustomText color={selectedTabIndex == index ? 'fullwhite' : null} >{item.name}</CustomText>
                                     }
                                 </Pressable>
                             )
@@ -797,7 +892,7 @@ export const Blueprint = ({ }: Props) => {
                 </Box>
             )
         }
-    }, [isTablet, planDeTouche, selectedTab])
+    }, [isTablet, planDeTouche, selectedTabIndex])
 
     return (
         <SafeAreaView style={{ flex: 1 }}>
@@ -813,11 +908,11 @@ export const Blueprint = ({ }: Props) => {
                                 availableCategoriesList
                         }
                     </Box>
-                    {categoriesList}
+                    {tabList}
                 </Box>
                 <Box flex={1} flexGrow={1} gap={'m'} marginHorizontal={'l'}>
                     <Box flex={1} flexGrow={1} >
-                        {planDeTouche[selectedTab] ?
+                        {planDeTouche[selectedTabIndex] ?
                             <ScrollView
                                 scrollEnabled={dragged == null}
                                 decelerationRate={0}
@@ -952,7 +1047,7 @@ export const Blueprint = ({ }: Props) => {
                 <IconFormRow handleChange={(e) => setTabIcon(e as FoodSVGCode)} title="Icone" value={tabIcon} />
             </ModalNative>
             {
-                planDeTouche[selectedTab] && <>
+                selectedTab && <>
                     <ModalNative // DELETE TAB MODAL
                         open={deleteTabOpen}
                         close={() => setDeleteTabOpen(false)}
@@ -962,8 +1057,8 @@ export const Blueprint = ({ }: Props) => {
                         ]}
                     >
                         <Box flexDirection={"column"} alignItems={"center"} width={"100%"} marginTop={"l"}>
-                            <CustomText>Supprimer l'onglet {planDeTouche[selectedTab].name} ?</CustomText>
-                            <CustomText>Celui ci contient {planDeTouche[selectedTab].blueprint.length.toString()} produit(s)</CustomText>
+                            <CustomText>Supprimer l'onglet {selectedTab.name} ?</CustomText>
+                            <CustomText>Celui ci contient {selectedTab.blueprint.length.toString()} produit(s)</CustomText>
                             <CustomText color="danger">Attention, cette action est irréversible</CustomText>
                         </Box>
                     </ModalNative>
@@ -975,9 +1070,20 @@ export const Blueprint = ({ }: Props) => {
                             { title: "Sauvegarder", icon: IconSVGCode.save, onPress: () => { setEditTabOpen(false); editTab() }, variant: "success" }
                         ]}
                     >
-                        <TextFormRow handleChange={(e) => setTabName(e)} title="Nom" value={tabName} />
-                        <ColorFormRow handleChange={(e) => setTabColor(e)} title="Couleur" value={tabColor} />
-                        <IconFormRow handleChange={(e) => setTabIcon(e as FoodSVGCode)} title="Icone" value={tabIcon} />
+                        <TextFormRow handleChange={(e) => setTabName(e)} title="Nom" value={selectedTab.name} />
+                        <ColorFormRow handleChange={(e) => setTabColor(e)} title="Couleur" value={selectedTab.color} />
+                        <IconFormRow handleChange={(e) => setTabIcon(e as FoodSVGCode)} title="Icone" value={selectedTab.icon} />
+                        <Box height={48} flex={1} />
+                        <Button
+                            outline
+                            icon={IconSVGCode.trash}
+                            variant="danger"
+                            onPress={() => {
+                                setEditTabOpen(false)
+                                setDeleteTabOpen(true)
+                            }}
+                            title={"Supprimer l'onglet"}
+                        />
                     </ModalNative>
                     <ModalNative // EMPTY TAB MODAL
                         open={emptyTabOpen}
@@ -988,7 +1094,7 @@ export const Blueprint = ({ }: Props) => {
                         ]}
                     >
                         <Box justifyContent="center" alignItems="center" style={{ flex: 1, paddingVertical: theme.spacing.m, paddingHorizontal: theme.spacing.m }} >
-                            <CustomText style={{ textAlign: "center" }}>Supprimer les {planDeTouche[selectedTab].blueprint.length.toString()} produit(s) de l'onglet {planDeTouche[selectedTab].name} ?</CustomText>
+                            <CustomText style={{ textAlign: "center" }}>Supprimer les {selectedTab.blueprint.length.toString()} produit(s) de l'onglet {selectedTab.name} ?</CustomText>
                             <CustomText style={{ textAlign: "center" }} color="danger">Attention, cette action est irréversible</CustomText>
                         </Box>
                     </ModalNative>
@@ -1047,17 +1153,17 @@ const DraggableProduct = ({
         .onBegin((e) => {
             translateY.value = e.absoluteY - fingerDodge
             translateX.value = e.absoluteX - .5 * cellWidth
-            runOnJS(queueHighlightTargetUnder)({ absX: e.absoluteX - .5 * cellWidth, absY: e.absoluteY - fingerDodge })
+            //runOnJS(queueHighlightTargetUnder)({ absX: e.absoluteX - .5 * cellWidth, absY: e.absoluteY - fingerDodge })
         }).activateAfterLongPress(delayLongPress).onStart((e) => {
-            if (onLongPress) runOnJS(onLongPress)()
+            //if (onLongPress) runOnJS(onLongPress)()
             translateY.value = e.absoluteY - fingerDodge
             translateX.value = e.absoluteX - .5 * cellWidth
-            runOnJS(queueHighlightTargetUnder)({ absX: e.absoluteX - .5 * cellWidth, absY: e.absoluteY - fingerDodge })
+            //runOnJS(queueHighlightTargetUnder)({ absX: e.absoluteX - .5 * cellWidth, absY: e.absoluteY - fingerDodge })
         }).onUpdate((e) => {
             translateY.value = e.absoluteY - fingerDodge
             translateX.value = e.absoluteX - .5 * cellWidth
-            runOnJS(checkForScrollViewLimit)(e.absoluteY)
-            runOnJS(queueHighlightTargetUnder)({ absX: e.absoluteX - .5 * cellWidth, absY: e.absoluteY - fingerDodge })
+            //runOnJS(checkForScrollViewLimit)(e.absoluteY)
+            //runOnJS(queueHighlightTargetUnder)({ absX: e.absoluteX - .5 * cellWidth, absY: e.absoluteY - fingerDodge })
         }).onEnd((e) => {
             runOnJS(handleDrop)({ absX: e.absoluteX - .5 * cellWidth, absY: e.absoluteY - fingerDodge })
         })
@@ -1132,18 +1238,18 @@ const DraggablePlacedProduct = ({
         .onBegin((e) => {
             translateY.value = e.absoluteY - fingerDodge
             translateX.value = e.absoluteX - .5 * cellWidth
-            runOnJS(queueHighlightTargetUnder)({ absX: e.absoluteX - .5 * cellWidth, absY: e.absoluteY - fingerDodge })
+            //runOnJS(queueHighlightTargetUnder)({ absX: e.absoluteX - .5 * cellWidth, absY: e.absoluteY - fingerDodge })
         }).activateAfterLongPress(delayLongPress).onStart((e) => {
             runOnJS(onLongPress)()
             runOnJS(setIsDragged)(true)
             translateY.value = e.absoluteY - fingerDodge
             translateX.value = e.absoluteX - .5 * cellWidth
-            runOnJS(queueHighlightTargetUnder)({ absX: e.absoluteX - .5 * cellWidth, absY: e.absoluteY - fingerDodge })
+            //runOnJS(queueHighlightTargetUnder)({ absX: e.absoluteX - .5 * cellWidth, absY: e.absoluteY - fingerDodge })
         }).onUpdate((e) => {
             translateY.value = e.absoluteY - fingerDodge
             translateX.value = e.absoluteX - .5 * cellWidth
             runOnJS(checkForScrollViewLimit)(e.absoluteY)
-            runOnJS(queueHighlightTargetUnder)({ absX: e.absoluteX - .5 * cellWidth, absY: e.absoluteY - fingerDodge })
+            //runOnJS(queueHighlightTargetUnder)({ absX: e.absoluteX - .5 * cellWidth, absY: e.absoluteY - fingerDodge })
         }).onEnd((e) => {
             runOnJS(setIsDragged)(false)
             runOnJS(handleDrop)({ absX: e.absoluteX - .5 * cellWidth, absY: e.absoluteY - fingerDodge })
@@ -1158,8 +1264,8 @@ const DraggablePlacedProduct = ({
         if (!isLastDragged) {
             animatedTop.value = withTiming(cell.layout.top, { easing: Easing.out(Easing.ease), })
             animatedLeft.value = withTiming(cell.layout.left, { easing: Easing.out(Easing.ease), })
-            animatedHeight.value = withTiming(cell.layout.height, { easing: Easing.linear, })
-            animatedWidth.value = withTiming(cell.layout.width, { easing: Easing.linear, })
+            animatedHeight.value = cell.layout.height
+            animatedWidth.value = cell.layout.width
         } else {
             animatedTop.value = cell.layout.top
             animatedLeft.value = cell.layout.left
@@ -1227,13 +1333,20 @@ const DraggablePlacedProduct = ({
 }
 
 const styles = StyleSheet.create({
-    categorie: {
-        borderRadius: 6,
+    tab: {
+        borderRadius: 4,
         flexDirection: "row",
         gap: 6,
         justifyContent: "flex-start",
         alignItems: "center",
         borderRightWidth: 8
+    },
+    addTab: {
+        borderRadius: 4,
+        flexDirection: "row",
+        gap: 6,
+        justifyContent: "flex-start",
+        alignItems: "center",
     },
     hr: {
         alignSelf: "center",
