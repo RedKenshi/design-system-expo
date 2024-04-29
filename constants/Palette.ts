@@ -89,11 +89,25 @@ const danger = {
     '900': '#7f1c36',
     '950': '#4d0a1c',
 }
+const neutral = {
+    '50': '#ffffff',
+    '100': '#efefef',
+    '200': '#dcdcdc',
+    '300': '#bdbdbd',
+    '400': '#989898',
+    '500': '#7c7c7c',
+    '600': '#656565',
+    '700': '#525252',
+    '800': '#464646',
+    '900': '#3d3d3d',
+    '950': '#292929',
+}
 export const palettes = {
     primary: primary,
     success: success,
     warning: warning,
     danger: danger,
+    neutral: neutral,
 }
 export const lightColors = {
 
@@ -113,6 +127,8 @@ export const lightColors = {
     textOnPanel: "#5D6165",
     textOnFullTheme: "#333",
     textOnFullThemeInverse: "#ddd",
+
+    border: neutral[100],
 
     textOnPrimary: "#FFFFFF",
     textOnSecondary: "#FFFFFF",
@@ -158,8 +174,8 @@ export const lightColors = {
 export const darkColors = {
 
     //ELEMENTS COLORS
-    background: "#0c0c0e",
-    //background: "#121516",
+    //background: "#0c0c0e",
+    background: "#121516",
     //surface: "#202022",
     surface: "#202428",
     item: "#0c0c0e",
@@ -176,6 +192,8 @@ export const darkColors = {
     textOnFullTheme: "#ddd",
     textOnFullThemeInverse: "#333",
     textLegend: "#83858d",
+
+    border: neutral[900],
 
     textOnPrimary: "#FFFFFF",
     textOnSecondary: "#FFFFFF",

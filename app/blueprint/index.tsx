@@ -31,6 +31,7 @@ import { useThrottledCallback } from 'use-debounce';
 
 import Header from "../../components/Header"
 import Pill from "../../components/Pill"
+import { FolderDeToucheView } from "../../components/FolderDeToucheView"
 
 /*
 - Highlight on over : 4 square to 1 big square
@@ -57,7 +58,7 @@ type Cell = {
         height: number;
         width: number;
     } | null;
-    content: null | Product;
+    content: null | Product | FolderDeTouche;
     overlappedBy?: string | null
 }
 
@@ -68,16 +69,24 @@ type TabDeTouche = {
     blueprint: Cell[]
 }
 
+export type FolderDeTouche = {
+    typeDeTouche: "FOLDER",
+    name: string,
+    color: string,
+    icon?: FoodSVGCode,
+    content: Cell[]
+}
+
 type PlanDeTouche = TabDeTouche[]
 
 const displayTabName = true;
-const cellHWFactor = .75;
+const cellHWFactor = .8;
 const gridGap = 's';
 const delayLongPress = 100;
 const fingerDodge = 80;
 const overlapMinimum = 15;
 
-let computeTargetUnder = ({ absX, absY, dragged, scrollViewLayout, onScrollEndContentOffset, cellHeight, cellWidth, potentialDropTargets }: { absX: number, absY: number, dragged: Product, scrollViewLayout: RegisterAbsoluteLayout | null, onScrollEndContentOffset: number, cellHeight: number, cellWidth: number, potentialDropTargets: Cell[] }) => {
+let computeTargetUnder = ({ absX, absY, dragged, scrollViewLayout, onScrollEndContentOffset, cellHeight, cellWidth, potentialDropTargets }: { absX: number, absY: number, dragged: Product | FolderDeTouche, scrollViewLayout: RegisterAbsoluteLayout | null, onScrollEndContentOffset: number, cellHeight: number, cellWidth: number, potentialDropTargets: Cell[] }) => {
     //return [] // TEST
     if (!scrollViewLayout) return []
     if (dragged) {
@@ -140,6 +149,8 @@ export const Blueprint = ({ }: Props) => {
     const [selectedProduct, setSelectedProduct] = useState<Product | null>(null)
     const [selectedTabIndex, setSelectedTabIndex] = useState<number>(0)
     const [selectedTab, setSelectedTab] = useState<TabDeTouche | null>(null)
+    const [selectedFolder, setSelectedFolder] = useState<FolderDeTouche | null>(null)
+    const [selectedFolderCell, setSelectedFolderCell] = useState<Cell | null>(null)
 
     const [editTabOpen, setEditTabOpen] = useState<boolean>(null)
     const [newTabOpen, setNewTabOpen] = useState<boolean>(null)
@@ -147,9 +158,20 @@ export const Blueprint = ({ }: Props) => {
     const [emptyTabOpen, setEmptyTabOpen] = useState<boolean>(null)
     const [autoLayoutOpen, setAutoLayoutOpen] = useState<boolean>(null)
 
+    const [editFolderOpen, setEditFolderOpen] = useState<boolean>(null)
+    const [newFolderOpen, setNewFolderOpen] = useState<boolean>(null)
+    const [deleteFolderOpen, setDeleteFolderOpen] = useState<boolean>(null)
+    const [emptyFolderOpen, setEmptyFolderOpen] = useState<boolean>(null)
+
     const [tabName, setTabName] = useState<string>('')
     const [tabColor, setTabColor] = useState<string>('')
     const [tabIcon, setTabIcon] = useState<FoodSVGCode | null>(null)
+
+    const [folderName, setFolderName] = useState<string>('')
+    const [folderColor, setFolderColor] = useState<string>('')
+    const [folderIcon, setFolderIcon] = useState<FoodSVGCode | null>(null)
+
+    const [emptyPlaceCoordinates, setEmptyPlaceCoordinates] = useState<{ x: number, y: number } | null>(null)
 
     const [planDeTouche, setPlanDeTouche] = useState<PlanDeTouche>([])
 
@@ -197,7 +219,7 @@ export const Blueprint = ({ }: Props) => {
     const [availableProductGridWidth, setAvailableProductGridWidth] = useState<number | null>(null)
     const [scrollViewLayout, setScrollViewLayout] = useState<RegisterAbsoluteLayout | null>(null)
     const [onScrollEndContentOffset, setOnScrollEndContentOffset] = useState<number>(0)
-    const [dragged, setDragged] = useState<Product | null>(null)
+    const [dragged, setDragged] = useState<Product | FolderDeTouche | null>(null)
     const [lastDragged, setLastDragged] = useState<Cell | null>(null)
     const [draggedOrigin, setDraggedOrigin] = useState<null | Cell>(null)
 
@@ -221,8 +243,6 @@ export const Blueprint = ({ }: Props) => {
             return 140
         }
     }, [availableProductGridWidth, numColumnsAvailable])
-
-
 
     const cellHeight = useMemo(() => {
         if (cellWidth) {
@@ -287,6 +307,54 @@ export const Blueprint = ({ }: Props) => {
         })
         setPlanDeTouche(tmp)
     }
+
+    const createNewFolder = () => {
+        let tmp: Cell[] = JSON.parse(JSON.stringify(planDeTouche[selectedTabIndex].blueprint))
+        let tmpCell: Cell = {
+            id: uuid.v4().toString(),
+            coordinates: { x: emptyPlaceCoordinates.x, y: emptyPlaceCoordinates.y, w: 1, h: 1 },
+            layout: null,
+            content: {
+                typeDeTouche: "FOLDER",
+                color: folderColor,
+                content: [],
+                name: folderName,
+                icon: folderIcon
+            } as FolderDeTouche,
+        }
+        tmp.push(tmpCell)
+        updateBlueprintOfTab(tmp)
+    }
+    const deleteSelectedFolder = () => {
+        removeFromBlueprint(selectedFolderCell)
+    }
+    const editFolder = () => {
+        let tmp: Cell[] = JSON.parse(JSON.stringify(planDeTouche[selectedTabIndex].blueprint))
+        if (selectedFolderCell.id) {
+            tmp = tmp.filter(tmpCell => tmpCell.id !== selectedFolderCell.id)
+            let tmpCell: Cell = {
+                ...selectedFolderCell,
+                content: {
+                    ...selectedFolderCell.content,
+                    name: folderName,
+                    color: folderColor,
+                    icon: folderIcon
+                } as FolderDeTouche
+            }
+            tmp.push(tmpCell)
+            updateBlueprintOfTab(tmp)
+        }
+    }
+    const emptyFolder = () => {
+        let tmp: PlanDeTouche = JSON.parse(JSON.stringify(planDeTouche))
+        let editedTab: TabDeTouche = tmp.splice(selectedTabIndex, 1)[0]
+        tmp.splice(selectedTabIndex, 0, {
+            ...editedTab,
+            blueprint: []
+        })
+        setPlanDeTouche(tmp)
+    }
+
     const updateBlueprintOfTab = (blueprint: Cell[]) => {
         let tmp: PlanDeTouche = JSON.parse(JSON.stringify(planDeTouche))
         let editedTab: TabDeTouche = tmp.splice(selectedTabIndex, 1)[0]
@@ -307,7 +375,7 @@ export const Blueprint = ({ }: Props) => {
             carCat.products.forEach(product => {
                 productInCells.push({
                     id: uuid.v4().toString(),
-                    content: product,
+                    content: { ...product, typeDeTouche: "PRODUCT" },
                     coordinates: {
                         x: x,
                         y: y,
@@ -334,13 +402,19 @@ export const Blueprint = ({ }: Props) => {
     }
     const autoLayoutCategory = useCallback(() => {
         const category = card.find(x => x.id == selectedCategory)
+        let autoLayoutName = category.name
+        let n = 1;
+        while (planDeTouche.some(tab => tab.name == autoLayoutName)) {
+            autoLayoutName = `${category.name} (${n})`
+            n++;
+        }
         let productInCells: Cell[] = []
         let x = 0;
         let y = 0;
         category.products.forEach(product => {
             productInCells.push({
                 id: uuid.v4().toString(),
-                content: product,
+                content: { ...product, typeDeTouche: "PRODUCT" },
                 coordinates: {
                     x: x,
                     y: y,
@@ -360,11 +434,10 @@ export const Blueprint = ({ }: Props) => {
             blueprint: productInCells,
             color: category.color,
             icon: category.icon as FoodSVGCode,
-            name: category.name
+            name: autoLayoutName
         }
         setPlanDeTouche([...planDeTouche, newTabPdt])
-    }, [card, selectedCategory, planDeTouche,])
-
+    }, [card, selectedCategory, planDeTouche])
 
     const purge = () => {
         setPlanDeTouche([])
@@ -387,14 +460,14 @@ export const Blueprint = ({ }: Props) => {
     }
 
     //blueprint is the list of product to whom has been added coordinates
-    const blueprint = useMemo(() => {
+    const blueprint = useMemo<Cell[]>(() => {
         if (planDeTouche[selectedTabIndex]) {
-            return planDeTouche[selectedTabIndex].blueprint.map((product, index) => {
+            return planDeTouche[selectedTabIndex].blueprint.map((cell, index) => {
                 return ({
-                    id: product.id,
-                    coordinates: product.coordinates,
-                    layout: getPositionAndSizesFromXYCoordinates({ ...product.coordinates }),
-                    content: product.content,
+                    id: cell.id,
+                    coordinates: cell.coordinates,
+                    layout: getPositionAndSizesFromXYCoordinates({ ...cell.coordinates }),
+                    content: cell.content
                 })
             })
         } else {
@@ -454,7 +527,7 @@ export const Blueprint = ({ }: Props) => {
         }
     }, [onScrollEndContentOffset, grid, scrollViewLayout])
 
-    const addProductToDropIds = ({ product, dropIds, origin }: { product: Product, dropIds: { x: number, y: number }[], origin: Cell | null }) => {
+    const addProductToDropIds = ({ product, dropIds, origin }: { product: Product | FolderDeTouche, dropIds: { x: number, y: number }[], origin: Cell | null }) => {
         if (dropIds.some(di => di.y == (gridY - 1))) {
             setGridY(gridY + 1)
         }
@@ -517,7 +590,7 @@ export const Blueprint = ({ }: Props) => {
         setHovered(tmpUnder)
     } // PREVIOUSLY THROTTLED
 
-    const addProductToBlueprint = ({ product, x, y, w, h, origin }: { product: Product, x: number, y: number, w: number, h: number, origin: Cell | null }) => {
+    const addProductToBlueprint = ({ product, x, y, w, h, origin }: { product: Product | FolderDeTouche, x: number, y: number, w: number, h: number, origin: Cell | null }) => {
         let tmp: Cell[] = JSON.parse(JSON.stringify(planDeTouche[selectedTabIndex].blueprint))
         if (origin) {
             tmp = tmp.filter(tmpCell => tmpCell.id !== origin.id)
@@ -547,7 +620,8 @@ export const Blueprint = ({ }: Props) => {
         }
         resetDrag()
     }
-    const handleGrab = (product: Product, originCell: Cell | null) => {
+
+    const handleGrab = (product: Product | FolderDeTouche, originCell: Cell | null) => {
         if (product) {
             setDragged(product)
             if (originCell) setLastDragged(originCell)
@@ -674,9 +748,9 @@ export const Blueprint = ({ }: Props) => {
                     renderItem={({ item, index }) => {
                         return (
                             <DraggableProduct
-                                product={item}
-                                onPress={() => setSelectedProduct(item)}
-                                onLongPress={() => { handleGrab(item, null); }}
+                                product={{ ...item, typeDeTouche: "PRODUCT" }}
+                                onPress={() => setSelectedProduct({ ...item, typeDeTouche: "PRODUCT" })}
+                                onLongPress={() => { handleGrab({ ...item, typeDeTouche: "PRODUCT" }, null); }}
                                 cellHeight={cellWidthAvailable * cellHWFactor}
                                 cellWidth={cellWidthAvailable}
                                 handleDrop={handleDrop}
@@ -691,7 +765,7 @@ export const Blueprint = ({ }: Props) => {
                 />
             </Panel>
         )
-    }, [numColumnsAvailable, dragged, setAvailableProductGridWidth, selectedCategory, gridGap, cellWidthAvailable, cellHWFactor])
+    }, [numColumnsAvailable, dragged, setAvailableProductGridWidth, selectedCategory, gridGap, cellWidthAvailable, cellHWFactor, autoLayoutCategory])
 
     const selectedProductPanel = useMemo(() => {
         if (!selectedProduct) return
@@ -711,25 +785,25 @@ export const Blueprint = ({ }: Props) => {
 
     const availableCategoriesList = useMemo(() => {
         return (
-            <Panel style={{ flex: 1 }}
+            <Panel unpadded style={{ flex: 1 }}
                 header={
                     <Box style={{ flexDirection: "row", alignItems: "center", paddingHorizontal: theme.spacing.m, padding: theme.spacing.s }}>
                         <Header margin={0} style={{ marginTop: 4 }} size={4} variant="primary">{"CARTE : Carte été"}</Header>
                     </Box>
                 }
-                title={"CARTE : Carte été"} >
+                title={"CARTE : Carte été"}
+            >
                 <FlatList
                     keyExtractor={(item) => "cat" + item.id}
-                    style={{ flex: 0, flexGrow: 0, paddingRight: theme.spacing.m, marginRight: -theme.spacing.s }}
-                    contentContainerStyle={{ gap: theme.spacing[gridGap] }}
+                    style={{ flex: 0, flexGrow: 0 }}
                     data={card}
                     renderItem={({ item, index }) => {
                         return (
-                            <Pressable style={{ flex: 1, paddingVertical: theme.spacing.s, paddingHorizontal: theme.spacing.s, borderRadius: 4, flexDirection: "row", backgroundColor: theme.colors.background, alignItems: 'center' }} onPress={() => setSelectedCategory(item.id)}>
+                            <Pressable style={{ flex: 1, paddingVertical: theme.spacing.m, paddingHorizontal: theme.spacing.l, borderRadius: 4, flexDirection: "row", alignItems: 'center', borderBottomWidth: 1, borderColor: theme.colors.border }} onPress={() => setSelectedCategory(item.id)}>
                                 <FoodSVG icon={item.icon as FoodSVGCode} fill={item.color} size="normal" />
                                 <CustomText style={{ marginLeft: theme.spacing.s, marginTop: 2 }} color={item.id == selectedCategory ? "white" : undefined} font='A600' size={18}>{item.name}</CustomText>
                                 <Box flex={1} />
-                                <CustomText font={"A400_I"} size={11} color={item.id == selectedCategory ? "white" : 'textFadded'} style={{ marginRight: theme.spacing.xxs, marginTop: 3 }}>{`${item.products.length} produits`}</CustomText>
+                                <CustomText font={"A500_I"} size={12} color={item.id == selectedCategory ? "white" : 'textFadded'} style={{ marginRight: theme.spacing.s, marginTop: 3 }}>{`${item.products.length} produits`}</CustomText>
                                 <IconSVG icon={IconSVGCode.folder} fill={theme.colors.textFadded} />
                             </Pressable>
                         )
@@ -784,7 +858,11 @@ export const Blueprint = ({ }: Props) => {
                                     onPress={() => setSelectedTabIndex(index)}
                                     onLongPress={() => {
                                         setSelectedTabIndex(index)
-                                        setEditTabOpen(true)
+                                        setSelectedTab(item)
+                                        setTabColor(item.color);
+                                        setTabName(item.name);
+                                        setTabIcon(item.icon as FoodSVGCode);
+                                        setEditTabOpen(true);
                                     }}
                                     style={[
                                         styles.tab,
@@ -892,7 +970,7 @@ export const Blueprint = ({ }: Props) => {
                 </Box>
             )
         }
-    }, [isTablet, planDeTouche, selectedTabIndex])
+    }, [isTablet, planDeTouche, selectedTabIndex, selectedTab, setSelectedTabIndex, setSelectedTab, setTabColor, setTabName, setTabIcon, setEditTabOpen, editTabOpen, tabIcon, tabColor, tabName])
 
     return (
         <SafeAreaView style={{ flex: 1 }}>
@@ -927,30 +1005,56 @@ export const Blueprint = ({ }: Props) => {
                             >
                                 {objects.map((cell) => {
                                     if (cell.content) {
-                                        return (
-                                            <DraggablePlacedProduct
-                                                key={"object-" + cell.id}
-                                                cell={cell}
-                                                product={cell.content}
-                                                onLongPress={() => grabPlacedItem(cell)}
-                                                cellHeight={cellHeight}
-                                                cellWidth={cellWidth}
-                                                handleDrop={handleDrop}
-                                                queueHighlightTargetUnder={highlightTargetUnder}
-                                                translateX={translateX}
-                                                translateY={translateY}
-                                                resetDrag={resetDrag}
-                                                removeFromBlueprint={removeFromBlueprint}
-                                                checkForScrollViewLimit={checkForScrollViewLimit}
-                                                isLastDragged={lastDragged != null && lastDragged.id == cell.id}
-                                            />
-                                        )
+                                        if (cell.content.typeDeTouche == "PRODUCT") {
+                                            return (
+                                                <DraggablePlacedProduct
+                                                    key={"object-" + cell.id}
+                                                    cell={cell}
+                                                    product={cell.content as Product}
+                                                    onLongPress={() => grabPlacedItem(cell)}
+                                                    cellHeight={cellHeight}
+                                                    cellWidth={cellWidth}
+                                                    handleDrop={handleDrop}
+                                                    queueHighlightTargetUnder={highlightTargetUnder}
+                                                    translateX={translateX}
+                                                    translateY={translateY}
+                                                    resetDrag={resetDrag}
+                                                    removeFromBlueprint={removeFromBlueprint}
+                                                    checkForScrollViewLimit={checkForScrollViewLimit}
+                                                    isLastDragged={lastDragged != null && lastDragged.id == cell.id}
+                                                />
+                                            )
+                                        } else {
+                                            return (
+                                                <DraggablePlacedFolder
+                                                    setSelectedFolder={setSelectedFolder}
+                                                    setSelectedFolderCell={setSelectedFolderCell}
+                                                    setEditFolderOpen={setEditFolderOpen}
+                                                    key={"folder-" + cell.id}
+                                                    cell={cell}
+                                                    folder={cell.content as FolderDeTouche}
+                                                    onLongPress={() => grabPlacedItem(cell)}
+                                                    cellHeight={cellHeight}
+                                                    cellWidth={cellWidth}
+                                                    handleDrop={handleDrop}
+                                                    queueHighlightTargetUnder={highlightTargetUnder}
+                                                    translateX={translateX}
+                                                    translateY={translateY}
+                                                    checkForScrollViewLimit={checkForScrollViewLimit}
+                                                    isLastDragged={lastDragged != null && lastDragged.id == cell.id}
+                                                    setFolderIcon={setFolderIcon}
+                                                    setFolderName={setFolderName}
+                                                    setFolderColor={setFolderColor}
+                                                />
+                                            )
+                                        }
                                     } else {
                                         return (
                                             <Box
                                                 key={cell.id}
                                                 position={"absolute"}
                                                 borderRadius={4}
+                                                opacity={cell.overlappedBy ? 0 : 1}
                                                 style={{ borderColor: chroma(theme.colors[isHovered(cell) ? 'success' : 'primary']).alpha(.8).hex(), borderStyle: "dashed", borderWidth: 1.5, backgroundColor: chroma(theme.colors[isHovered(cell) ? 'success' : 'primary']).alpha(.08).hex(), ...cell.layout }}
                                                 width={cellWidth}
                                                 height={cellHeight}
@@ -958,7 +1062,15 @@ export const Blueprint = ({ }: Props) => {
                                                 alignItems={"center"}
                                             >
                                                 <Pressable
-                                                    onPress={selectedProduct ? () => placeSelectedProductHere(cell) : null}
+                                                    onPress={selectedProduct ?
+                                                        () => placeSelectedProductHere(cell) :
+                                                        () => {
+                                                            setEmptyPlaceCoordinates({ x: cell.coordinates.x, y: cell.coordinates.y })
+                                                            setNewFolderOpen(true)
+                                                            setFolderName("Nouveau dossier")
+                                                            setFolderIcon(FoodSVGCode.none)
+                                                            setFolderColor(selectedTabIndex ? planDeTouche[selectedTabIndex].color : tabColors[0])
+                                                        }}
                                                     style={{
                                                         flex: 1,
                                                         width: "100%",
@@ -1000,7 +1112,7 @@ export const Blueprint = ({ }: Props) => {
                                 <Panel style={{ flex: 1, alignSelf: "stretch" }} contentInnerStyle={{ justifyContent: "center", alignItems: "center" }}>
                                     <CustomText font="A500" lineHeight={18} size={16} style={{ textAlign: "center" }} >Vous n'avez aucun onglet dans ce plan de touche ...</CustomText>
                                     <CustomText font="A500" lineHeight={18} size={16} style={{ textAlign: "center", marginTop: theme.spacing.s }} >Créer en un pour commencer à ajouter des produits !</CustomText>
-                                    <Button outline onPress={() => { setTabColor(tabColors[planDeTouche.length + 1]); setTabName("Onglet " + (planDeTouche.length + 1)); setTabIcon(FoodSVGCode.none); setNewTabOpen(true) }} title="Créer un onglet" icon={IconSVGCode.plus} size="m" iconPosition="right" style={{ marginTop: theme.spacing.m }} />
+                                    <Button outline onPress={() => { setTabColor(tabColors[planDeTouche.length]); setTabName("Onglet " + (planDeTouche.length + 1)); setTabIcon(FoodSVGCode.none); setNewTabOpen(true) }} title="Créer un onglet" icon={IconSVGCode.plus} size="m" iconPosition="right" style={{ marginTop: theme.spacing.m }} />
                                     <CustomText font="A500" lineHeight={18} size={16} style={{ textAlign: "center", marginTop: theme.spacing.s }} >Ou essayez l'auto layout</CustomText>
                                     <Button outline onPress={() => { setAutoLayoutOpen(true) }} title="Auto layout" variant="info" icon={IconSVGCode.layer_group} size="m" iconPosition="right" style={{ marginTop: theme.spacing.m }} />
                                 </Panel>
@@ -1016,12 +1128,13 @@ export const Blueprint = ({ }: Props) => {
                 </>
             }
             <View style={{ position: "absolute", top: 0, bottom: 0, left: 0, right: 0 }} pointerEvents="none">
-                {dragged &&
+                {dragged && dragged.typeDeTouche == "PRODUCT" &&
                     <Animated.View
                         style={[
                             animatedStyle,
                             styles.animatedView,
                             {
+                                borderBottomWidth: 12,
                                 backgroundColor: chroma.mix(theme.colors.fullTheme, dragged.color, .1).hex(),
                                 borderColor: dragged.color,
                                 width: cellWidth,
@@ -1031,6 +1144,24 @@ export const Blueprint = ({ }: Props) => {
                         ]}
                     >
                         <CustomText font="A700" size={14} style={{ textAlign: "center" }}>{dragged.label}</CustomText>
+                    </Animated.View>
+                }
+                {dragged && dragged.typeDeTouche == "FOLDER" &&
+                    <Animated.View
+                        style={[
+                            animatedStyle,
+                            styles.animatedView,
+                            {
+                                width: cellWidth,
+                                height: cellHeight,
+                            }
+                        ]}
+                    >
+                        <FolderDeToucheView
+                            folder={dragged}
+                            width={1}
+                            backgroundColor={theme.colors.surface}
+                        />
                     </Animated.View>
                 }
             </View>
@@ -1070,9 +1201,9 @@ export const Blueprint = ({ }: Props) => {
                             { title: "Sauvegarder", icon: IconSVGCode.save, onPress: () => { setEditTabOpen(false); editTab() }, variant: "success" }
                         ]}
                     >
-                        <TextFormRow handleChange={(e) => setTabName(e)} title="Nom" value={selectedTab.name} />
-                        <ColorFormRow handleChange={(e) => setTabColor(e)} title="Couleur" value={selectedTab.color} />
-                        <IconFormRow handleChange={(e) => setTabIcon(e as FoodSVGCode)} title="Icone" value={selectedTab.icon} />
+                        <TextFormRow handleChange={(e) => setTabName(e)} title="Nom" value={tabName} />
+                        <ColorFormRow handleChange={(e) => setTabColor(e)} title="Couleur" value={tabColor} />
+                        <IconFormRow handleChange={(e) => setTabIcon(e as FoodSVGCode)} title="Icone" value={tabIcon} />
                         <Box height={48} flex={1} />
                         <Button
                             outline
@@ -1116,6 +1247,73 @@ export const Blueprint = ({ }: Props) => {
                     <CustomText style={{ textAlign: "center" }} color="danger">Attention, cette action est irréversible.</CustomText>
                 </Box>
             </ModalNative>
+            <ModalNative // CREATE FOLDER MODAL
+                title="CRÉER UN DOSSIER"
+                open={newFolderOpen}
+                close={() => setNewFolderOpen(false)}
+                actions={[
+                    { title: "Retour", icon: IconSVGCode.arrow_left, onPress: () => setNewFolderOpen(false), variant: "neutral" },
+                    { title: "Créer", icon: IconSVGCode.plus, onPress: () => { setNewFolderOpen(false); createNewFolder() }, variant: "success", disabled: folderName.length < 1 || folderColor.length != 7 }
+                ]}
+            >
+                <TextFormRow handleChange={(e) => setFolderName(e)} title="Nom" value={folderName} />
+                <ColorFormRow handleChange={(e) => setFolderColor(e)} title="Couleur" value={folderColor} />
+                <IconFormRow handleChange={(e) => setFolderIcon(e as FoodSVGCode)} title="Icone" value={folderIcon} />
+            </ModalNative>
+            {
+                selectedFolder && <>
+                    <ModalNative // DELETE FOLDER MODAL
+                        open={deleteFolderOpen}
+                        close={() => setDeleteFolderOpen(false)}
+                        actions={[
+                            { title: "Retour", icon: IconSVGCode.arrow_left, onPress: () => setDeleteFolderOpen(false), variant: "neutral" },
+                            { title: "Supprimer", icon: IconSVGCode.trash, onPress: () => { setDeleteFolderOpen(false); deleteSelectedFolder() }, variant: "danger" }
+                        ]}
+                    >
+                        <Box flexDirection={"column"} alignItems={"center"} width={"100%"} marginTop={"l"}>
+                            <CustomText>Supprimer le dossier {selectedFolder.name} ?</CustomText>
+                            <CustomText>Celui ci contient {selectedFolder.content.length.toString()} produit(s)</CustomText>
+                            <CustomText color="danger">Attention, cette action est irréversible</CustomText>
+                        </Box>
+                    </ModalNative>
+                    <ModalNative // EDIT FOLDER MODAL
+                        open={editFolderOpen}
+                        close={() => setEditFolderOpen(false)}
+                        actions={[
+                            { title: "Retour", icon: IconSVGCode.arrow_left, onPress: () => setEditFolderOpen(false), variant: "neutral" },
+                            { title: "Sauvegarder", icon: IconSVGCode.save, onPress: () => { setEditFolderOpen(false); editFolder() }, variant: "success" }
+                        ]}
+                    >
+                        <TextFormRow handleChange={(e) => setFolderName(e)} title="Nom" value={folderName} />
+                        <ColorFormRow handleChange={(e) => setFolderColor(e)} title="Couleur" value={folderColor} />
+                        <IconFormRow handleChange={(e) => setFolderIcon(e as FoodSVGCode)} title="Icone" value={folderIcon} />
+                        <Box height={48} flex={1} />
+                        <Button
+                            outline
+                            icon={IconSVGCode.trash}
+                            variant="danger"
+                            onPress={() => {
+                                setEditFolderOpen(false)
+                                setDeleteFolderOpen(true)
+                            }}
+                            title={"Supprimer le dossier"}
+                        />
+                    </ModalNative>
+                    <ModalNative // EMPTY FOLDER MODAL
+                        open={emptyFolderOpen}
+                        close={() => setEmptyFolderOpen(false)}
+                        actions={[
+                            { title: "Retour", icon: IconSVGCode.arrow_left, onPress: () => setEmptyFolderOpen(false), variant: "neutral" },
+                            { title: "Vider", icon: IconSVGCode.xmark, onPress: () => { setEmptyFolderOpen(false); emptyFolder() }, variant: "danger" }
+                        ]}
+                    >
+                        <Box justifyContent="center" alignItems="center" style={{ flex: 1, paddingVertical: theme.spacing.m, paddingHorizontal: theme.spacing.m }} >
+                            <CustomText style={{ textAlign: "center" }}>Supprimer les {selectedFolder.content.length.toString()} produit(s) de l'onglet {selectedFolder.name} ?</CustomText>
+                            <CustomText style={{ textAlign: "center" }} color="danger">Attention, cette action est irréversible</CustomText>
+                        </Box>
+                    </ModalNative>
+                </>
+            }
             <CollapsingFloatingMenu actions={floatingActions} />
         </SafeAreaView >
     )
@@ -1155,7 +1353,7 @@ const DraggableProduct = ({
             translateX.value = e.absoluteX - .5 * cellWidth
             //runOnJS(queueHighlightTargetUnder)({ absX: e.absoluteX - .5 * cellWidth, absY: e.absoluteY - fingerDodge })
         }).activateAfterLongPress(delayLongPress).onStart((e) => {
-            //if (onLongPress) runOnJS(onLongPress)()
+            if (onLongPress) runOnJS(onLongPress)()
             translateY.value = e.absoluteY - fingerDodge
             translateX.value = e.absoluteX - .5 * cellWidth
             //runOnJS(queueHighlightTargetUnder)({ absX: e.absoluteX - .5 * cellWidth, absY: e.absoluteY - fingerDodge })
@@ -1332,6 +1530,133 @@ const DraggablePlacedProduct = ({
     )
 }
 
+const DraggablePlacedFolder = ({
+    cell,
+    folder,
+    onLongPress,
+    translateX,
+    translateY,
+    cellWidth,
+    cellHeight,
+    handleDrop,
+    checkForScrollViewLimit,
+    isLastDragged,
+    setEditFolderOpen,
+    setSelectedFolder,
+    setSelectedFolderCell,
+    setFolderIcon,
+    setFolderName,
+    setFolderColor
+}: {
+    cell: Cell,
+    folder: FolderDeTouche,
+    onLongPress: () => void,
+    translateX: SharedValue<number>,
+    translateY: SharedValue<number>,
+    queueHighlightTargetUnder: ({ absX, absY }: { absX: number, absY: number }) => any,
+    cellWidth: number,
+    cellHeight: number,
+    handleDrop: ({ absX, absY }: { absX: number, absY: number }) => void,
+    checkForScrollViewLimit: (y: number) => void
+    isLastDragged: boolean
+    setEditFolderOpen: (value: boolean) => void
+    setSelectedFolder: (folder: FolderDeTouche) => void
+    setSelectedFolderCell: (cell: Cell) => void,
+    setFolderIcon: (value: FoodSVGCode) => void,
+    setFolderName: (value: string) => void,
+    setFolderColor: (value: string) => void
+}) => {
+    const [isPressed, setIsPressed] = useState<boolean>(false)
+    const [isDragged, setIsDragged] = useState<boolean>(false)
+    const theme = useTheme<Theme>()
+
+    const fromPlacedPan = Gesture.Pan()
+        .onBegin((e) => {
+            translateY.value = e.absoluteY - fingerDodge
+            translateX.value = e.absoluteX - .5 * cellWidth
+            //runOnJS(queueHighlightTargetUnder)({ absX: e.absoluteX - .5 * cellWidth, absY: e.absoluteY - fingerDodge })
+        }).activateAfterLongPress(delayLongPress).onStart((e) => {
+            runOnJS(onLongPress)()
+            runOnJS(setIsDragged)(true)
+            translateY.value = e.absoluteY - fingerDodge
+            translateX.value = e.absoluteX - .5 * cellWidth
+            //runOnJS(queueHighlightTargetUnder)({ absX: e.absoluteX - .5 * cellWidth, absY: e.absoluteY - fingerDodge })
+        }).onUpdate((e) => {
+            translateY.value = e.absoluteY - fingerDodge
+            translateX.value = e.absoluteX - .5 * cellWidth
+            runOnJS(checkForScrollViewLimit)(e.absoluteY)
+            //runOnJS(queueHighlightTargetUnder)({ absX: e.absoluteX - .5 * cellWidth, absY: e.absoluteY - fingerDodge })
+        }).onEnd((e) => {
+            runOnJS(setIsDragged)(false)
+            runOnJS(handleDrop)({ absX: e.absoluteX - .5 * cellWidth, absY: e.absoluteY - fingerDodge })
+        })
+
+    const animatedTop = useSharedValue(cell.layout.top)
+    const animatedLeft = useSharedValue(cell.layout.left)
+    const animatedHeight = useSharedValue(cell.layout.height)
+    const animatedWidth = useSharedValue(cell.layout.width)
+
+    useEffect(() => {
+        if (!isLastDragged) {
+            animatedTop.value = withTiming(cell.layout.top, { easing: Easing.out(Easing.ease), })
+            animatedLeft.value = withTiming(cell.layout.left, { easing: Easing.out(Easing.ease), })
+            animatedHeight.value = cell.layout.height
+            animatedWidth.value = cell.layout.width
+        } else {
+            animatedTop.value = cell.layout.top
+            animatedLeft.value = cell.layout.left
+            animatedHeight.value = cell.layout.height
+            animatedWidth.value = cell.layout.width
+        }
+    }, [cell])
+
+    const animatedStyle = useAnimatedStyle(() => {
+        return ({
+            top: animatedTop.value,
+            left: animatedLeft.value,
+            height: animatedHeight.value,
+            width: animatedWidth.value,
+        })
+    })
+
+    return (
+        <>
+            <GestureDetector gesture={fromPlacedPan}>
+                <Animated.View
+                    style={[{
+                        position: "absolute",
+                        padding: theme.spacing.xxs,
+                        borderRadius: 4,
+                        width: cellWidth,
+                        height: cellHeight,
+                        justifyContent: "center",
+                        alignItems: "center",
+                        opacity: isDragged ? .5 : 1,
+                        zIndex: isLastDragged ? 10000000 : 9000000,
+                        ...cell.layout
+                    }, animatedStyle]}
+                >
+                    <FolderDeToucheView
+                        folder={folder}
+                        backgroundColor={isPressed ? chroma(folder.color).alpha(.1).hex() : theme.colors.surface}
+                        width={cell.coordinates.w}
+                        onPressIn={() => setIsPressed(true)}
+                        onPressOut={() => setIsPressed(false)}
+                        onPress={() => {
+                            setEditFolderOpen(true)
+                            setSelectedFolder(folder)
+                            setSelectedFolderCell(cell)
+                            setFolderIcon(folder.icon)
+                            setFolderName(folder.name)
+                            setFolderColor(folder.color)
+                        }}
+                    />
+                </Animated.View>
+            </GestureDetector>
+        </>
+    )
+}
+
 const styles = StyleSheet.create({
     tab: {
         borderRadius: 4,
@@ -1361,7 +1686,6 @@ const styles = StyleSheet.create({
         zIndex: 10000000000,
         top: 0,
         left: 0,
-        borderRadius: 4,
-        borderBottomWidth: 12,
+        borderRadius: 4
     }
 })

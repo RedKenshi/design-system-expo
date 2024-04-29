@@ -169,6 +169,7 @@ export interface CartItem {
     totalPriceInclTax: number
 }
 export type Product = {
+    typeDeTouche: "PRODUCT",
     id: string
     label: string;
     priceExclTaxUnit: number;

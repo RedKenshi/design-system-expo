@@ -7,8 +7,10 @@ import Button from './Button';
 import Box from './Box';
 import { useTheme } from '@shopify/restyle';
 import { ModalAction } from '../constants/types';
+import Header from './Header';
 
 interface Props {
+    title?: string,
     open: boolean,
     close: () => void,
     actions?: ModalAction[]
@@ -16,7 +18,7 @@ interface Props {
     children: JSX.Element | JSX.Element[],
 }
 
-export const ModalNative = ({ open, close, actions, preventCloseOnDimmerPress = false, children }: Props) => {
+export const ModalNative = ({ title, open, close, actions, preventCloseOnDimmerPress = false, children }: Props) => {
 
     const theme = useTheme<Theme>();
 
@@ -37,6 +39,7 @@ export const ModalNative = ({ open, close, actions, preventCloseOnDimmerPress = 
                         borderRadius={8}
                         flexDirection="column"
                     >
+                        {title && <Header size={5} >{title}</Header>}
                         <ScrollView style={{ width: "100%", alignSelf: "stretch" }} contentContainerStyle={{ paddingBottom: "5%", paddingHorizontal: theme.spacing.s }} automaticallyAdjustKeyboardInsets={true}>
                             {children}
                         </ScrollView>

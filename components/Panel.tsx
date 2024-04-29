@@ -10,6 +10,7 @@ interface Props {
     header?: JSX.Element,
     children: JSX.Element | JSX.Element[],
     style?: ViewStyle,
+    unpadded?: boolean,
     contentInnerStyle?: ViewStyle,
     title?: string,
     titleOnPress?: () => void,
@@ -22,6 +23,7 @@ export const Panel = (props: Props) => {
         children,
         header,
         style,
+        unpadded = false,
         contentInnerStyle,
         titleIcon,
         titleOnPress,
@@ -30,7 +32,6 @@ export const Panel = (props: Props) => {
 
     const [layout, setLayout] = useState<LayoutRectangle | null>(null)
 
-    const paddingHorizontal = useResponsiveProp({ phone: 'm', tablet: 'l' })
     const theme = useTheme<Theme>()
 
     return (
@@ -53,8 +54,8 @@ export const Panel = (props: Props) => {
             }
             <Box
                 flex={1}
-                paddingHorizontal={paddingHorizontal}
-                paddingVertical={{ phone: 'm', tablet: 'l' }}
+                paddingHorizontal={unpadded ? null : { phone: 's', tablet: 'm' }}
+                paddingVertical={unpadded ? null : { phone: 's', tablet: 'm' }}
                 style={contentInnerStyle}
             >
                 {children}
