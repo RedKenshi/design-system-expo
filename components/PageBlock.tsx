@@ -2,7 +2,7 @@
 import React from 'react';
 import { StyleSheet, ViewStyle } from 'react-native';
 import Box from './Box';
-import { useTheme } from '@shopify/restyle';
+import { useResponsiveProp, useTheme } from '@shopify/restyle';
 import { Theme } from '../constants/Palette';
 
 interface Props {
@@ -19,10 +19,14 @@ export const PageBlock = (props: Props) => {
 
     const theme = useTheme<Theme>()
 
+    const isTablet = useResponsiveProp({ phone: 0, tablet: 1 })
+
+    const tmp = isTablet ? { marginHorizontal: "12.5%" } : null
+
     return (
         <Box
             maxWidth={{ phone: '100%', tablet: '75%' }}
-            style={{ ...styles.pageBlock, marginBottom: theme.spacing.l, ...style }}
+            style={{ marginBottom: theme.spacing.l, ...style, ...tmp }}
         >
             {children}
         </Box>
@@ -30,9 +34,3 @@ export const PageBlock = (props: Props) => {
 };
 
 export default PageBlock;
-
-const styles = StyleSheet.create({
-    pageBlock: {
-        //alignSelf: "center",
-    },
-})

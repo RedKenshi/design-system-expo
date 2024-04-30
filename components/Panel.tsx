@@ -34,9 +34,10 @@ export const Panel = (props: Props) => {
 
     const theme = useTheme<Theme>()
 
+    const innerPadding = useResponsiveProp({ phone: 's', tablet: 'l' })
+
     return (
         <Box
-            flex={1}
             overflow={"hidden"}
             onLayout={e => setLayout(e.nativeEvent.layout)}
             backgroundColor='surface'
@@ -54,8 +55,7 @@ export const Panel = (props: Props) => {
             }
             <Box
                 flex={1}
-                paddingHorizontal={unpadded ? null : { phone: 's', tablet: 'm' }}
-                paddingVertical={unpadded ? null : { phone: 's', tablet: 'm' }}
+                padding={!unpadded && innerPadding}
                 style={contentInnerStyle}
             >
                 {children}

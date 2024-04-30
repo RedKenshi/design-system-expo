@@ -22,11 +22,11 @@ export const Buttons = ({ }: Props) => {
 
     return (
         <>
-            <PageBlock style={{ display: "flex", justifyContent: "center", alignItems: "center", flexDirection: 'row', marginTop: 400 }} >
-                <Box marginHorizontal={{ tablet: 'l' }} justifyContent="space-evenly" style={[padding, { maxWidth: "100%", paddingBottom: "50%" }]} >
+            <PageBlock style={{ display: "flex", justifyContent: "center", alignItems: "center", flexDirection: 'row' }} >
+                <Box marginHorizontal={{ tablet: 'l' }} justifyContent="space-evenly" style={[padding, { maxWidth: "100%", paddingBottom: "50%", marginTop: 250 }]} >
                     <Button onPress={() => router.navigate('/_sitemap')} title={"MAP"} variant='info' />
+                    <Button onPress={() => router.navigate('/blueprint')} title={"BLUEPRINT"} variant='info' />
                 </Box>
-                <Button onPress={() => router.navigate('/blueprint')} title={"BLUEPRINT"} variant='info' />
             </PageBlock>
         </>
     )

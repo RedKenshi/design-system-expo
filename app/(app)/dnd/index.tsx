@@ -75,9 +75,9 @@ export const Dnd = ({ }: Props) => {
 
     return (
         <>
-            <PageBlock style={{ display: "flex", justifyContent: "center", alignItems: "center", flexDirection: 'row', height: "100%", width: "100%", alignSelf: "center" }} >
-                <Box flexDirection={"column"} paddingVertical='xl' gap="l" marginHorizontal={{ tablet: 'l' }} justifyContent="space-evenly" style={[padding, { width: '100%', alignSelf: "stretch" }]} >
-                    <Panel style={{ zIndex: 10000, overflow: "visible", alignSelf: "stretch", flexDirection: "row", justifyContent: "space-evenly", alignItems: "center", marginBottom: 220 }}>
+            <PageBlock style={{ display: "flex", justifyContent: "center", flexDirection: 'row', width: "100%", alignSelf: "center", maxHeight: "100%", height: "100%" }} >
+                <Box flexDirection={"column"} paddingVertical='xl' gap="l" marginHorizontal={{ tablet: 'l' }} style={[padding, { width: '100%' }]} >
+                    <Panel style={{ zIndex: 10000, overflow: "visible", alignSelf: "stretch", flexDirection: "row", justifyContent: "space-evenly", alignItems: "center" }}>
                         <FlatList numColumns={windowWidth > theme.breakpoints.largeTablet ? 3 : 2} data={items} style={{ overflow: "visible" }} contentContainerStyle={{ zIndex: 10000, gap: 16 }} columnWrapperStyle={{ justifyContent: "space-evenly" }} renderItem={({ item, index }) => {
                             return (
                                 <Droppable key={`available${index}`} place={item}>
@@ -88,7 +88,7 @@ export const Dnd = ({ }: Props) => {
                             )
                         }} />
                     </Panel>
-                    <Box style={{ position: "absolute", overflow: "visible", zIndex: 9000, paddingHorizontal: 16, bottom: 0, left: 0, right: 0, height: 220, flexDirection: "row", justifyContent: "space-evenly", alignItems: "center" }} backgroundColor={'surface'} >
+                    <Box style={{ position: "absolute", overflow: "visible", zIndex: 9000, bottom: 0, left: 0, right: 0, height: 220, flexDirection: "row", justifyContent: "space-evenly", alignItems: "center" }} backgroundColor={'surface'} >
                         <View style={{ overflow: "visible", gap: 16, flexDirection: "column" }}>
                             {splitPlaces(places, windowWidth > theme.breakpoints.largeTablet ? 6 : 3).map((row, indexRow) => {
                                 return (
@@ -106,7 +106,7 @@ export const Dnd = ({ }: Props) => {
                         </View>
                     </Box>
                 </Box>
-            </PageBlock>
+            </PageBlock >
         </>
     )
 }

@@ -52,38 +52,33 @@ export const Inputs = ({ }: Props) => {
     return (
         <>
             <PageBlock style={{ display: "flex", justifyContent: "center", alignItems: "center", flexDirection: 'row' }} >
-                <Box marginHorizontal={{ tablet: 'l' }} justifyContent="space-evenly" style={[padding, { maxWidth: "100%", paddingBottom: "50%" }]} >
-
+                <Box marginHorizontal={{ tablet: 'l' }} justifyContent="space-evenly" style={[padding, { maxWidth: "100%", paddingBottom: "50%", alignItems: "stretch", flex: 1 }]} >
                     <Header style={{ marginHorizontal: theme.spacing.l }} size={3}>Date form examples</Header>
-                    <Panel style={{ display: 'flex', flexDirection: "column", gap: theme.spacing.m }}>
+                    <Panel style={{ display: 'flex', flexDirection: "column" }} contentInnerStyle={{ gap: theme.spacing.m }}>
                         <DateFormRow handleChange={(d: Date) => setDate(d)} value={date} title={"DATE"} from={subMonths(new Date, 1)} to={addMonths(new Date, 1)} />
                         <DateRangeFormRow handleChange={(dr: DateRange) => setDateRange(dr)} value={dateRange} title="DATE RANGE" minNumberOfDays={3} maxNumberOfDays={9} />
                         <TimeFormRow handleChange={(d: string) => setTime(d)} value={time} title={"TIME"} />
                         <TextFormRow handleChange={(d: string) => { }} value={time} title={"TIME"} />
                     </Panel>
-
                     <Header style={{ marginHorizontal: theme.spacing.l }} size={5}>Inputs examples (not FormRow) with label</Header>
-                    <Panel style={{ display: 'flex', flexDirection: "column", gap: theme.spacing.m }}>
+                    <Panel style={{ display: 'flex', flexDirection: "column" }} contentInnerStyle={{ gap: theme.spacing.m }}>
                         <DatePickerField label="Pick a date" handleChange={(d: Date) => setDate(d)} value={date} from={subMonths(new Date, 1)} to={addMonths(new Date, 1)} />
                         <DateRangePickerField label="Pick a date range" handleChange={(dr: DateRange) => setDateRange(dr)} value={dateRange} minNumberOfDays={3} maxNumberOfDays={9} />
                         <TimePickerField label="Pick a time" handleChange={(d: string) => setTime(d)} value={time} />
                         <CustomTextField label="Tell us about you" handleChange={(d: string) => { }} value={time} />
                     </Panel>
-
                     <Header style={{ marginHorizontal: theme.spacing.l }} size={5}>Inputs examples (not FormRow) without label</Header>
-                    <Panel style={{ display: 'flex', flexDirection: "column", gap: theme.spacing.m }}>
+                    <Panel style={{ display: 'flex', flexDirection: "column" }} contentInnerStyle={{ gap: theme.spacing.m }}>
                         <DatePickerField handleChange={(d: Date) => setDate(d)} value={date} from={subMonths(new Date, 1)} to={addMonths(new Date, 1)} />
                         <DateRangePickerField handleChange={(dr: DateRange) => setDateRange(dr)} value={dateRange} minNumberOfDays={3} maxNumberOfDays={9} hideDaysInitials />
                         <TimePickerField handleChange={(d: string) => setTime(d)} value={time} />
                         <CustomTextField handleChange={(d: string) => { }} value={time} />
                     </Panel>
-
                     <Header style={{ marginHorizontal: theme.spacing.l }} size={3}>Toggle examples</Header>
-                    <Panel style={{ display: 'flex', flexDirection: "column", gap: theme.spacing.m }}>
+                    <Panel style={{ display: 'flex', flexDirection: "column" }} contentInnerStyle={{ gap: theme.spacing.m }}>
                         <ToggleFormRow title={"First toggle"} value={togF} handleChange={(value) => setTogF(value)} />
                         <ToggleFormRow title={"Second toggle"} value={togS} handleChange={(value) => setTogS(value)} />
                     </Panel>
-
                 </Box>
             </PageBlock>
         </>

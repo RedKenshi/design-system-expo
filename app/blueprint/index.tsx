@@ -799,7 +799,7 @@ export const Blueprint = ({ }: Props) => {
                     data={card}
                     renderItem={({ item, index }) => {
                         return (
-                            <Pressable style={{ flex: 1, paddingVertical: theme.spacing.m, paddingHorizontal: theme.spacing.l, borderRadius: 4, flexDirection: "row", alignItems: 'center', borderBottomWidth: 1, borderColor: theme.colors.border }} onPress={() => setSelectedCategory(item.id)}>
+                            <Pressable style={{ flex: 1, paddingVertical: theme.spacing.s, paddingHorizontal: theme.spacing.l, borderRadius: 4, flexDirection: "row", alignItems: 'center', borderBottomWidth: 1, borderColor: theme.colors.border }} onPress={() => setSelectedCategory(item.id)}>
                                 <FoodSVG icon={item.icon as FoodSVGCode} fill={item.color} size="normal" />
                                 <CustomText style={{ marginLeft: theme.spacing.s, marginTop: 2 }} color={item.id == selectedCategory ? "white" : undefined} font='A600' size={18}>{item.name}</CustomText>
                                 <Box flex={1} />

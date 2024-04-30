@@ -26,14 +26,14 @@ const AppLayout = () => {
                 <TopBarMenu />
             </TopBar>
             <StatusBar style={darkMode ? "light" : "dark"} />
-            <SafeAreaView>
-                <ScrollView >
+            <SafeAreaView >
+                <ScrollView contentContainerStyle={{ height: "80%" }} >
                     <Slot />
+                    <View style={{ position: 'absolute', bottom: 24, right: 24 }}>
+                        <Button variant='info' size='l' style={{ borderRadius: 999 }} icon={IconSVGCode.ticket} onPress={() => router.navigate(`/newticket`)} />
+                    </View>
                 </ScrollView>
             </SafeAreaView>
-            <View style={{ position: 'absolute', bottom: 24, right: 24 }}>
-                <Button variant='info' size='l' style={{ borderRadius: 999 }} icon={IconSVGCode.ticket} onPress={() => router.navigate(`/newticket`)} />
-            </View>
         </>
 
     );

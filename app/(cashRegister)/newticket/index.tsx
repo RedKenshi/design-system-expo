@@ -66,12 +66,9 @@ export const NewTicket = ({ }: Props) => {
                     <Box flexDirection={"column"} gap={"s"} marginBottom={'l'}>
                         {item.map((cat, i) => {
                             return (
-                                <Pressable style={{ flex: 1, paddingVertical: theme.spacing.s, paddingHorizontal: theme.spacing.s, borderRadius: 4, flexDirection: "row", backgroundColor: theme.colors.background, alignItems: 'center', height: categoryHeight }} onPress={() => setSelectedCategory(cat.id)}>
+                                <Pressable style={{ height: 32, width: 136, paddingVertical: theme.spacing.xs, paddingHorizontal: theme.spacing.s, borderRadius: 4, flexDirection: "row", backgroundColor: theme.colors.surface, alignItems: 'center' }} onPress={() => setSelectedCategory(cat.id)}>
                                     <FoodSVG icon={cat.icon as FoodSVGCode} fill={cat.color} size="normal" />
-                                    <CustomText style={{ marginLeft: theme.spacing.s, marginTop: 2 }} color={cat.id == selectedCategory ? "white" : undefined} font='A600' size={18}>{cat.name}</CustomText>
-                                    <Box flex={1} />
-                                    <CustomText font={"A400_I"} size={11} color={cat.id == selectedCategory ? "white" : 'textFadded'} style={{ marginRight: theme.spacing.xxs, marginTop: 3 }}>{`${cat.products.length} produits`}</CustomText>
-                                    <IconSVG icon={IconSVGCode.folder} fill={theme.colors.textFadded} />
+                                    <CustomText style={{ marginLeft: theme.spacing.s, marginTop: 2 }} color={cat.id == selectedCategory ? "white" : undefined} font='A600' size={14}>{cat.name}</CustomText>
                                 </Pressable>
                             )
                         })}
